@@ -1,0 +1,628 @@
+/* Trust Declaration Detail Styles */
+.trust-declaration-detail {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+}
+
+/* Loading State */
+.trust-declaration-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f4f6;
+  border-top: 4px solid #667eea;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Error State */
+.trust-declaration-error,
+.trust-declaration-not-found {
+  text-align: center;
+  padding: 60px 20px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  margin: 20px 0;
+}
+
+.error-icon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+}
+
+.trust-declaration-error h3,
+.trust-declaration-not-found h3 {
+  color: #dc2626;
+  margin: 0 0 10px 0;
+}
+
+.trust-declaration-error p,
+.trust-declaration-not-found p {
+  color: #7f1d1d;
+  margin: 0 0 20px 0;
+}
+
+.error-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.retry-button,
+.back-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.retry-button {
+  background: #dc2626;
+  color: white;
+}
+
+.retry-button:hover {
+  background: #b91c1c;
+}
+
+.back-button {
+  background: #6b7280;
+  color: white;
+}
+
+.back-button:hover {
+  background: #4b5563;
+}
+
+/* Header */
+.declaration-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.back-nav-button {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.back-nav-button:hover {
+  background: #e5e7eb;
+  border-color: #9ca3af;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.audit-toggle-btn {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.audit-toggle-btn:hover {
+  background: #5a67d8;
+}
+
+.audit-toggle-btn.active {
+  background: #dc2626;
+}
+
+.audit-toggle-btn.active:hover {
+  background: #b91c1c;
+}
+
+/* Main Content */
+.declaration-content {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+/* Section Styles */
+.agent-info-section,
+.scores-section,
+.trust-articles-section,
+.notes-section,
+.audit-section,
+.audit-history-section {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.agent-info-section h2,
+.scores-section h2,
+.trust-articles-section h3,
+.notes-section h3,
+.audit-section h3,
+.audit-history-section h3 {
+  color: #1f2937;
+  margin: 0 0 20px 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  border-bottom: 2px solid #f3f4f6;
+  padding-bottom: 10px;
+}
+
+/* Agent Information */
+.agent-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.agent-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.agent-detail-item label {
+  font-weight: 600;
+  color: #6b7280;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.agent-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.agent-id {
+  font-family: 'Monaco', 'Menlo', monospace;
+  background: #f3f4f6;
+  padding: 8px 12px;
+  border-radius: 6px;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.declaration-date,
+.last-validated {
+  color: #374151;
+  font-weight: 500;
+}
+
+/* Scores Section */
+.detailed-scores {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+}
+
+.score-card {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+}
+
+.score-header {
+  margin-bottom: 20px;
+}
+
+.score-header h3 {
+  margin: 0 0 5px 0;
+  color: #1f2937;
+  font-size: 1.25rem;
+}
+
+.score-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: 20px;
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.score-display {
+  margin: 20px 0;
+}
+
+.score-circle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: conic-gradient(
+    var(--color) calc(var(--score) * 360deg),
+    #e5e7eb calc(var(--score) * 360deg)
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  position: relative;
+}
+
+.score-circle::before {
+  content: '';
+  width: 90px;
+  height: 90px;
+  background: white;
+  border-radius: 50%;
+  position: absolute;
+}
+
+.score-text {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color);
+  position: relative;
+  z-index: 1;
+}
+
+.score-description {
+  font-size: 0.9rem;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+/* Trust Articles Section */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.compliance-summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.compliance-count {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.compliance-percentage {
+  font-size: 1rem;
+  color: #6b7280;
+}
+
+.articles-detailed-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 16px;
+}
+
+.article-detailed-item {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.2s;
+}
+
+.article-detailed-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.article-detailed-item.compliant {
+  border-left: 4px solid #10b981;
+  background: #ecfdf5;
+}
+
+.article-detailed-item.non-compliant {
+  border-left: 4px solid #ef4444;
+  background: #fef2f2;
+}
+
+.article-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.article-icon {
+  font-size: 1.1rem;
+}
+
+.status-text {
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-text.compliant {
+  color: #065f46;
+}
+
+.status-text.non-compliant {
+  color: #7f1d1d;
+}
+
+.article-name {
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 6px;
+  font-size: 1rem;
+}
+
+.article-description {
+  font-size: 0.85rem;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+/* Notes Section */
+.notes-content {
+  background: #fffbeb;
+  border: 1px solid #fed7aa;
+  border-radius: 8px;
+  padding: 16px;
+  color: #92400e;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+/* Audit Section */
+.audit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.audit-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.audit-input-group label {
+  font-weight: 600;
+  color: #374151;
+}
+
+.audit-input-group input,
+.audit-input-group textarea {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.audit-input-group input:focus,
+.audit-input-group textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.audit-input-group textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.audit-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.submit-audit-btn {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.submit-audit-btn:hover {
+  background: #059669;
+}
+
+.cancel-audit-btn {
+  background: #6b7280;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.cancel-audit-btn:hover {
+  background: #4b5563;
+}
+
+/* Audit History */
+.no-audit-history {
+  text-align: center;
+  padding: 40px 20px;
+  color: #6b7280;
+  background: #f9fafb;
+  border-radius: 8px;
+  border: 2px dashed #d1d5db;
+}
+
+.audit-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.audit-entry {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.audit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.audit-date {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.auditor {
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.audit-scores {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 10px;
+}
+
+.audit-score {
+  font-size: 0.9rem;
+  color: #374151;
+}
+
+.audit-score strong {
+  color: #1f2937;
+}
+
+.audit-notes {
+  background: #fffbeb;
+  border: 1px solid #fed7aa;
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 0.9rem;
+  color: #92400e;
+  line-height: 1.4;
+}
+
+.audit-notes strong {
+  color: #78350f;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .trust-declaration-detail {
+    padding: 15px;
+  }
+  
+  .declaration-detail-header {
+    flex-direction: column;
+    gap: 15px;
+    align-items: stretch;
+  }
+  
+  .header-actions {
+    justify-content: center;
+  }
+  
+  .agent-details {
+    grid-template-columns: 1fr;
+  }
+  
+  .detailed-scores {
+    grid-template-columns: 1fr;
+  }
+  
+  .articles-detailed-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .audit-header {
+    flex-direction: column;
+    gap: 5px;
+    align-items: flex-start;
+  }
+  
+  .audit-scores {
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .audit-actions {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .trust-declaration-detail {
+    padding: 10px;
+  }
+  
+  .agent-info-section,
+  .scores-section,
+  .trust-articles-section,
+  .notes-section,
+  .audit-section,
+  .audit-history-section {
+    padding: 16px;
+  }
+  
+  .score-circle {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .score-circle::before {
+    width: 75px;
+    height: 75px;
+  }
+  
+  .score-text {
+    font-size: 1.25rem;
+  }
+}

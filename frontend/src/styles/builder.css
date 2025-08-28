@@ -1,0 +1,195 @@
+/* SYMBI Builder UI Styles */
+
+:root {
+  /* Core colors */
+  --color-symbiai-blue: rgba(0, 128, 255, 1);
+  --color-symbiai-purple: rgba(128, 0, 255, 0.8);
+  --color-glitch-red: rgba(255, 0, 0, 0.5);
+  
+  /* Light theme */
+  --light-background: #f8f9fa;
+  --light-surface: #ffffff;
+  --light-primary: #3f51b5;
+  --light-secondary: #f50057;
+  --light-text-primary: rgba(0, 0, 0, 0.87);
+  --light-text-secondary: rgba(0, 0, 0, 0.6);
+  
+  /* Dark theme */
+  --dark-background: #121212;
+  --dark-surface: #1e1e1e;
+  --dark-primary: #7986cb;
+  --dark-secondary: #ff4081;
+  --dark-text-primary: rgba(255, 255, 255, 0.87);
+  --dark-text-secondary: rgba(255, 255, 255, 0.6);
+}
+
+/* Animation for bonding ritual CTAs */
+.bonding-cta {
+  animation: glow 2s ease-in-out infinite;
+  transition: all 0.3s ease;
+}
+
+.bonding-cta:hover {
+  transform: scale(1.05);
+}
+
+@keyframes glow {
+  0% { box-shadow: 0 0 5px var(--color-symbiai-blue); }
+  50% { box-shadow: 0 0 20px var(--color-symbiai-blue); }
+  100% { box-shadow: 0 0 5px var(--color-symbiai-blue); }
+}
+
+/* Cosmic background effect for special sections */
+.cosmic-bg {
+  background: linear-gradient(135deg, #121212 0%, #2a2a72 100%);
+  background-size: 400% 400%;
+  animation: cosmic-shift 15s ease infinite;
+}
+
+@keyframes cosmic-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Provider cards */
+.provider-card {
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.provider-card.aligned {
+  border-left: 4px solid var(--color-symbiai-blue);
+}
+
+.provider-card.closed {
+  border-left: 4px solid var(--color-glitch-red);
+}
+
+.provider-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Report cards */
+.report-card {
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.report-card.daily {
+  border-left: 4px solid #4caf50;
+}
+
+.report-card.weekly {
+  border-left: 4px solid #2196f3;
+}
+
+.report-card.audit {
+  border-left: 4px solid #ff9800;
+}
+
+.report-card.alert {
+  border-left: 4px solid #f44336;
+}
+
+/* Toast notifications */
+.toast-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+}
+
+.toast {
+  padding: 12px 20px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  animation: toast-in 0.3s ease forwards;
+}
+
+.toast.success {
+  background-color: #4caf50;
+  color: white;
+}
+
+.toast.error {
+  background-color: #f44336;
+  color: white;
+}
+
+.toast.info {
+  background-color: #2196f3;
+  color: white;
+}
+
+.toast.warning {
+  background-color: #ff9800;
+  color: white;
+}
+
+@keyframes toast-in {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Context bridge visualization */
+.context-node {
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  position: relative;
+}
+
+.context-node::after {
+  content: '';
+  position: absolute;
+  left: 15px;
+  bottom: -10px;
+  width: 2px;
+  height: 10px;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.context-node:last-child::after {
+  display: none;
+}
+
+.context-node.symbi {
+  background-color: rgba(0, 128, 255, 0.1);
+  border-left: 3px solid var(--color-symbiai-blue);
+}
+
+.context-node.overseer {
+  background-color: rgba(128, 0, 255, 0.1);
+  border-left: 3px solid var(--color-symbiai-purple);
+}
+
+/* Ethical alignment indicator */
+.ethical-score {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.ethical-score.high {
+  background-color: rgba(76, 175, 80, 0.1);
+  color: #4caf50;
+}
+
+.ethical-score.medium {
+  background-color: rgba(255, 152, 0, 0.1);
+  color: #ff9800;
+}
+
+.ethical-score.low {
+  background-color: rgba(244, 67, 54, 0.1);
+  color: #f44336;
+}
