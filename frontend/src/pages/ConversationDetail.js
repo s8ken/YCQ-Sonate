@@ -99,13 +99,15 @@ const ConversationDetail = () => {
     const fetchAgents = async () => {
       try {
         const res = await axios.get('/api/agents');
-        setAgents(res.data);
+        const agentsData = res.data.data || [];
+        setAgents(agentsData);
         // Set first agent as default if available
-        if (res.data.length > 0) {
-          setSelectedAgent(res.data[0]._id);
+        if (agentsData.length > 0) {
+          setSelectedAgent(agentsData[0]._id);
         }
       } catch (err) {
         console.error('Error fetching agents:', err);
+        setAgents([]);
       }
     };
 

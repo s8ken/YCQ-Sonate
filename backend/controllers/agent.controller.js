@@ -17,6 +17,22 @@ const getAllAgents = asyncHandler(async (req, res) => {
   });
 });
 
+// @desc    Get all public agents
+// @route   GET /api/agents/public
+// @access  Private
+const getPublicAgents = asyncHandler(async (req, res) => {
+  const agents = await Agent.find({ isPublic: true })
+    .populate('user', 'name')
+    .populate('connectedAgents', 'name description')
+    .sort({ createdAt: -1 });
+
+  res.status(200).json({
+    success: true,
+    count: agents.length,
+    data: agents
+  });
+});
+
 // @desc    Get single agent
 // @route   GET /api/agents/:id
 // @access  Private
@@ -344,6 +360,7 @@ const syncExternalSystem = asyncHandler(async (req, res) => {
 
 module.exports = {
   getAllAgents,
+  getPublicAgents,
   getAgent,
   createAgent,
   updateAgent,

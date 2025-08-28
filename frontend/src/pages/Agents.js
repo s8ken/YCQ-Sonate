@@ -56,10 +56,11 @@ const Agents = () => {
       setLoading(true);
       const url = showPublic ? '/api/agents/public' : '/api/agents';
       const res = await axios.get(url);
-      setAgents(res.data);
+      setAgents(res.data.data || []);
       setLoading(false);
     } catch (err) {
       console.error('Error fetching agents:', err);
+      setAgents([]);
       setLoading(false);
     }
   };

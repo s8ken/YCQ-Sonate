@@ -79,11 +79,11 @@ const AgentDetail = () => {
       
       // Ensure CI fields are properly initialized
       const agentData = {
-        ...res.data,
-        ciEnabled: res.data.ciEnabled || false,
-        ciModel: res.data.ciModel || 'symbi-core',
-        contextBridgeEnabled: res.data.contextBridgeEnabled || false,
-        trustScoreThreshold: res.data.trustScoreThreshold || 0.7
+        ...res.data.data,
+        ciEnabled: res.data.data.ciEnabled || false,
+        ciModel: res.data.data.ciModel || 'symbi-core',
+        contextBridgeEnabled: res.data.data.contextBridgeEnabled || false,
+        trustScoreThreshold: res.data.data.trustScoreThreshold || 0.7
       };
       
       setAgent(agentData);
@@ -98,9 +98,10 @@ const AgentDetail = () => {
   const fetchApiKeys = async () => {
     try {
       const res = await axios.get('/api/users/apikeys');
-      setApiKeys(res.data);
+      setApiKeys(res.data.data || []);
     } catch (err) {
       console.error('Error fetching API keys:', err);
+      setApiKeys([]);
     }
   };
 

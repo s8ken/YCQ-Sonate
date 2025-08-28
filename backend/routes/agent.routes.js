@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const { 
-  getAllAgents, 
+  getAllAgents,
+  getPublicAgents, 
   getAgent, 
   createAgent, 
   updateAgent, 
@@ -15,6 +16,7 @@ const { protect } = require('../middleware/auth.middleware');
 
 // Agent management routes
 router.get('/', protect, getAllAgents);
+router.get('/public', protect, getPublicAgents);
 router.get('/:id', protect, getAgent);
 router.post('/', protect, createAgent);
 router.put('/:id', protect, updateAgent);
