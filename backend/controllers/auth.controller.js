@@ -29,15 +29,11 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new Error('User already exists');
   }
 
-  // Hash password
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(password, salt);
-
-  // Create user
+  // Create user (password will be hashed by the model's pre-save hook)
   const user = await User.create({
     name,
     email,
-    password: hashedPassword,
+    password,
   });
 
   if (user) {

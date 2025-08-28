@@ -31,8 +31,8 @@ export const AuthProvider = ({ children }) => {
       }
 
       try {
-        const res = await axios.get('/api/users/profile');
-        setUser(res.data);
+        const res = await axios.get('/api/auth/me');
+        setUser(res.data.data);
         setLoading(false);
       } catch (err) {
         console.error('Error loading user:', err);
@@ -46,11 +46,13 @@ export const AuthProvider = ({ children }) => {
   }, [token]);
 
   // Register user
-  const register = async (userData) => {
+  const register = async (name, email, password) => {
     try {
       setLoading(true);
+      const userData = { name, email, password };
       const res = await axios.post('/api/auth/register', userData);
-      setToken(res.data.token);
+      setToken(res.data.data.token);
+      setUser(res.data.data);
       return res.data;
     } catch (err) {
       setError(err.response?.data?.message || 'Registration failed');
@@ -65,7 +67,8 @@ export const AuthProvider = ({ children }) => {
     try {
       setLoading(true);
       const res = await axios.post('/api/auth/login', { email, password });
-      setToken(res.data.token);
+      setToken(res.data.data.token);
+      setUser(res.data.data);
       return res.data;
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed');
