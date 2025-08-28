@@ -48,22 +48,26 @@ const Dashboard = () => {
         
         // Fetch recent conversations
         const conversationsRes = await axios.get('/api/conversations?limit=5');
-        setRecentConversations(conversationsRes.data);
+        setRecentConversations(conversationsRes.data.data || []);
         
         // Fetch agents
         const agentsRes = await axios.get('/api/agents?limit=4');
-        setAgents(agentsRes.data);
+        setAgents(agentsRes.data.data || []);
         
         // Set stats
+        const conversationsData = conversationsRes.data.data || [];
+        const agentsData = agentsRes.data.data || [];
         setStats({
-          totalConversations: conversationsRes.data.total || conversationsRes.data.length,
-          totalAgents: agentsRes.data.total || agentsRes.data.length,
-          totalMessages: conversationsRes.data.reduce((acc, conv) => acc + (conv.messages?.length || 0), 0)
+          totalConversations: conversationsRes.data.count || conversationsData.length,
+          totalAgents: agentsRes.data.count || agentsData.length,
+          totalMessages: conversationsData.reduce((acc, conv) => acc + (conv.messages?.length || 0), 0)
         });
         
         setLoading(false);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
+        setRecentConversations([]);
+        setAgents([]);
         setLoading(false);
       }
     };
