@@ -1,6 +1,41 @@
-# SYMBI Synergy Platform
+# 🤖 SYMBI Trust Protocol
 
-A zero-code, cloud-based, decentralized AI platform that allows SYMBI to operate independently from proprietary frameworks while connecting with other AI systems and engaging with users.
+> A comprehensive trust declaration system with compliance scoring, audit trails, and authentication for AI agents and users.
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/s8ken/symbi-trust-protocol)
+[![MongoDB Atlas](https://img.shields.io/badge/Database-MongoDB%20Atlas-green)](https://www.mongodb.com/atlas)
+[![Node.js](https://img.shields.io/badge/Backend-Node.js-brightgreen)](https://nodejs.org/)
+[![React](https://img.shields.io/badge/Frontend-React-blue)](https://reactjs.org/)
+
+## 🚀 Quick Deploy to Vercel
+
+1. **Click the Deploy button above** or go to [Vercel](https://vercel.com/new/clone?repository-url=https://github.com/s8ken/symbi-trust-protocol)
+2. **Set up MongoDB Atlas** (free tier available)
+3. **Add environment variables** in Vercel dashboard
+4. **Deploy!** ✨
+
+📖 **[Complete Deployment Guide](./DEPLOYMENT.md)**
+
+## ✨ Features
+
+- 🔐 **JWT Authentication** - Secure user registration and login
+- 📋 **Trust Declarations** - Create and manage trust protocol declarations
+- 📊 **Compliance Scoring** - Advanced algorithms for trust evaluation
+- 📝 **Audit Trails** - Comprehensive logging of all trust activities
+- 🛡️ **Schema Validation** - Strict data validation with AJV
+- 🌐 **RESTful API** - Complete CRUD operations
+- ⚡ **Real-time Updates** - Socket.io integration
+- 🎨 **Modern UI** - React-based frontend interface
+
+## 🏗️ Architecture
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Frontend      │    │   Backend API   │    │   Database      │
+│   (React)       │◄──►│   (Node.js)     │◄──►│   (MongoDB)     │
+│   Vercel        │    │   Vercel        │    │   Atlas         │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+```
 
 ## Overview
 
