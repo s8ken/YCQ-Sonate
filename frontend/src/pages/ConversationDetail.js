@@ -86,8 +86,8 @@ const ConversationDetail = () => {
       try {
         setLoading(true);
         const res = await axios.get(`/api/conversations/${id}`);
-        setConversation(res.data);
-        setEditTitle(res.data.title || 'Untitled Conversation');
+        setConversation(res.data.data);
+        setEditTitle(res.data.data.title || 'Untitled Conversation');
         setLoading(false);
       } catch (err) {
         console.error('Error fetching conversation:', err);
