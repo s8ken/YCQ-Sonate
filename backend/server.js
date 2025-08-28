@@ -46,6 +46,27 @@ const contextRoutes = require('./routes/context');
 const webhookRoutes = require('./routes/webhook.routes');
 const trustRoutes = require('./routes/trust.routes');
 
+// Root endpoint for API status
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'SYMBI Trust Protocol API is running',
+    version: '1.0.0',
+    endpoints: {
+      auth: '/api/auth',
+      users: '/api/users',
+      conversations: '/api/conversations',
+      llm: '/api/llm',
+      agents: '/api/agents',
+      reports: '/api/reports',
+      context: '/api/context',
+      webhooks: '/api/webhooks',
+      trust: '/api/trust'
+    },
+    documentation: 'Visit /api/trust for trust protocol endpoints'
+  });
+});
+
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
