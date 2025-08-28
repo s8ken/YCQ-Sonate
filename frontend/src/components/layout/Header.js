@@ -4,12 +4,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
-import { AuthContext } from '../../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 import { ThemeContext } from '../../context/ThemeContext';
 
 const Header = ({ toggleDrawer }) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
-  const { user, logout } = useContext(AuthContext);
+  const { user, logout } = useAuth();
   const { mode, toggleTheme } = useContext(ThemeContext);
   const navigate = useNavigate();
   const theme = useTheme();
@@ -35,8 +35,16 @@ const Header = ({ toggleDrawer }) => {
   };
 
   return (
-    <AppBar position="fixed" color="primary" elevation={1}>
-      <Toolbar>
+    <AppBar 
+      position="fixed" 
+      sx={{
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        backdropFilter: 'blur(20px)',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+        boxShadow: '0 8px 32px rgba(102, 126, 234, 0.2)'
+      }}
+    >
+      <Toolbar sx={{ minHeight: { xs: 56, sm: 64 } }}>
         {user && (
           <IconButton
             edge="start"
@@ -49,13 +57,42 @@ const Header = ({ toggleDrawer }) => {
           </IconButton>
         )}
         
-        <Typography variant="h6" component={Link} to="/" sx={{ flexGrow: 1, textDecoration: 'none', color: 'inherit' }}>
+        <Typography 
+          variant="h6" 
+          component={Link} 
+          to="/" 
+          sx={{ 
+            flexGrow: 1, 
+            textDecoration: 'none', 
+            color: 'inherit',
+            fontWeight: 700,
+            fontSize: { xs: '1.1rem', sm: '1.25rem' },
+            background: 'linear-gradient(45deg, #ffffff 30%, #f0f0f0 90%)',
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            textShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          }}
+        >
           SYMBI Synergy
         </Typography>
 
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           {/* Theme toggle */}
-          <IconButton color="inherit" onClick={toggleTheme} sx={{ ml: 1 }}>
+          <IconButton 
+            color="inherit" 
+            onClick={toggleTheme} 
+            sx={{ 
+              ml: 1,
+              bgcolor: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(10px)',
+              '&:hover': {
+                bgcolor: 'rgba(255, 255, 255, 0.2)',
+                transform: 'scale(1.05)'
+              },
+              transition: 'all 0.2s ease'
+            }}
+          >
             {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
           </IconButton>
 
@@ -65,7 +102,17 @@ const Header = ({ toggleDrawer }) => {
                 color="inherit" 
                 component={Link} 
                 to="/conversations"
-                sx={{ display: isMobile ? 'none' : 'block' }}
+                sx={{ 
+                  display: isMobile ? 'none' : 'block',
+                  mx: 0.5,
+                  borderRadius: 2,
+                  px: 2,
+                  '&:hover': {
+                    bgcolor: 'rgba(255, 255, 255, 0.1)',
+                    transform: 'translateY(-1px)'
+                  },
+                  transition: 'all 0.2s ease'
+                }}
               >
                 Conversations
               </Button>
@@ -73,7 +120,17 @@ const Header = ({ toggleDrawer }) => {
                 color="inherit" 
                 component={Link} 
                 to="/agents"
-                sx={{ display: isMobile ? 'none' : 'block' }}
+                sx={{ 
+                  display: isMobile ? 'none' : 'block',
+                  mx: 0.5,
+                  borderRadius: 2,
+                  px: 2,
+                  '&:hover': {
+                    bgcolor: 'rgba(255, 255, 255, 0.1)',
+                    transform: 'translateY(-1px)'
+                  },
+                  transition: 'all 0.2s ease'
+                }}
               >
                 Agents
               </Button>
@@ -81,7 +138,17 @@ const Header = ({ toggleDrawer }) => {
                 color="inherit" 
                 component={Link} 
                 to="/reports"
-                sx={{ display: isMobile ? 'none' : 'block' }}
+                sx={{ 
+                  display: isMobile ? 'none' : 'block',
+                  mx: 0.5,
+                  borderRadius: 2,
+                  px: 2,
+                  '&:hover': {
+                    bgcolor: 'rgba(255, 255, 255, 0.1)',
+                    transform: 'translateY(-1px)'
+                  },
+                  transition: 'all 0.2s ease'
+                }}
               >
                 Symbi Logs
               </Button>
@@ -89,7 +156,17 @@ const Header = ({ toggleDrawer }) => {
                 color="inherit" 
                 component={Link} 
                 to="/context-bridge"
-                sx={{ display: isMobile ? 'none' : 'block' }}
+                sx={{ 
+                  display: isMobile ? 'none' : 'block',
+                  mx: 0.5,
+                  borderRadius: 2,
+                  px: 2,
+                  '&:hover': {
+                    bgcolor: 'rgba(255, 255, 255, 0.1)',
+                    transform: 'translateY(-1px)'
+                  },
+                  transition: 'all 0.2s ease'
+                }}
               >
                 Context Bridge
               </Button>
@@ -99,8 +176,25 @@ const Header = ({ toggleDrawer }) => {
                 aria-haspopup="true"
                 onClick={handleMenu}
                 color="inherit"
+                sx={{
+                  ml: 1,
+                  '&:hover': {
+                    transform: 'scale(1.05)'
+                  },
+                  transition: 'transform 0.2s ease'
+                }}
               >
-                <Avatar sx={{ width: 32, height: 32, bgcolor: 'secondary.main' }}>
+                <Avatar 
+                  sx={{ 
+                    width: 36, 
+                    height: 36, 
+                    bgcolor: 'rgba(255, 255, 255, 0.2)',
+                    backdropFilter: 'blur(10px)',
+                    border: '2px solid rgba(255, 255, 255, 0.3)',
+                    fontWeight: 600,
+                    fontSize: '1rem'
+                  }}
+                >
                   {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
                 </Avatar>
               </IconButton>

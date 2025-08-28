@@ -34,7 +34,7 @@ import {
   Link as LinkIcon,
   LinkOff as LinkOffIcon,
 } from '@mui/icons-material';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import '../styles/builder.css';
 
 const ContextBridge = () => {

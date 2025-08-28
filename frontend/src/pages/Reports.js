@@ -42,7 +42,7 @@ import {
   Info as InfoIcon,
   CheckCircle as CheckCircleIcon,
 } from '@mui/icons-material';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import '../styles/builder.css';
 
 const Reports = () => {

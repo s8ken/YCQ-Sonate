@@ -75,32 +75,51 @@ const ReportDetailDialog = ({ open, report, onClose, onArchive, onDelete }) => {
       onClose={onClose} 
       maxWidth="md" 
       fullWidth
-      PaperProps={{
-        sx: {
-          borderTop: `4px solid ${getCategoryColor(report.category)}`,
-          borderRadius: '4px'
+      sx={{
+        '& .MuiDialog-paper': {
+          borderRadius: 3,
+          background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+          borderTop: `4px solid ${getCategoryColor(report.category)}`
         }
       }}
     >
-      <DialogTitle sx={{ pr: 6 }}>
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          {getCategoryIcon(report.category)}
-          <Typography variant="h6" component="div" sx={{ ml: 1 }}>
-            {report.title}
-          </Typography>
+      <DialogTitle sx={{ pb: 2 }}>
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            {getCategoryIcon(report.category)}
+            <Typography 
+              variant="h6" 
+              component="div" 
+              sx={{
+                ml: 1,
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                fontWeight: 700,
+                fontSize: '1.5rem'
+              }}
+            >
+              {report.title}
+            </Typography>
+          </Box>
+          <IconButton
+            aria-label="close"
+            onClick={onClose}
+            sx={{
+              color: 'rgba(255, 255, 255, 0.7)',
+              '&:hover': {
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                color: 'rgba(255, 255, 255, 0.9)'
+              }
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
         </Box>
-        <IconButton
-          aria-label="close"
-          onClick={onClose}
-          sx={{
-            position: 'absolute',
-            right: 8,
-            top: 8,
-            color: theme.palette.grey[500],
-          }}
-        >
-          <CloseIcon />
-        </IconButton>
       </DialogTitle>
       
       <Divider />
@@ -233,11 +252,41 @@ const ReportDetailDialog = ({ open, report, onClose, onArchive, onDelete }) => {
       
       <Divider />
       
-      <DialogActions>
+      <DialogActions sx={{ p: 3, gap: 2 }}>
+        <Button 
+          onClick={onClose} 
+          color="primary"
+          sx={{
+            borderRadius: 2,
+            px: 3,
+            py: 1.5,
+            color: 'rgba(255, 255, 255, 0.7)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            '&:hover': {
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              borderColor: 'rgba(255, 255, 255, 0.3)',
+              color: 'rgba(255, 255, 255, 0.9)'
+            }
+          }}
+        >
+          Close
+        </Button>
         <Button 
           startIcon={report.archived ? <UnarchiveIcon /> : <ArchiveIcon />}
           onClick={() => onArchive(report)}
           color="primary"
+          sx={{
+            borderRadius: 2,
+            px: 3,
+            py: 1.5,
+            color: 'rgba(255, 255, 255, 0.7)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            '&:hover': {
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              borderColor: 'rgba(255, 255, 255, 0.3)',
+              color: 'rgba(255, 255, 255, 0.9)'
+            }
+          }}
         >
           {report.archived ? 'Unarchive' : 'Archive'}
         </Button>
@@ -248,6 +297,19 @@ const ReportDetailDialog = ({ open, report, onClose, onArchive, onDelete }) => {
             onClose();
           }}
           color="error"
+          sx={{
+            borderRadius: 2,
+            px: 3,
+            py: 1.5,
+            backgroundColor: 'rgba(239, 68, 68, 0.1)',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            color: '#ef4444',
+            '&:hover': {
+              backgroundColor: 'rgba(239, 68, 68, 0.2)',
+              borderColor: 'rgba(239, 68, 68, 0.5)',
+              color: '#dc2626'
+            }
+          }}
         >
           Delete
         </Button>

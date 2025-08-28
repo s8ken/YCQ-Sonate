@@ -123,15 +123,25 @@ const GenerateReportDialog = ({ open, onClose, onSuccess }) => {
       fullWidth
       PaperProps={{
         sx: {
-          borderTop: `4px solid ${theme.palette.info.main}`,
-          borderRadius: '4px'
+          borderRadius: 3,
+          background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255,255,255,0.1)',
+          boxShadow: '0 20px 40px rgba(0,0,0,0.1)'
         }
       }}
     >
       <DialogTitle sx={{ pr: 6 }}>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <AssessmentIcon sx={{ mr: 1 }} />
-          Generate Report
+          <AssessmentIcon sx={{ mr: 1, color: '#667eea' }} />
+          <Typography variant="h6" sx={{
+            fontWeight: 600,
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent'
+          }}>
+            Generate Report
+          </Typography>
         </Box>
         <IconButton
           aria-label="close"
@@ -140,7 +150,11 @@ const GenerateReportDialog = ({ open, onClose, onSuccess }) => {
             position: 'absolute',
             right: 8,
             top: 8,
-            color: theme.palette.grey[500],
+            color: 'rgba(255, 255, 255, 0.7)',
+            '&:hover': {
+              color: '#667eea',
+              backgroundColor: 'rgba(102, 126, 234, 0.1)'
+            }
           }}
         >
           <CloseIcon />
@@ -151,11 +165,29 @@ const GenerateReportDialog = ({ open, onClose, onSuccess }) => {
       
       <DialogContent>
         <FormControl fullWidth sx={{ mb: 3 }}>
-          <InputLabel>Report Type</InputLabel>
+          <InputLabel sx={{ color: 'rgba(255, 255, 255, 0.7)', '&.Mui-focused': { color: '#667eea' } }}>Report Type</InputLabel>
           <Select
             value={reportType}
             onChange={(e) => setReportType(e.target.value)}
             label="Report Type"
+            sx={{
+              borderRadius: 2,
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              '& .MuiOutlinedInput-notchedOutline': {
+                borderColor: 'rgba(255, 255, 255, 0.2)'
+              },
+              '&:hover .MuiOutlinedInput-notchedOutline': {
+                borderColor: 'rgba(102, 126, 234, 0.5)'
+              },
+              '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                borderColor: '#667eea',
+                borderWidth: 2
+              },
+              '& .MuiSelect-select': {
+                color: 'rgba(255, 255, 255, 0.9)'
+              },
+              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+            }}
           >
             <MenuItem value="daily">Daily System Report</MenuItem>
             <MenuItem value="custom">Custom Report</MenuItem>
@@ -236,17 +268,61 @@ const GenerateReportDialog = ({ open, onClose, onSuccess }) => {
                 onChange={handleChange}
                 fullWidth
                 required
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    '& fieldset': {
+                      borderColor: 'rgba(255, 255, 255, 0.2)'
+                    },
+                    '&:hover fieldset': {
+                      borderColor: 'rgba(102, 126, 234, 0.5)'
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#667eea',
+                      borderWidth: 2
+                    },
+                    '& input': {
+                      color: 'rgba(255, 255, 255, 0.9)'
+                    },
+                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    '&.Mui-focused': {
+                      color: '#667eea'
+                    }
+                  }
+                }}
               />
             </Grid>
             
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
-                <InputLabel>Category</InputLabel>
+                <InputLabel sx={{ color: 'rgba(255, 255, 255, 0.7)', '&.Mui-focused': { color: '#667eea' } }}>Category</InputLabel>
                 <Select
                   name="category"
                   value={formData.category}
                   onChange={handleChange}
                   label="Category"
+                  sx={{
+                    borderRadius: 2,
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    '& .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'rgba(255, 255, 255, 0.2)'
+                    },
+                    '&:hover .MuiOutlinedInput-notchedOutline': {
+                      borderColor: 'rgba(102, 126, 234, 0.5)'
+                    },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                      borderColor: '#667eea',
+                      borderWidth: 2
+                    },
+                    '& .MuiSelect-select': {
+                      color: 'rgba(255, 255, 255, 0.9)'
+                    },
+                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+                  }}
                 >
                   <MenuItem value="audit">Audit</MenuItem>
                   <MenuItem value="info">Information</MenuItem>
@@ -263,6 +339,32 @@ const GenerateReportDialog = ({ open, onClose, onSuccess }) => {
                 value={formData.metadata.description}
                 onChange={handleChange}
                 fullWidth
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    '& fieldset': {
+                      borderColor: 'rgba(255, 255, 255, 0.2)'
+                    },
+                    '&:hover fieldset': {
+                      borderColor: 'rgba(102, 126, 234, 0.5)'
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#667eea',
+                      borderWidth: 2
+                    },
+                    '& input': {
+                      color: 'rgba(255, 255, 255, 0.9)'
+                    },
+                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    '&.Mui-focused': {
+                      color: '#667eea'
+                    }
+                  }
+                }}
               />
             </Grid>
             
@@ -276,6 +378,32 @@ const GenerateReportDialog = ({ open, onClose, onSuccess }) => {
                 multiline
                 rows={6}
                 required
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    '& fieldset': {
+                      borderColor: 'rgba(255, 255, 255, 0.2)'
+                    },
+                    '&:hover fieldset': {
+                      borderColor: 'rgba(102, 126, 234, 0.5)'
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#667eea',
+                      borderWidth: 2
+                    },
+                    '& textarea': {
+                      color: 'rgba(255, 255, 255, 0.9)'
+                    },
+                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    '&.Mui-focused': {
+                      color: '#667eea'
+                    }
+                  }
+                }}
               />
             </Grid>
             
@@ -329,21 +457,54 @@ const GenerateReportDialog = ({ open, onClose, onSuccess }) => {
       
       <Divider />
       
-      <DialogActions>
-        <Button onClick={onClose} color="inherit">
+      <DialogActions sx={{ p: 3, gap: 2 }}>
+        <Button 
+          onClick={onClose} 
+          color="inherit"
+          sx={{
+            borderRadius: 2,
+            px: 3,
+            py: 1.5,
+            color: 'rgba(255, 255, 255, 0.7)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            '&:hover': {
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              borderColor: 'rgba(255, 255, 255, 0.3)',
+              color: 'rgba(255, 255, 255, 0.9)'
+            }
+          }}
+        >
           Cancel
         </Button>
-        <Button 
-          onClick={handleGenerateReport} 
-          variant="contained" 
-          color="primary"
+        <Button
+          onClick={handleGenerateReport}
+          variant="contained"
           disabled={loading || (reportType === 'custom' && (!formData.title || !formData.content))}
+          startIcon={loading ? <CircularProgress size={20} sx={{ color: 'white' }} /> : null}
+          sx={{
+            borderRadius: 2,
+            px: 4,
+            py: 1.5,
+            background: loading ? 'rgba(102, 126, 234, 0.6)' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)',
+            '&:hover': {
+              background: loading ? 'rgba(102, 126, 234, 0.6)' : 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)',
+              boxShadow: '0 12px 40px rgba(102, 126, 234, 0.4)',
+              transform: loading ? 'none' : 'translateY(-2px)'
+            },
+            '&:active': {
+              transform: loading ? 'none' : 'translateY(0px)',
+              boxShadow: '0 4px 20px rgba(102, 126, 234, 0.3)'
+            },
+            '&.Mui-disabled': {
+              background: 'rgba(102, 126, 234, 0.6)',
+              color: 'rgba(255, 255, 255, 0.8)'
+            },
+            fontWeight: 600,
+            fontSize: '0.95rem'
+          }}
         >
-          {loading ? (
-            <CircularProgress size={24} color="inherit" />
-          ) : (
-            reportType === 'daily' ? 'Generate Daily Report' : 'Create Report'
-          )}
+          {loading ? 'Generating...' : (reportType === 'daily' ? 'Generate Daily Report' : 'Create Report')}
         </Button>
       </DialogActions>
     </Dialog>

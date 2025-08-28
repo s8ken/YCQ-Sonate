@@ -1,7 +1,7 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Box, CssBaseline, CircularProgress } from '@mui/material';
-import { AuthContext } from './context/AuthContext';
+import { useAuth } from './context/AuthContext';
 
 // Layout components
 import Layout from './components/layout/Layout';
@@ -20,7 +20,7 @@ import ContextBridge from './pages/ContextBridge';
 import NotFound from './pages/NotFound';
 
 const App = () => {
-  const { isAuthenticated, loading } = useContext(AuthContext);
+  const { isAuthenticated, loading } = useAuth();
 
   // Protected route wrapper
   const ProtectedRoute = ({ children }) => {

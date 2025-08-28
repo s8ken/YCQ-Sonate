@@ -258,6 +258,7 @@ const AgentDetail = () => {
           <Tab label="Advanced Settings" />
           <Tab label="System Prompt" />
           <Tab icon={<PsychologyIcon />} label="Cognitive Intelligence" />
+        </Tabs>
 
         {/* Basic Settings Tab */}
         {tabValue === 0 && (

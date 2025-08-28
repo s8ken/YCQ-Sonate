@@ -119,30 +119,48 @@ const CreateContextBridgeDialog = ({ open, onClose, onSubmit }) => {
   return (
     <Dialog 
       open={open} 
-      onClose={onClose}
-      maxWidth="md"
+      onClose={onClose} 
+      maxWidth="md" 
       fullWidth
-      PaperProps={{
-        sx: {
-          borderTop: `4px solid ${theme.palette.primary.main}`,
-          borderRadius: '4px'
+      sx={{
+        '& .MuiDialog-paper': {
+          borderRadius: 3,
+          background: 'linear-gradient(135deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
         }
       }}
     >
-      <DialogTitle sx={{ pr: 6 }}>
-        Create Context Bridge
-        <IconButton
-          aria-label="close"
-          onClick={onClose}
-          sx={{
-            position: 'absolute',
-            right: 8,
-            top: 8,
-            color: theme.palette.grey[500],
-          }}
-        >
-          <CloseIcon />
-        </IconButton>
+      <DialogTitle sx={{ pb: 2 }}>
+        <Box display="flex" justifyContent="space-between" alignItems="center">
+          <Typography 
+            variant="h6"
+            sx={{
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              fontWeight: 700,
+              fontSize: '1.5rem'
+            }}
+          >
+            Create Context Bridge
+          </Typography>
+          <IconButton
+            aria-label="close"
+            onClick={onClose}
+            sx={{
+              color: 'rgba(255, 255, 255, 0.7)',
+              '&:hover': {
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                color: 'rgba(255, 255, 255, 0.9)'
+              }
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </Box>
       </DialogTitle>
       
       <Divider />
@@ -159,7 +177,33 @@ const CreateContextBridgeDialog = ({ open, onClose, onSubmit }) => {
                 value={newTag}
                 onChange={(e) => setNewTag(e.target.value)}
                 size="small"
-                sx={{ mr: 1 }}
+                sx={{ 
+                  mr: 1,
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    '& fieldset': {
+                      borderColor: 'rgba(255, 255, 255, 0.2)'
+                    },
+                    '&:hover fieldset': {
+                      borderColor: 'rgba(102, 126, 234, 0.5)'
+                    },
+                    '&.Mui-focused fieldset': {
+                      borderColor: '#667eea',
+                      borderWidth: 2
+                    },
+                    '& input': {
+                      color: 'rgba(255, 255, 255, 0.9)'
+                    },
+                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    '&.Mui-focused': {
+                      color: '#667eea'
+                    }
+                  }
+                }}
                 onKeyPress={(e) => {
                   if (e.key === 'Enter') {
                     e.preventDefault();
@@ -197,12 +241,30 @@ const CreateContextBridgeDialog = ({ open, onClose, onSubmit }) => {
           
           <Grid item xs={12} sm={6}>
             <FormControl fullWidth>
-              <InputLabel>Source System</InputLabel>
+              <InputLabel sx={{ color: 'rgba(255, 255, 255, 0.7)', '&.Mui-focused': { color: '#667eea' } }}>Source System</InputLabel>
               <Select
                 name="source"
                 value={formData.source}
                 onChange={handleChange}
                 label="Source System"
+                sx={{
+                  borderRadius: 2,
+                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'rgba(255, 255, 255, 0.2)'
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: 'rgba(102, 126, 234, 0.5)'
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#667eea',
+                    borderWidth: 2
+                  },
+                  '& .MuiSelect-select': {
+                    color: 'rgba(255, 255, 255, 0.9)'
+                  },
+                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+                }}
               >
                 <MenuItem value="symbi">Symbi</MenuItem>
                 <MenuItem value="overseer">Overseer</MenuItem>
@@ -224,6 +286,32 @@ const CreateContextBridgeDialog = ({ open, onClose, onSubmit }) => {
               fullWidth
               inputProps={{ min: 0, max: 1, step: 0.1 }}
               helperText="Trust score between 0 and 1"
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2,
+                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                  '& fieldset': {
+                    borderColor: 'rgba(255, 255, 255, 0.2)'
+                  },
+                  '&:hover fieldset': {
+                    borderColor: 'rgba(102, 126, 234, 0.5)'
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#667eea',
+                    borderWidth: 2
+                  },
+                  '& input': {
+                    color: 'rgba(255, 255, 255, 0.9)'
+                  },
+                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+                },
+                '& .MuiInputLabel-root': {
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  '&.Mui-focused': {
+                    color: '#667eea'
+                  }
+                }
+              }}
             />
           </Grid>
           
@@ -238,6 +326,32 @@ const CreateContextBridgeDialog = ({ open, onClose, onSubmit }) => {
               rows={4}
               error={!!errors.data}
               helperText={errors.data || 'The actual context information to be shared'}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2,
+                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                  '& fieldset': {
+                    borderColor: 'rgba(255, 255, 255, 0.2)'
+                  },
+                  '&:hover fieldset': {
+                    borderColor: 'rgba(102, 126, 234, 0.5)'
+                  },
+                  '&.Mui-focused fieldset': {
+                    borderColor: '#667eea',
+                    borderWidth: 2
+                  },
+                  '& textarea': {
+                    color: 'rgba(255, 255, 255, 0.9)'
+                  },
+                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+                },
+                '& .MuiInputLabel-root': {
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  '&.Mui-focused': {
+                    color: '#667eea'
+                  }
+                }
+              }}
             />
           </Grid>
           
@@ -332,14 +446,46 @@ const CreateContextBridgeDialog = ({ open, onClose, onSubmit }) => {
       
       <Divider />
       
-      <DialogActions>
-        <Button onClick={onClose} color="inherit">
+      <DialogActions sx={{ p: 3, gap: 2 }}>
+        <Button 
+          onClick={onClose} 
+          color="inherit"
+          sx={{
+            borderRadius: 2,
+            px: 3,
+            py: 1.5,
+            color: 'rgba(255, 255, 255, 0.7)',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            '&:hover': {
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              borderColor: 'rgba(255, 255, 255, 0.3)',
+              color: 'rgba(255, 255, 255, 0.9)'
+            }
+          }}
+        >
           Cancel
         </Button>
-        <Button 
-          onClick={handleSubmit} 
-          variant="contained" 
-          color="primary"
+        <Button
+          onClick={handleSubmit}
+          variant="contained"
+          sx={{
+            borderRadius: 2,
+            px: 4,
+            py: 1.5,
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)',
+            '&:hover': {
+              background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)',
+              boxShadow: '0 12px 40px rgba(102, 126, 234, 0.4)',
+              transform: 'translateY(-2px)'
+            },
+            '&:active': {
+              transform: 'translateY(0px)',
+              boxShadow: '0 4px 20px rgba(102, 126, 234, 0.3)'
+            },
+            fontWeight: 600,
+            fontSize: '0.95rem'
+          }}
         >
           Create Context Bridge
         </Button>
