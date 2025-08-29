@@ -748,6 +748,112 @@ components:
       name: X-API-Key
       description: API key for service-to-service authentication
 
+  /llm/providers:
+    get:
+      summary: Get available LLM providers
+      description: Retrieve list of available AI providers and their capabilities
+      tags:
+        - LLM Services
+      responses:
+        '200':
+          description: List of available providers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        modelCount:
+                          type: integer
+
+  /llm/code-review:
+    post:
+      summary: Perform AI-powered code review
+      description: Analyze code using OpenAI or Anthropic models for quality, security, and performance insights
+      tags:
+        - LLM Services
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - code
+              properties:
+                code:
+                  type: string
+                  description: The code to review
+                  example: "function calculateTotal(items) { let total = 0; for(let i = 0; i < items.length; i++) { total += items[i].price; } return total; }"
+                language:
+                  type: string
+                  description: Programming language
+                  example: "javascript"
+                provider:
+                  type: string
+                  enum: ["openai", "anthropic"]
+                  default: "openai"
+                  description: AI provider to use
+                model:
+                  type: string
+                  description: Specific model to use
+                  example: "gpt-4"
+                reviewType:
+                  type: string
+                  enum: ["comprehensive", "security", "performance", "style"]
+                  default: "comprehensive"
+                  description: Type of code review to perform
+      responses:
+        '200':
+          description: Code review completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      review:
+                        type: string
+                        description: Detailed code review feedback
+                      provider:
+                        type: string
+                      model:
+                        type: string
+                      reviewType:
+                        type: string
+                      usage:
+                        type: object
+                        properties:
+                          promptTokens:
+                            type: integer
+                          completionTokens:
+                            type: integer
+                          totalTokens:
+                            type: integer
+                      timestamp:
+                        type: string
+                        format: date-time
+        '400':
+          description: Bad request - missing code or invalid parameters
+        '401':
+          description: Unauthorized - invalid or missing JWT token
+        '500':
+          description: Server error - API key issues or provider errors
+
 security:
   - BearerAuth: []
   - ApiKeyAuth: []
@@ -759,3 +865,5 @@ tags:
     description: Operations for compliance scoring
   - name: Audit Events
     description: Operations for audit trail management
+  - name: LLM Services
+    description: AI-powered language model services for code review and analysis
