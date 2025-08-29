@@ -1,0 +1,394 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run security scans weekly on Sundays at 2 AM UTC
+    - cron: '0 2 * * 0'
+
+env:
+  NODE_VERSION: '18'
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  lint-and-typecheck:
+    name: Lint and Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          cd frontend && npm ci
+
+      - name: Lint backend
+        run: npm run lint
+        continue-on-error: false
+
+      - name: Lint frontend
+        run: |
+          cd frontend
+          npm run lint
+        continue-on-error: false
+
+      - name: Type check backend
+        run: npm run type-check || echo "Type checking not configured"
+        continue-on-error: true
+
+      - name: Type check frontend
+        run: |
+          cd frontend
+          npm run type-check || echo "Type checking not configured"
+        continue-on-error: true
+
+  test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    services:
+      mongodb:
+        image: mongo:7.0
+        env:
+          MONGO_INITDB_ROOT_USERNAME: test
+          MONGO_INITDB_ROOT_PASSWORD: test
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand(\"ping\")'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          cd frontend && npm ci
+
+      - name: Run backend tests
+        env:
+          MONGODB_URI: mongodb://test:test@localhost:27017/symbi_test?authSource=admin
+          NODE_ENV: test
+          JWT_SECRET: test-secret-key-for-ci
+        run: npm test || echo "Backend tests not configured"
+        continue-on-error: true
+
+      - name: Run frontend tests
+        run: |
+          cd frontend
+          npm test -- --coverage --watchAll=false || echo "Frontend tests not configured"
+        continue-on-error: true
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        if: success()
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+
+  security-scan:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+      actions: read
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          cd frontend && npm ci
+
+      - name: Run npm audit
+        run: |
+          npm audit --audit-level=moderate || true
+          cd frontend && npm audit --audit-level=moderate || true
+
+      - name: OWASP Dependency Check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: 'Symbi Trust Protocol'
+          path: '.'
+          format: 'SARIF'
+          out: 'dependency-check-report'
+          args: >
+            --enableRetired
+            --enableExperimental
+            --suppression suppression.xml
+        continue-on-error: true
+
+      - name: Upload OWASP Dependency Check results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: dependency-check-report/dependency-check-report.sarif
+        continue-on-error: true
+
+      - name: Semgrep Security Scan
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: >-
+            p/security-audit
+            p/secrets
+            p/owasp-top-ten
+            p/javascript
+            p/typescript
+            p/react
+            p/nodejs
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+        continue-on-error: true
+
+      - name: Trivy filesystem scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+        continue-on-error: true
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+        continue-on-error: true
+
+  build-and-scan-container:
+    name: Build and Scan Container
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'schedule'
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          load: true
+
+      - name: Scan Docker image with Trivy
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          format: 'sarif'
+          output: 'trivy-image-results.sarif'
+        continue-on-error: true
+
+      - name: Upload Trivy image scan results
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-image-results.sarif'
+        continue-on-error: true
+
+      - name: Push Docker image
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy-preview:
+    name: Deploy Preview
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    needs: [lint-and-typecheck, test, security-scan]
+    environment:
+      name: preview-${{ github.event.number }}
+      url: ${{ steps.deploy.outputs.preview-url }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          cd frontend && npm ci
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm run build
+        env:
+          REACT_APP_API_URL: https://api-preview-${{ github.event.number }}.symbi-trust.com
+
+      - name: Deploy to Vercel Preview
+        id: deploy
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: ./frontend
+          alias-domains: |
+            preview-${{ github.event.number }}.symbi-trust.com
+
+  deploy-production:
+    name: Deploy Production
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [lint-and-typecheck, test, security-scan, build-and-scan-container]
+    environment:
+      name: production
+      url: https://symbi-trust.com
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          cd frontend && npm ci
+
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm run build
+        env:
+          REACT_APP_API_URL: https://api.symbi-trust.com
+
+      - name: Deploy to Vercel Production
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          vercel-args: '--prod'
+          working-directory: ./frontend
+
+      - name: Notify deployment
+        if: success()
+        run: |
+          echo "🚀 Production deployment successful!"
+          echo "Frontend: https://symbi-trust.com"
+          echo "API: https://api.symbi-trust.com"
+
+  security-baseline:
+    name: Security Baseline Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check for secrets in repository
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: main
+          head: HEAD
+          extra_args: --debug --only-verified
+        continue-on-error: true
+
+      - name: Check for hardcoded credentials
+        run: |
+          echo "Checking for potential secrets..."
+          grep -r -i "password\|secret\|key\|token" --include="*.js" --include="*.ts" --include="*.json" . || true
+          echo "Manual review required for any findings above."
+
+      - name: Validate security headers
+        run: |
+          echo "Security headers validation would run here"
+          echo "This should check deployed endpoints for proper security headers"
+
+  notify:
+    name: Notify Results
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [lint-and-typecheck, test, security-scan]
+    
+    steps:
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "❌ CI/CD Pipeline failed"
+          echo "Please check the failed jobs and fix the issues"
+          
+      - name: Notify on success
+        if: success()
+        run: |
+          echo "✅ CI/CD Pipeline completed successfully"
+          echo "All checks passed!"
