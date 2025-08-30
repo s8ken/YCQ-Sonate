@@ -45,13 +45,18 @@ const corsOptions = {
       process.env.CORS_ORIGIN || 'http://localhost:3000',
       'http://localhost:3000',
       'http://localhost:3001',
-      'https://symbi-trust-protocol.vercel.app'
+      'https://symbi-trust-protocol.vercel.app',
+      'https://symbi-synergy-hl88yxu91-symbi.vercel.app'
     ];
+    
+    // Allow all Vercel deployment URLs for this project
+    const isVercelDomain = origin && (origin.includes('symbi-synergy') && origin.includes('vercel.app'));
+    const isSymbiDomain = origin && (origin.includes('symbi') && origin.includes('vercel.app'));
     
     // Allow requests with no origin (mobile apps, etc.)
     if (!origin) return callback(null, true);
     
-    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
+    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development' || isVercelDomain || isSymbiDomain) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -88,7 +93,17 @@ app.use(morgan('combined', {
 app.use('/api/', apiRateLimit);
 
 // Database connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/symbi-synergy')
+// Configure mongoose to handle buffering timeouts
+mongoose.set('bufferCommands', false);
+
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/symbi-synergy', {
+  serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
+  socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+  maxPoolSize: 10, // Maintain up to 10 socket connections
+  minPoolSize: 5, // Maintain a minimum of 5 socket connections
+  maxIdleTimeMS: 30000, // Close connections after 30 seconds of inactivity
+  family: 4 // Use IPv4, skip trying IPv6
+})
   .then(() => console.log('MongoDB connected successfully'))
   .catch(err => console.error('MongoDB connection error:', err));
 
