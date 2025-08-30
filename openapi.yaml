@@ -1,0 +1,869 @@
+openapi: 3.0.3
+info:
+  title: Symbi Trust Protocol API
+  description: |
+    API for managing trust declarations, compliance scoring, and audit events.
+    
+    The Symbi Trust Protocol enables cryptographic signing operations and trust workflows
+    with comprehensive audit trails and compliance scoring.
+  version: 1.0.0
+  contact:
+    name: Symbi Trust Protocol
+    email: security@s8ken
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.symbi-trust.com/v1
+    description: Production server
+  - url: http://localhost:5000/api
+    description: Development server
+
+paths:
+  /declarations:
+    get:
+      summary: List trust declarations
+      description: Retrieve a paginated list of trust declarations
+      tags:
+        - Trust Declarations
+      parameters:
+        - name: subjectId
+          in: query
+          description: Filter by subject ID
+          schema:
+            type: string
+        - name: issuerId
+          in: query
+          description: Filter by issuer ID
+          schema:
+            type: string
+        - name: type
+          in: query
+          description: Filter by declaration type
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: Page number (1-based)
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Number of items per page
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TrustDeclaration'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
+    post:
+      summary: Create trust declaration
+      description: Create a new trust declaration with cryptographic signature
+      tags:
+        - Trust Declarations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTrustDeclaration'
+      responses:
+        '201':
+          description: Declaration created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/TrustDeclaration'
+                  receipt:
+                    $ref: '#/components/schemas/TrustReceipt'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /declarations/{declarationId}:
+    get:
+      summary: Get trust declaration
+      description: Retrieve a specific trust declaration by ID
+      tags:
+        - Trust Declarations
+      parameters:
+        - name: declarationId
+          in: path
+          required: true
+          description: Trust declaration ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/TrustDeclaration'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /scores:
+    get:
+      summary: List compliance scores
+      description: Retrieve compliance scores for entities
+      tags:
+        - Compliance Scores
+      parameters:
+        - name: subjectId
+          in: query
+          description: Filter by subject ID
+          schema:
+            type: string
+        - name: fromDate
+          in: query
+          description: Filter scores from date (ISO 8601)
+          schema:
+            type: string
+            format: date-time
+        - name: toDate
+          in: query
+          description: Filter scores to date (ISO 8601)
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ComplianceScore'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /scores/{subjectId}:
+    get:
+      summary: Get entity compliance score
+      description: Get the current compliance score for a specific entity
+      tags:
+        - Compliance Scores
+      parameters:
+        - name: subjectId
+          in: path
+          required: true
+          description: Subject entity ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ComplianceScore'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /audits:
+    get:
+      summary: List audit events
+      description: Retrieve audit trail events
+      tags:
+        - Audit Events
+      parameters:
+        - name: actorId
+          in: query
+          description: Filter by actor ID
+          schema:
+            type: string
+        - name: resourceId
+          in: query
+          description: Filter by resource ID
+          schema:
+            type: string
+        - name: action
+          in: query
+          description: Filter by action type
+          schema:
+            type: string
+        - name: fromDate
+          in: query
+          description: Filter events from date (ISO 8601)
+          schema:
+            type: string
+            format: date-time
+        - name: toDate
+          in: query
+          description: Filter events to date (ISO 8601)
+          schema:
+            type: string
+            format: date-time
+        - name: page
+          in: query
+          description: Page number (1-based)
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          description: Number of items per page
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 50
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AuditEvent'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    TrustDeclaration:
+      type: object
+      required:
+        - id
+        - subjectId
+        - issuerId
+        - type
+        - payload
+        - signature
+        - createdAt
+        - version
+      properties:
+        id:
+          type: string
+          description: Unique declaration identifier
+          example: "decl_1234567890abcdef"
+        subjectId:
+          type: string
+          description: Entity being declared about
+          example: "entity_abc123"
+        issuerId:
+          type: string
+          description: Entity making the declaration
+          example: "issuer_xyz789"
+        type:
+          type: string
+          description: Type of trust declaration
+          enum: ["identity_verification", "compliance_attestation", "reputation_score", "capability_claim"]
+          example: "identity_verification"
+        payload:
+          type: object
+          description: Declaration content (schema varies by type)
+          additionalProperties: true
+        signature:
+          type: object
+          required:
+            - algorithm
+            - value
+            - publicKey
+          properties:
+            algorithm:
+              type: string
+              description: Signature algorithm used
+              example: "ES256"
+            value:
+              type: string
+              description: Base64-encoded signature
+              example: "MEUCIQDx..."
+            publicKey:
+              type: string
+              description: Public key for verification
+              example: "-----BEGIN PUBLIC KEY-----\n..."
+        metadata:
+          type: object
+          description: Additional metadata
+          properties:
+            tags:
+              type: array
+              items:
+                type: string
+            expiresAt:
+              type: string
+              format: date-time
+        createdAt:
+          type: string
+          format: date-time
+          description: Declaration creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last update timestamp
+        version:
+          type: string
+          description: Schema version
+          example: "1.0.0"
+        hash:
+          type: string
+          description: Content hash for integrity
+          example: "sha256:a1b2c3..."
+
+    CreateTrustDeclaration:
+      type: object
+      required:
+        - subjectId
+        - type
+        - payload
+        - signature
+      properties:
+        subjectId:
+          type: string
+          description: Entity being declared about
+        type:
+          type: string
+          description: Type of trust declaration
+          enum: ["identity_verification", "compliance_attestation", "reputation_score", "capability_claim"]
+        payload:
+          type: object
+          description: Declaration content
+          additionalProperties: true
+        signature:
+          type: object
+          required:
+            - algorithm
+            - value
+            - publicKey
+          properties:
+            algorithm:
+              type: string
+              description: Signature algorithm
+            value:
+              type: string
+              description: Base64-encoded signature
+            publicKey:
+              type: string
+              description: Public key for verification
+        metadata:
+          type: object
+          description: Additional metadata
+          properties:
+            tags:
+              type: array
+              items:
+                type: string
+            expiresAt:
+              type: string
+              format: date-time
+        nonce:
+          type: string
+          description: Replay protection nonce
+        idempotencyKey:
+          type: string
+          description: Idempotency key for duplicate prevention
+
+    ComplianceScore:
+      type: object
+      required:
+        - subjectId
+        - score
+        - confidence
+        - calculatedAt
+        - version
+      properties:
+        subjectId:
+          type: string
+          description: Entity being scored
+          example: "entity_abc123"
+        score:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: Compliance score (0-100)
+          example: 85.7
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: Confidence interval (0-1)
+          example: 0.92
+        breakdown:
+          type: object
+          description: Score component breakdown
+          properties:
+            identity:
+              type: number
+              minimum: 0
+              maximum: 100
+            reputation:
+              type: number
+              minimum: 0
+              maximum: 100
+            compliance:
+              type: number
+              minimum: 0
+              maximum: 100
+            activity:
+              type: number
+              minimum: 0
+              maximum: 100
+        evidence:
+          type: array
+          description: Supporting evidence for score
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                description: Evidence type
+              weight:
+                type: number
+                description: Evidence weight in scoring
+              source:
+                type: string
+                description: Evidence source
+              timestamp:
+                type: string
+                format: date-time
+        calculatedAt:
+          type: string
+          format: date-time
+          description: Score calculation timestamp
+        expiresAt:
+          type: string
+          format: date-time
+          description: Score expiration timestamp
+        version:
+          type: string
+          description: Scoring algorithm version
+          example: "2.1.0"
+        previousScore:
+          type: number
+          description: Previous score for comparison
+        trend:
+          type: string
+          enum: ["increasing", "decreasing", "stable"]
+          description: Score trend direction
+
+    AuditEvent:
+      type: object
+      required:
+        - id
+        - timestamp
+        - actorId
+        - action
+        - resourceType
+        - resourceId
+        - outcome
+      properties:
+        id:
+          type: string
+          description: Unique audit event identifier
+          example: "audit_1234567890abcdef"
+        timestamp:
+          type: string
+          format: date-time
+          description: Event timestamp
+        actorId:
+          type: string
+          description: Entity performing the action
+          example: "user_abc123"
+        action:
+          type: string
+          description: Action performed
+          enum: ["create", "read", "update", "delete", "sign", "verify", "score", "audit"]
+          example: "create"
+        resourceType:
+          type: string
+          description: Type of resource affected
+          enum: ["declaration", "score", "user", "agent", "conversation"]
+          example: "declaration"
+        resourceId:
+          type: string
+          description: Identifier of affected resource
+          example: "decl_xyz789"
+        outcome:
+          type: string
+          description: Action outcome
+          enum: ["success", "failure", "partial"]
+          example: "success"
+        details:
+          type: object
+          description: Additional event details
+          additionalProperties: true
+        metadata:
+          type: object
+          description: Event metadata
+          properties:
+            requestId:
+              type: string
+              description: Request correlation ID
+            sessionId:
+              type: string
+              description: User session ID
+            ipAddress:
+              type: string
+              description: Client IP address
+            userAgent:
+              type: string
+              description: Client user agent
+            decisionId:
+              type: string
+              description: Decision correlation ID
+        risk:
+          type: object
+          description: Risk assessment
+          properties:
+            level:
+              type: string
+              enum: ["low", "medium", "high", "critical"]
+            factors:
+              type: array
+              items:
+                type: string
+        hash:
+          type: string
+          description: Event content hash for integrity
+          example: "sha256:a1b2c3..."
+        previousHash:
+          type: string
+          description: Previous event hash for chain integrity
+          example: "sha256:d4e5f6..."
+
+    TrustReceipt:
+      type: object
+      required:
+        - declarationId
+        - hash
+        - timestamp
+        - issuer
+        - subject
+      properties:
+        declarationId:
+          type: string
+          description: Declaration identifier
+        hash:
+          type: string
+          description: Declaration content hash
+        timestamp:
+          type: string
+          format: date-time
+          description: Receipt timestamp
+        issuer:
+          type: string
+          description: Declaration issuer
+        subject:
+          type: string
+          description: Declaration subject
+        scoreImpact:
+          type: object
+          description: Impact on compliance score
+          properties:
+            previousScore:
+              type: number
+            newScore:
+              type: number
+            change:
+              type: number
+        cid:
+          type: string
+          description: Content identifier (IPFS CID or similar)
+        merkleRoot:
+          type: string
+          description: Merkle tree root for batch verification
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          description: Current page number
+        limit:
+          type: integer
+          description: Items per page
+        total:
+          type: integer
+          description: Total number of items
+        pages:
+          type: integer
+          description: Total number of pages
+        hasNext:
+          type: boolean
+          description: Whether there are more pages
+        hasPrev:
+          type: boolean
+          description: Whether there are previous pages
+
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Error code
+        message:
+          type: string
+          description: Human-readable error message
+        details:
+          type: object
+          description: Additional error details
+          additionalProperties: true
+        requestId:
+          type: string
+          description: Request correlation ID
+        timestamp:
+          type: string
+          format: date-time
+          description: Error timestamp
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "BAD_REQUEST"
+            message: "Invalid request parameters"
+            requestId: "req_1234567890"
+            timestamp: "2024-01-15T10:30:00Z"
+
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "UNAUTHORIZED"
+            message: "Authentication required"
+            requestId: "req_1234567890"
+            timestamp: "2024-01-15T10:30:00Z"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "NOT_FOUND"
+            message: "Resource not found"
+            requestId: "req_1234567890"
+            timestamp: "2024-01-15T10:30:00Z"
+
+    ValidationError:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "VALIDATION_ERROR"
+            message: "Request validation failed"
+            details:
+              field: "signature.value"
+              reason: "Invalid signature format"
+            requestId: "req_1234567890"
+            timestamp: "2024-01-15T10:30:00Z"
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "INTERNAL_SERVER_ERROR"
+            message: "An unexpected error occurred"
+            requestId: "req_1234567890"
+            timestamp: "2024-01-15T10:30:00Z"
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token with RBAC claims
+
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for service-to-service authentication
+
+  /llm/providers:
+    get:
+      summary: Get available LLM providers
+      description: Retrieve list of available AI providers and their capabilities
+      tags:
+        - LLM Services
+      responses:
+        '200':
+          description: List of available providers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+                        modelCount:
+                          type: integer
+
+  /llm/code-review:
+    post:
+      summary: Perform AI-powered code review
+      description: Analyze code using OpenAI or Anthropic models for quality, security, and performance insights
+      tags:
+        - LLM Services
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - code
+              properties:
+                code:
+                  type: string
+                  description: The code to review
+                  example: "function calculateTotal(items) { let total = 0; for(let i = 0; i < items.length; i++) { total += items[i].price; } return total; }"
+                language:
+                  type: string
+                  description: Programming language
+                  example: "javascript"
+                provider:
+                  type: string
+                  enum: ["openai", "anthropic"]
+                  default: "openai"
+                  description: AI provider to use
+                model:
+                  type: string
+                  description: Specific model to use
+                  example: "gpt-4"
+                reviewType:
+                  type: string
+                  enum: ["comprehensive", "security", "performance", "style"]
+                  default: "comprehensive"
+                  description: Type of code review to perform
+      responses:
+        '200':
+          description: Code review completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      review:
+                        type: string
+                        description: Detailed code review feedback
+                      provider:
+                        type: string
+                      model:
+                        type: string
+                      reviewType:
+                        type: string
+                      usage:
+                        type: object
+                        properties:
+                          promptTokens:
+                            type: integer
+                          completionTokens:
+                            type: integer
+                          totalTokens:
+                            type: integer
+                      timestamp:
+                        type: string
+                        format: date-time
+        '400':
+          description: Bad request - missing code or invalid parameters
+        '401':
+          description: Unauthorized - invalid or missing JWT token
+        '500':
+          description: Server error - API key issues or provider errors
+
+security:
+  - BearerAuth: []
+  - ApiKeyAuth: []
+
+tags:
+  - name: Trust Declarations
+    description: Operations for managing trust declarations
+  - name: Compliance Scores
+    description: Operations for compliance scoring
+  - name: Audit Events
+    description: Operations for audit trail management
+  - name: LLM Services
+    description: AI-powered language model services for code review and analysis

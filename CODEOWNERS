@@ -1,0 +1,13 @@
+# Global ownership
+* @s8ken
+
+# Backend specific
+/backend/ @s8ken
+
+# Frontend specific
+/frontend/ @s8ken
+
+# Security and governance
+/SECURITY.md @s8ken
+/PRIVACY.md @s8ken
+/.github/ @s8ken

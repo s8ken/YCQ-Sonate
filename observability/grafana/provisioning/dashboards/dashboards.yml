@@ -1,0 +1,32 @@
+apiVersion: 1
+
+providers:
+  - name: 'Symbi Trust Protocol Dashboards'
+    orgId: 1
+    folder: 'Symbi Trust Protocol'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards
+
+  - name: 'System Dashboards'
+    orgId: 1
+    folder: 'System'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards/system
+
+  - name: 'Application Dashboards'
+    orgId: 1
+    folder: 'Application'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 10
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards/application

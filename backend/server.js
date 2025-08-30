@@ -6,6 +6,17 @@ const mongoose = require('mongoose');
 const path = require('path');
 const http = require('http');
 const socketIo = require('socket.io');
+const {
+  securityHeaders,
+  sanitizeInput,
+  compression,
+  authRateLimit,
+  apiRateLimit,
+  requestLogger,
+  detectSuspiciousActivity,
+  validateContentType,
+  requestSizeLimiter
+} = require('./middleware/security.middleware');
 
 // Load environment variables
 dotenv.config();
@@ -21,14 +32,60 @@ const io = socketIo(server, {
   }
 });
 
-// Middleware
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
-  credentials: true
+// Security Middleware (applied first)
+app.use(securityHeaders);
+app.use(compression);
+app.use(requestSizeLimiter('10mb'));
+app.use(validateContentType(['application/json', 'application/x-www-form-urlencoded', 'multipart/form-data']));
+
+// CORS Configuration
+const corsOptions = {
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      process.env.CORS_ORIGIN || 'http://localhost:3000',
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'https://symbi-trust-protocol.vercel.app'
+    ];
+    
+    // Allow requests with no origin (mobile apps, etc.)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['X-RateLimit-Limit', 'X-RateLimit-Remaining', 'X-RateLimit-Reset'],
+  maxAge: 86400 // 24 hours
+};
+
+app.use(cors(corsOptions));
+
+// Body parsing middleware
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Input sanitization
+app.use(sanitizeInput);
+
+// Suspicious activity detection
+app.use(detectSuspiciousActivity);
+
+// Request logging
+app.use(requestLogger);
+
+// HTTP request logging
+app.use(morgan('combined', {
+  skip: (req, res) => res.statusCode < 400
 }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(morgan('dev'));
+
+// General API rate limiting
+app.use('/api/', apiRateLimit);
 
 // Database connection
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/symbi-synergy')
@@ -67,8 +124,8 @@ app.get('/', (req, res) => {
   });
 });
 
-// API routes
-app.use('/api/auth', authRoutes);
+// API routes with specific rate limiting
+app.use('/api/auth', authRateLimit, authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/conversations', conversationRoutes);
 app.use('/api/llm', llmRoutes);
@@ -113,13 +170,61 @@ io.on('connection', (socket) => {
   });
 });
 
-// Error handling middleware
+// CORS Error Handler
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({
+  if (err.message === 'Not allowed by CORS') {
+    return res.status(403).json({
+      success: false,
+      error: 'CORS Error',
+      message: 'Origin not allowed by CORS policy'
+    });
+  }
+  next(err);
+});
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+  // Log security-related errors
+  if (err.status === 401 || err.status === 403 || err.status === 429) {
+    console.warn(JSON.stringify({
+      type: 'security_error',
+      error: err.message,
+      status: err.status,
+      requestId: req.requestId,
+      ip: req.ip,
+      userAgent: req.get('User-Agent'),
+      userId: req.user?.id,
+      timestamp: new Date().toISOString()
+    }));
+  } else {
+    console.error('Server Error:', {
+      message: err.message,
+      stack: err.stack,
+      requestId: req.requestId,
+      method: req.method,
+      path: req.path
+    });
+  }
+
+  // Don't leak error details in production
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  
+  res.status(err.status || 500).json({
     success: false,
-    message: 'Server error',
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    error: err.name || 'Server Error',
+    message: err.message || 'Internal server error',
+    requestId: req.requestId,
+    ...(isDevelopment && { stack: err.stack })
+  });
+});
+
+// 404 Handler
+app.use('*', (req, res) => {
+  res.status(404).json({
+    success: false,
+    error: 'Not Found',
+    message: `Route ${req.method} ${req.originalUrl} not found`,
+    requestId: req.requestId
   });
 });
 
