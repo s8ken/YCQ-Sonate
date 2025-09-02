@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -69,6 +70,8 @@ export default function SymbiDashboard() {
     cognitiveResonance: 0.8,
     traits: [],
   })
+
+  const router = useRouter()
 
   useEffect(() => {
     fetchAgents()
@@ -155,7 +158,7 @@ export default function SymbiDashboard() {
   const handleOpenChat = (agent) => {
     setSelectedAgent(agent)
     setChatMessages([])
-    setIsChatDialogOpen(true)
+    router.push(`/chat/${agent._id}`)
   }
 
   const handleOpenConfig = (agent) => {
