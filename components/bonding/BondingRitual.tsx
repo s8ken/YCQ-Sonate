@@ -17,13 +17,13 @@ import {
   Typography,
   useTheme,
 } from "@mui/material"
-import { useNavigate } from "react-router-dom"
+import { useRouter } from "next/navigation"
 import axios from "axios"
 import "../../styles/builder.css"
 
 const BondingRitual = ({ agent, onComplete }) => {
   const theme = useTheme()
-  const navigate = useNavigate()
+  const router = useRouter()
 
   // State
   const [activeStep, setActiveStep] = useState(0)

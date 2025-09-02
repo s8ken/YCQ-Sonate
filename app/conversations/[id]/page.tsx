@@ -34,7 +34,7 @@ import SmartToyIcon from "@mui/icons-material/SmartToy"
 import PersonIcon from "@mui/icons-material/Person"
 import PsychologyIcon from "@mui/icons-material/Psychology"
 import axios from "axios"
-import MessageWithCI from "../components/conversation/MessageWithCI"
+import MessageWithCI from "../../../components/conversation/MessageWithCI"
 import { io } from "socket.io-client"
 
 const ConversationDetail = () => {
