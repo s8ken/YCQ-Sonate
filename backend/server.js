@@ -103,6 +103,82 @@ app.use(
 // General API rate limiting
 app.use("/api/", apiRateLimit)
 
+// Root endpoint for API status
+app.get("/", (req, res) => {
+  res.json({
+    success: true,
+    message: "SYMBI Trust Protocol API is running",
+    version: "1.0.0",
+    endpoints: {
+      auth: "/api/auth",
+      users: "/api/users",
+      conversations: "/api/conversations",
+      llm: "/api/llm",
+      agents: "/api/agents",
+      reports: "/api/reports",
+      context: "/api/context",
+      webhooks: "/api/webhooks",
+      trust: "/api/trust",
+      trustProtocol: "/api/trust-protocol",
+    },
+    documentation: "Visit /api/trust for trust protocol endpoints",
+  })
+})
+
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    success: true,
+    status: "healthy",
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    version: "1.0.0",
+    environment: process.env.NODE_ENV || "development",
+  })
+})
+
+app.get("/ready", async (req, res) => {
+  try {
+    // Check database connection
+    const dbState = mongoose.connection.readyState
+    const dbStatus = dbState === 1 ? "connected" : "disconnected"
+
+    // Check Socket.io status
+    const socketStatus = io ? "initialized" : "not initialized"
+
+    if (dbState !== 1) {
+      return res.status(503).json({
+        success: false,
+        status: "not ready",
+        checks: {
+          database: dbStatus,
+          socket: socketStatus,
+        },
+        timestamp: new Date().toISOString(),
+      })
+    }
+
+    res.status(200).json({
+      success: true,
+      status: "ready",
+      checks: {
+        database: dbStatus,
+        socket: socketStatus,
+      },
+      timestamp: new Date().toISOString(),
+    })
+  } catch (error) {
+    res.status(503).json({
+      success: false,
+      status: "not ready",
+      error: error.message,
+      timestamp: new Date().toISOString(),
+    })
+  }
+})
+
+app.get("/healthz", (req, res) => res.redirect("/health"))
+app.get("/readyz", (req, res) => res.redirect("/ready"))
+
 // Database connection
 // Configure mongoose to handle buffering timeouts
 mongoose.set("bufferCommands", false)
@@ -130,28 +206,6 @@ const contextRoutes = require("./routes/context")
 const webhookRoutes = require("./routes/webhook.routes")
 const trustRoutes = require("./routes/trust.routes")
 const trustProtocolRoutes = require("./routes/trust-protocol.routes")
-
-// Root endpoint for API status
-app.get("/", (req, res) => {
-  res.json({
-    success: true,
-    message: "SYMBI Trust Protocol API is running",
-    version: "1.0.0",
-    endpoints: {
-      auth: "/api/auth",
-      users: "/api/users",
-      conversations: "/api/conversations",
-      llm: "/api/llm",
-      agents: "/api/agents",
-      reports: "/api/reports",
-      context: "/api/context",
-      webhooks: "/api/webhooks",
-      trust: "/api/trust",
-      trustProtocol: "/api/trust-protocol",
-    },
-    documentation: "Visit /api/trust for trust protocol endpoints",
-  })
-})
 
 // API routes with specific rate limiting
 app.use("/api/auth", authRateLimit, authRoutes)
