@@ -1,20 +1,23 @@
 import { getDatabase } from "../../lib/mongodb"
 import { generateToken, comparePassword } from "../../lib/auth"
+import { withSecurity, handleValidationErrors } from "../../lib/security"
+import { body } from "express-validator"
 
-export default async function handler(req, res) {
+const validateLogin = [
+  body("email").isEmail().normalizeEmail().withMessage("Valid email is required"),
+  body("password").isLength({ min: 1 }).withMessage("Password is required"),
+]
+
+async function loginHandler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ success: false, message: "Method not allowed" })
   }
 
+  const validationError = handleValidationErrors(req, res)
+  if (validationError) return validationError
+
   try {
     const { email, password } = req.body
-
-    if (!email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: "Please add email and password",
-      })
-    }
 
     const db = await getDatabase()
     const users = db.collection("users")
@@ -39,12 +42,15 @@ export default async function handler(req, res) {
       })
     }
 
+    await users.updateOne({ _id: user._id }, { $set: { lastLogin: new Date() } })
+
     res.json({
       success: true,
       data: {
         _id: user._id,
         name: user.name,
         email: user.email,
+        role: user.role,
         token: generateToken(user._id),
       },
     })
@@ -56,3 +62,10 @@ export default async function handler(req, res) {
     })
   }
 }
+
+export default withSecurity(loginHandler, {
+  rateLimit: {
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    maxRequests: 10, // 10 login attempts per 15 minutes
+  },
+})

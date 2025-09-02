@@ -1,45 +1,27 @@
 import { getDatabase } from "../../lib/mongodb"
 import { generateToken, hashPassword } from "../../lib/auth"
-import { validateRequest, handleApiError, corsHeaders, checkRateLimit } from "../../lib/middleware"
+import { withSecurity, handleValidationErrors } from "../../lib/security"
+import { body } from "express-validator"
 
-export default async function handler(req, res) {
-  // Handle CORS preflight
-  if (corsHeaders(req, res)) return
+const validateRegistration = [
+  body("name").isString().isLength({ min: 2, max: 50 }).trim().withMessage("Name must be 2-50 characters long"),
+  body("email").isEmail().normalizeEmail().withMessage("Valid email is required"),
+  body("password")
+    .isLength({ min: 8, max: 128 })
+    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
+    .withMessage("Password must contain at least 8 characters with uppercase, lowercase, and number"),
+]
 
-  // Rate limiting
-  const rateLimitResult = await checkRateLimit(req, req.headers["x-forwarded-for"] || "anonymous", 5, 15 * 60 * 1000)
-  if (!rateLimitResult.allowed) {
-    return res.status(429).json({
-      success: false,
-      message: "Too many registration attempts. Please try again later.",
-      resetTime: rateLimitResult.resetTime,
-    })
-  }
-
+async function registerHandler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ success: false, message: "Method not allowed" })
   }
 
-  const validationError = validateRequest(req, res, ["name", "email", "password"])
+  const validationError = handleValidationErrors(req, res)
   if (validationError) return validationError
 
   try {
     const { name, email, password } = req.body
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({
-        success: false,
-        message: "Please provide a valid email address",
-      })
-    }
-
-    if (password.length < 8) {
-      return res.status(400).json({
-        success: false,
-        message: "Password must be at least 8 characters long",
-      })
-    }
 
     const db = await getDatabase()
     const users = db.collection("users")
@@ -76,6 +58,17 @@ export default async function handler(req, res) {
       },
     })
   } catch (error) {
-    return handleApiError(error, res, "User registration")
+    console.error("Registration error:", error)
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error during registration",
+    })
   }
 }
+
+export default withSecurity(registerHandler, {
+  rateLimit: {
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    maxRequests: 5, // 5 registration attempts per 15 minutes
+  },
+})

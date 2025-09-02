@@ -1,5 +1,22 @@
-import clientPromise from "../../lib/mongodb"
+import { getDatabase } from "../../lib/mongodb"
 import { verifyToken, extractToken } from "../../lib/auth"
+import { withSecurity, handleValidationErrors } from "../../lib/security"
+import { body } from "express-validator"
+
+const validateGeneration = [
+  body("messages").isArray({ min: 1 }).withMessage("Messages array is required and must not be empty"),
+  body("messages.*.role")
+    .isIn(["user", "assistant", "system"])
+    .withMessage("Message role must be user, assistant, or system"),
+  body("messages.*.content")
+    .isString()
+    .isLength({ min: 1, max: 10000 })
+    .withMessage("Message content must be 1-10000 characters"),
+  body("provider")
+    .isIn(["openai", "anthropic", "together", "perplexity", "v0"])
+    .withMessage("Provider must be one of: openai, anthropic, together, perplexity, v0"),
+  body("model").isString().isLength({ min: 1, max: 100 }).withMessage("Model is required"),
+]
 
 // AI Provider configurations
 const AI_PROVIDERS = {
@@ -124,10 +141,13 @@ async function generateWithV0(messages, model, apiKey) {
   return data.choices[0].message.content
 }
 
-export default async function handler(req, res) {
+async function llmGenerateHandler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ success: false, message: "Method not allowed" })
   }
+
+  const validationError = handleValidationErrors(req, res)
+  if (validationError) return validationError
 
   try {
     // Authenticate user
@@ -137,8 +157,7 @@ export default async function handler(req, res) {
     }
 
     const decoded = verifyToken(token)
-    const client = await clientPromise
-    const db = client.db("symbi-synergy")
+    const db = await getDatabase()
     const users = db.collection("users")
 
     const user = await users.findOne({ _id: decoded.id })
@@ -148,10 +167,11 @@ export default async function handler(req, res) {
 
     const { messages, provider, model } = req.body
 
-    if (!messages || !provider || !model) {
+    if (!AI_PROVIDERS[provider].models.includes(model)) {
       return res.status(400).json({
         success: false,
-        message: "Messages, provider, and model are required",
+        message: `Model ${model} is not supported by provider ${provider}`,
+        supportedModels: AI_PROVIDERS[provider].models,
       })
     }
 
@@ -181,6 +201,8 @@ export default async function handler(req, res) {
       return res.status(400).json({ success: false, message: `API key not configured for ${provider}` })
     }
 
+    console.log(`[v0] LLM generation request: ${provider}/${model} by user ${user._id}`)
+
     // Generate response based on provider
     let response
     switch (provider) {
@@ -201,6 +223,17 @@ export default async function handler(req, res) {
         break
     }
 
+    const generations = db.collection("generations")
+    await generations.insertOne({
+      userId: user._id,
+      provider,
+      model,
+      messageCount: messages.length,
+      responseLength: response.length,
+      timestamp: new Date(),
+      success: true,
+    })
+
     res.json({
       success: true,
       data: {
@@ -212,6 +245,22 @@ export default async function handler(req, res) {
     })
   } catch (error) {
     console.error("LLM generation error:", error)
+
+    try {
+      const db = await getDatabase()
+      const generations = db.collection("generations")
+      await generations.insertOne({
+        userId: req.user?._id,
+        provider: req.body?.provider,
+        model: req.body?.model,
+        error: error.message,
+        timestamp: new Date(),
+        success: false,
+      })
+    } catch (dbError) {
+      console.error("Failed to log generation error:", dbError)
+    }
+
     res.status(500).json({
       success: false,
       message: "Error generating response",
@@ -219,3 +268,10 @@ export default async function handler(req, res) {
     })
   }
 }
+
+export default withSecurity(llmGenerateHandler, {
+  rateLimit: {
+    windowMs: 60 * 1000, // 1 minute
+    maxRequests: 20, // 20 AI generations per minute
+  },
+})
