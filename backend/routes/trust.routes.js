@@ -11,6 +11,7 @@ const {
 } = require('../controllers/trust.controller');
 const { validateTrust, validateTrustUpdate } = require('../middleware/trust.middleware');
 const { protect } = require('../middleware/auth.middleware');
+const { requireRole } = require('../middleware/security.middleware');
 
 const router = express.Router();
 
@@ -37,7 +38,7 @@ router.get('/agent/:agentId', getTrustDeclarationsByAgent);
  * @access  Protected (Admin only)
  * @note    In a real application, you might want to add an admin-only middleware here
  */
-router.post('/:id/audit', auditTrustDeclaration);
+router.post('/:id/audit', requireRole('admin'), auditTrustDeclaration);
 
 /**
  * @route   GET /api/trust/:id
@@ -51,14 +52,14 @@ router.get('/:id', getTrustDeclarationById);
  * @desc    Update a trust declaration
  * @access  Protected
  */
-router.put('/:id', validateTrustUpdate, updateTrustDeclaration);
+router.put('/:id', requireRole('admin'), validateTrustUpdate, updateTrustDeclaration);
 
 /**
  * @route   DELETE /api/trust/:id
  * @desc    Delete a trust declaration
  * @access  Protected
  */
-router.delete('/:id', deleteTrustDeclaration);
+router.delete('/:id', requireRole('admin'), deleteTrustDeclaration);
 
 /**
  * @route   GET /api/trust

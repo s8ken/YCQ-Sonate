@@ -5,7 +5,11 @@ const User = require('../models/user.model');
 
 // Generate JWT Token
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || 'your-secret-key', {
+  const secret = process.env.JWT_SECRET;
+  if (!secret && process.env.NODE_ENV !== 'test') {
+    throw new Error('JWT_SECRET is not configured');
+  }
+  return jwt.sign({ id }, secret || 'test-secret', {
     expiresIn: '30d',
   });
 };
@@ -138,4 +142,8 @@ module.exports = {
   loginUser,
   getMe,
   updateProfile,
+  // Stateless JWT logout (placeholder for future token revocation)
+  logoutUser: asyncHandler(async (req, res) => {
+    return res.status(200).json({ success: true, message: 'Logged out' });
+  })
 };

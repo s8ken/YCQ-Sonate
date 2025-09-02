@@ -455,8 +455,10 @@ When users ask about their data, use the appropriate functions to retrieve and p
 - Updating agent configurations
 
 Always be helpful, accurate, and respect user privacy.`,
-      model: config.model || 'gpt-4-1106-preview',
-      tools: this.getFunctionDefinitions()
+      model: config.model || 'gpt-4o',
+      tools: (Array.isArray(config.tools) && config.tools.length > 0)
+        ? config.tools
+        : this.getFunctionDefinitions()
     };
     
     const assistant = await this.openai.beta.assistants.create(assistantConfig);
@@ -566,13 +568,13 @@ Always be helpful, accurate, and respect user privacy.`,
   async listAssistants(apiKey) {
     this.initializeClient(apiKey);
     const assistants = await this.openai.beta.assistants.list();
-    
-    return assistants.data.map(assistant => ({
+    const list = assistants.data.map(assistant => ({
       id: assistant.id,
       name: assistant.name,
       model: assistant.model,
       created_at: assistant.created_at
     }));
+    return list.sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
   }
 
   // Delete an assistant
@@ -580,6 +582,31 @@ Always be helpful, accurate, and respect user privacy.`,
     this.initializeClient(apiKey);
     const result = await this.openai.beta.assistants.del(assistantId);
     return result;
+  }
+
+  // Update an assistant configuration
+  async updateAssistant(apiKey, assistantId, update) {
+    this.initializeClient(apiKey);
+    const payload = {};
+    if (update.name) payload.name = update.name;
+    if (update.instructions) payload.instructions = update.instructions;
+    if (update.model) payload.model = update.model;
+    if (Array.isArray(update.tools)) payload.tools = update.tools;
+    const assistant = await this.openai.beta.assistants.update(assistantId, payload);
+    return {
+      id: assistant.id,
+      name: assistant.name,
+      model: assistant.model,
+      instructions: assistant.instructions,
+      tools: assistant.tools,
+      updated_at: assistant.updated_at
+    };
+  }
+
+  // Get most recent assistant
+  async getLatestAssistant(apiKey) {
+    const list = await this.listAssistants(apiKey);
+    return list[0] || null;
   }
 }
 

@@ -18,6 +18,7 @@ import ChatIcon from '@mui/icons-material/Chat';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import SettingsIcon from '@mui/icons-material/Settings';
 import AssessmentIcon from '@mui/icons-material/Assessment';
+import TimelineIcon from '@mui/icons-material/Timeline';
 import LinkIcon from '@mui/icons-material/Link';
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
@@ -34,6 +35,7 @@ const Sidebar = ({ open, toggleDrawer }) => {
      { text: 'Agents', icon: <SmartToyIcon />, path: '/agents', color: '#8b5cf6' },
      { text: 'Assistants', icon: <SmartToyIcon />, path: '/assistants', color: '#ec4899' },
      { text: 'Symbi Logs', icon: <AssessmentIcon />, path: '/reports', color: '#f59e0b' },
+     { text: 'Review Console', icon: <TimelineIcon />, path: '/review', color: '#0ea5e9' },
      { text: 'Context Bridge', icon: <LinkIcon />, path: '/context-bridge', color: '#3b82f6' },
      { text: 'Settings', icon: <SettingsIcon />, path: '/settings', color: '#6b7280' },
    ];

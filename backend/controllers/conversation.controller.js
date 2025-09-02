@@ -331,8 +331,68 @@ const generateAgentResponse = async (conversation, agentId, userId) => {
           throw new Error(`Anthropic API error for agent "${agent.name}": ${error.message}`);
         }
       }
+    } else if (agent.provider === 'perplexity') {
+      try {
+        const response = await axios.post('https://api.perplexity.ai/chat/completions', {
+          model: agent.model || 'llama-3.1-sonar-small-128k-online',
+          messages: messages,
+          temperature: agent.temperature || 0.7,
+          max_tokens: agent.maxTokens || 1000
+        }, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey.key}`
+          }
+        });
+        
+        if (!response.data.choices || response.data.choices.length === 0) {
+          throw new Error('No response generated from Perplexity');
+        }
+        
+        responseContent = response.data.choices[0].message.content;
+      } catch (error) {
+        if (error.response?.status === 401) {
+          throw new Error(`Invalid Perplexity API key for agent "${agent.name}". Please check your API key.`);
+        } else if (error.response?.status === 429) {
+          throw new Error(`Perplexity rate limit exceeded for agent "${agent.name}". Please try again later.`);
+        } else if (error.response?.status === 400) {
+          throw new Error(`Invalid request to Perplexity for agent "${agent.name}". Please check agent configuration.`);
+        } else {
+          throw new Error(`Perplexity API error for agent "${agent.name}": ${error.message}`);
+        }
+      }
+    } else if (agent.provider === 'v0') {
+      try {
+        const response = await axios.post('https://api.v0.dev/chat/completions', {
+          model: agent.model || 'v0-1',
+          messages: messages,
+          temperature: agent.temperature || 0.7,
+          max_tokens: agent.maxTokens || 1000
+        }, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey.key}`
+          }
+        });
+        
+        if (!response.data.choices || response.data.choices.length === 0) {
+          throw new Error('No response generated from v0');
+        }
+        
+        responseContent = response.data.choices[0].message.content;
+      } catch (error) {
+        if (error.response?.status === 401) {
+          throw new Error(`Invalid v0 API key for agent "${agent.name}". Please check your API key.`);
+        } else if (error.response?.status === 429) {
+          throw new Error(`v0 rate limit exceeded for agent "${agent.name}". Please try again later.`);
+        } else if (error.response?.status === 400) {
+          throw new Error(`Invalid request to v0 for agent "${agent.name}". Please check agent configuration.`);
+        } else {
+          throw new Error(`v0 API error for agent "${agent.name}": ${error.message}`);
+        }
+      }
     } else {
-      throw new Error(`Provider "${agent.provider}" is not supported. Please use OpenAI or Anthropic.`);
+      throw new Error(`Provider "${agent.provider}" is not supported. Please use OpenAI, Anthropic, Perplexity, or v0.`);
     }
 
     // Add agent response to conversation

@@ -64,7 +64,10 @@ const ConversationDetail = () => {
 
   // Connect to socket
   useEffect(() => {
-    socketRef.current = io();
+    // Include JWT for socket auth
+    socketRef.current = io({
+      auth: { token: localStorage.getItem('token') }
+    });
     
     // Join conversation room
     if (id && id !== 'undefined' && id !== 'null') {
@@ -73,6 +76,16 @@ const ConversationDetail = () => {
     
     // Listen for new messages
     socketRef.current.on('newMessage', (newMessage) => {
+      setConversation(prev => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          messages: [...prev.messages, newMessage]
+        };
+      });
+    });
+    // Backward compatibility with server event name
+    socketRef.current.on('message_received', (newMessage) => {
       setConversation(prev => {
         if (!prev) return prev;
         return {

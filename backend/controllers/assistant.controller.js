@@ -5,7 +5,7 @@ class AssistantController {
   // Create a new OpenAI Assistant
   async createAssistant(req, res) {
     try {
-      const { name, instructions, model } = req.body;
+      const { name, instructions, model, tools } = req.body;
       const userId = req.user.id;
       
       // Get user's OpenAI API key
@@ -21,7 +21,8 @@ class AssistantController {
       const config = {
         name: name || `${user.name}'s Symbi Assistant`,
         instructions,
-        model: model || 'gpt-4-1106-preview'
+        model: model || 'gpt-4o',
+        tools
       };
       
       const assistant = await assistantService.createAssistant(openaiKey, config);
@@ -104,6 +105,52 @@ class AssistantController {
     }
   }
   
+  // Get the most recently created assistant
+  async getLatest(req, res) {
+    try {
+      const userId = req.user.id;
+      const user = await User.findById(userId);
+      const openaiKey = user.apiKeys?.find(key => key.provider === 'openai')?.key;
+      if (!openaiKey) {
+        return res.status(400).json({
+          error: 'OpenAI API key not found. Please add your OpenAI API key in settings.'
+        });
+      }
+
+      const latest = await assistantService.getLatestAssistant(openaiKey);
+      if (!latest) {
+        return res.status(404).json({ error: 'No assistants found' });
+      }
+      res.json({ success: true, assistant: latest });
+    } catch (error) {
+      console.error('Error getting latest assistant:', error);
+      res.status(500).json({ error: 'Failed to get latest assistant', details: error.message });
+    }
+  }
+
+  // Update assistant
+  async updateAssistant(req, res) {
+    try {
+      const { assistantId } = req.params;
+      const { name, instructions, model, tools } = req.body;
+      const userId = req.user.id;
+
+      const user = await User.findById(userId);
+      const openaiKey = user.apiKeys?.find(key => key.provider === 'openai')?.key;
+      if (!openaiKey) {
+        return res.status(400).json({
+          error: 'OpenAI API key not found. Please add your OpenAI API key in settings.'
+        });
+      }
+
+      const updated = await assistantService.updateAssistant(openaiKey, assistantId, { name, instructions, model, tools });
+      res.json({ success: true, assistant: updated, message: 'Assistant updated successfully' });
+    } catch (error) {
+      console.error('Error updating assistant:', error);
+      res.status(500).json({ error: 'Failed to update assistant', details: error.message });
+    }
+  }
+
   // Create a new conversation thread
   async createThread(req, res) {
     try {
@@ -144,10 +191,8 @@ class AssistantController {
       const { threadId, assistantId, message } = req.body;
       const userId = req.user.id;
       
-      if (!threadId || !assistantId || !message) {
-        return res.status(400).json({
-          error: 'threadId, assistantId, and message are required'
-        });
+      if (!threadId || !message) {
+        return res.status(400).json({ error: 'threadId and message are required' });
       }
       
       const user = await User.findById(userId);
@@ -159,13 +204,17 @@ class AssistantController {
         });
       }
       
-      const result = await assistantService.sendMessage(
-        openaiKey,
-        threadId,
-        assistantId,
-        message,
-        userId
-      );
+      // Fallback to most recent assistant if none provided
+      let assistantToUse = assistantId;
+      if (!assistantToUse) {
+        const latest = await assistantService.getLatestAssistant(openaiKey);
+        if (!latest) {
+          return res.status(400).json({ error: 'No assistant specified and none found in your account.' });
+        }
+        assistantToUse = latest.id;
+      }
+
+      const result = await assistantService.sendMessage(openaiKey, threadId, assistantToUse, message, userId);
       
       res.json({
         success: true,

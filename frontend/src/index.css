@@ -100,8 +100,12 @@ code {
   flex: 1;
   overflow-y: auto;
   padding: 20px;
-  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+  background: var(--light-background);
   scroll-behavior: smooth;
+}
+
+[data-theme="dark"] .messages-container {
+  background: var(--dark-background);
 }
 
 .message {
@@ -123,19 +127,30 @@ code {
 }
 
 .message-ai {
-  background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
-  color: #1e293b;
+  background: var(--light-surface);
+  color: var(--light-text-primary);
   margin-right: auto;
   border: 1px solid #e2e8f0;
   border-bottom-left-radius: 4px;
+}
+
+[data-theme="dark"] .message-ai {
+  background: var(--dark-surface);
+  color: var(--dark-text-primary);
+  border: 1px solid #334155;
 }
 
 .message-input {
   display: flex;
   padding: 20px;
   border-top: 1px solid #e2e8f0;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  background: var(--light-surface);
   backdrop-filter: blur(10px);
+}
+
+[data-theme="dark"] .message-input {
+  border-top: 1px solid #334155;
+  background: var(--dark-surface);
 }
 
 .message-input input {
@@ -152,10 +167,15 @@ code {
   border-radius: 16px;
   padding: 24px;
   margin-bottom: 20px;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  background: var(--light-surface);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+}
+
+[data-theme="dark"] .agent-card {
+  border: 1px solid #334155;
+  background: var(--dark-surface);
 }
 
 .agent-card::before {
@@ -190,11 +210,15 @@ code {
 .agent-card-title {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--light-text-primary);
   background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+[data-theme="dark"] .agent-card-title {
+  color: var(--dark-text-primary);
 }
 
 .agent-card-status {
@@ -210,10 +234,14 @@ code {
 }
 
 .agent-card-description {
-  color: #64748b;
+  color: var(--light-text-secondary);
   margin-bottom: 16px;
   line-height: 1.6;
   font-size: 0.95rem;
+}
+
+[data-theme="dark"] .agent-card-description {
+  color: var(--dark-text-secondary);
 }
 
 .agent-card-actions {
@@ -226,13 +254,19 @@ code {
 .api-key-form {
   max-width: 600px;
   margin: 0 auto;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  background: var(--light-surface);
   padding: 32px;
   border-radius: 16px;
   border: 1px solid #e2e8f0;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   position: relative;
   overflow: hidden;
+}
+
+[data-theme="dark"] .api-key-form {
+  background: var(--dark-surface);
+  border: 1px solid #334155;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
 }
 
 .api-key-form::before {

@@ -12,14 +12,25 @@ const anthropic = process.env.ANTHROPIC_API_KEY ? new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 }) : null;
 
+// Initialize Perplexity client
+const perplexity = process.env.PERPLEXITY_API_KEY ? {
+  apiKey: process.env.PERPLEXITY_API_KEY,
+} : null;
+
+// Initialize v0 client
+const v0 = process.env.V0_API_KEY ? {
+  apiKey: process.env.V0_API_KEY,
+} : null;
+
 // Supported LLM providers and their models
 const LLM_PROVIDERS = {
   openai: {
     name: 'OpenAI',
     models: [
-      { id: 'gpt-4', name: 'GPT-4', maxTokens: 8192 },
       { id: 'gpt-4o', name: 'GPT-4o', maxTokens: 128000 },
+      { id: 'gpt-4o-mini', name: 'GPT-4o mini', maxTokens: 128000 },
       { id: 'gpt-4-turbo', name: 'GPT-4 Turbo', maxTokens: 128000 },
+      { id: 'gpt-4', name: 'GPT-4', maxTokens: 8192 },
       { id: 'gpt-3.5-turbo', name: 'GPT-3.5 Turbo', maxTokens: 4096 }
     ],
     endpoint: 'https://api.openai.com/v1/chat/completions'
@@ -27,9 +38,10 @@ const LLM_PROVIDERS = {
   anthropic: {
     name: 'Anthropic',
     models: [
-      { id: 'claude-3-opus', name: 'Claude 3 Opus', maxTokens: 200000 },
-      { id: 'claude-3-sonnet', name: 'Claude 3 Sonnet', maxTokens: 200000 },
-      { id: 'claude-3-haiku', name: 'Claude 3 Haiku', maxTokens: 200000 }
+      { id: 'claude-3-opus-20240229', name: 'Claude 3 Opus', maxTokens: 200000 },
+      { id: 'claude-3-sonnet-20240229', name: 'Claude 3 Sonnet', maxTokens: 200000 },
+      { id: 'claude-3-haiku-20240307', name: 'Claude 3 Haiku', maxTokens: 200000 },
+      { id: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet', maxTokens: 200000 }
     ],
     endpoint: 'https://api.anthropic.com/v1/messages'
   },
@@ -40,6 +52,22 @@ const LLM_PROVIDERS = {
       { id: 'gemini-pro-vision', name: 'Gemini Pro Vision', maxTokens: 16384 }
     ],
     endpoint: 'https://generativelanguage.googleapis.com/v1/models'
+  },
+  perplexity: {
+    name: 'Perplexity',
+    models: [
+      { id: 'llama-3.1-sonar-small-128k-online', name: 'Llama 3.1 Sonar Small 128K Online', maxTokens: 127072 },
+      { id: 'llama-3.1-sonar-large-128k-online', name: 'Llama 3.1 Sonar Large 128K Online', maxTokens: 127072 },
+      { id: 'llama-3.1-sonar-huge-128k-online', name: 'Llama 3.1 Sonar Huge 128K Online', maxTokens: 127072 }
+    ],
+    endpoint: 'https://api.perplexity.ai/chat/completions'
+  },
+  v0: {
+    name: 'v0 by Vercel',
+    models: [
+      { id: 'v0-1', name: 'v0 Model', maxTokens: 4096 }
+    ],
+    endpoint: 'https://api.v0.dev/chat/completions'
   }
 };
 
@@ -68,6 +96,29 @@ const getModels = asyncHandler(async (req, res) => {
   if (!LLM_PROVIDERS[provider]) {
     res.status(404);
     throw new Error('Provider not found');
+  }
+
+  // Dynamic fetch for OpenAI models when API key is configured
+  if (provider === 'openai' && openai) {
+    try {
+      const list = await openai.models.list();
+      // Heuristic: surface chat-capable GPT models and 4o variants first
+      const models = list.data
+        .map(m => ({ id: m.id, created: m.created }))
+        .filter(m => /^(gpt|o)/.test(m.id))
+        .sort((a, b) => (b.created || 0) - (a.created || 0))
+        .map(m => ({ id: m.id, name: m.id, maxTokens: null }));
+
+      if (models.length) {
+        return res.json({
+          success: true,
+          data: { provider: LLM_PROVIDERS[provider].name, models }
+        });
+      }
+    } catch (e) {
+      // Fall back to static list on error
+      console.warn('Failed to fetch OpenAI models dynamically, using static list:', e.message);
+    }
   }
 
   res.json({
@@ -108,6 +159,12 @@ const generateResponse = asyncHandler(async (req, res) => {
       case 'google':
         response = await generateGoogleResponse(model, messages, temperature, maxTokens);
         break;
+      case 'perplexity':
+        response = await generatePerplexityResponse(model, messages, temperature, maxTokens);
+        break;
+      case 'v0':
+        response = await generateV0Response(model, messages, temperature, maxTokens);
+        break;
       default:
         res.status(400);
         throw new Error('Provider not implemented');
@@ -129,45 +186,50 @@ const generateResponse = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Stream response from LLM
+// @desc    Stream response from LLM (SSE for OpenAI)
 // @route   POST /api/llm/stream
 // @access  Private
 const streamResponse = asyncHandler(async (req, res) => {
-  const { provider, model, messages, temperature = 0.7, maxTokens = 1000 } = req.body;
+  const { provider = 'openai', model = 'gpt-4o', messages, temperature = 0.7, maxTokens = 1000 } = req.body || {};
 
-  if (!provider || !model || !messages) {
-    res.status(400);
-    throw new Error('Please provide provider, model, and messages');
+  if (!messages || !Array.isArray(messages)) {
+    return res.status(400).json({ success: false, message: 'messages array is required' });
   }
 
-  if (!LLM_PROVIDERS[provider]) {
-    res.status(404);
-    throw new Error('Provider not supported');
+  if (provider !== 'openai') {
+    return res.status(400).json({ success: false, message: 'Streaming supported for provider=openai only at this time' });
+  }
+  if (!openai) {
+    return res.status(400).json({ success: false, message: 'OpenAI API key not configured' });
   }
 
-  // Set headers for streaming
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders?.();
 
   try {
-    // For now, simulate streaming by sending the response in chunks
-    const response = await generateResponse(req, { json: () => {} });
-    
-    // Send response in chunks to simulate streaming
-    const content = response.data?.response || 'No response generated';
-    const chunks = content.match(/.{1,50}/g) || [content];
-    
-    for (const chunk of chunks) {
-      res.write(`data: ${JSON.stringify({ chunk })}\n\n`);
-      await new Promise(resolve => setTimeout(resolve, 100)); // Simulate delay
+    const stream = await openai.chat.completions.create({
+      model,
+      messages,
+      temperature,
+      max_tokens: maxTokens,
+      stream: true,
+    });
+
+    for await (const part of stream) {
+      const delta = part.choices?.[0]?.delta?.content || '';
+      if (delta) {
+        res.write(`data: ${JSON.stringify({ delta })}\n\n`);
+      }
     }
-    
-    res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+    res.write(`event: done\n`);
+    res.write(`data: {}\n\n`);
     res.end();
   } catch (error) {
-    console.error('LLM Streaming Error:', error);
-    res.write(`data: ${JSON.stringify({ error: 'Failed to stream response' })}\n\n`);
+    console.error('OpenAI streaming error:', error);
+    res.write(`event: error\n`);
+    res.write(`data: ${JSON.stringify({ error: error.message || 'stream failed' })}\n\n`);
     res.end();
   }
 });
@@ -239,6 +301,70 @@ const generateGoogleResponse = async (model, messages, temperature, maxTokens) =
     content: `Mock Google response from ${model}: ${messages[messages.length - 1]?.content}`,
     usage: { promptTokenCount: 50, candidatesTokenCount: 100 }
   };
+};
+
+// Helper function for Perplexity API
+const generatePerplexityResponse = async (model, messages, temperature, maxTokens) => {
+  if (!perplexity) {
+    throw new Error('Perplexity API key not configured');
+  }
+
+  try {
+    const response = await axios.post('https://api.perplexity.ai/chat/completions', {
+      model: model,
+      messages: messages,
+      temperature: temperature || 0.7,
+      max_tokens: maxTokens || 1000
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${perplexity.apiKey}`
+      }
+    });
+
+    return {
+      content: response.data.choices[0].message.content,
+      usage: {
+        inputTokens: response.data.usage.prompt_tokens,
+        outputTokens: response.data.usage.completion_tokens
+      }
+    };
+  } catch (error) {
+    console.error('Perplexity API Error:', error);
+    throw new Error(`Perplexity API Error: ${error.message}`);
+  }
+};
+
+// Helper function for v0 API
+const generateV0Response = async (model, messages, temperature, maxTokens) => {
+  if (!v0) {
+    throw new Error('v0 API key not configured');
+  }
+
+  try {
+    const response = await axios.post('https://api.v0.dev/chat/completions', {
+      model: model,
+      messages: messages,
+      temperature: temperature || 0.7,
+      max_tokens: maxTokens || 1000
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${v0.apiKey}`
+      }
+    });
+
+    return {
+      content: response.data.choices[0].message.content,
+      usage: {
+        inputTokens: response.data.usage.prompt_tokens,
+        outputTokens: response.data.usage.completion_tokens
+      }
+    };
+  } catch (error) {
+    console.error('v0 API Error:', error);
+    throw new Error(`v0 API Error: ${error.message}`);
+  }
 };
 
 // @desc    Perform code review using AI
@@ -320,7 +446,7 @@ ${code}
 
   try {
     let result;
-    const selectedModel = model || (provider === 'openai' ? 'gpt-4' : 'claude-3-sonnet');
+    const selectedModel = model || (provider === 'openai' ? 'gpt-4o' : 'claude-3-sonnet-20240229');
 
     if (provider === 'openai') {
       result = await generateOpenAIResponse(selectedModel, messages, 0.3, 2000);

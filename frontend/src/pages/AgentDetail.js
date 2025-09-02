@@ -112,9 +112,13 @@ const AgentDetail = () => {
     if (agent.provider === 'openai') {
       setAvailableModels(['gpt-4o', 'gpt-4-turbo', 'gpt-4', 'gpt-3.5-turbo']);
     } else if (agent.provider === 'anthropic') {
-      setAvailableModels(['claude-3-opus', 'claude-3-sonnet', 'claude-3-haiku']);
+      setAvailableModels(['claude-3-opus-20240229', 'claude-3-sonnet-20240229', 'claude-3-haiku-20240307', 'claude-3-5-sonnet-20241022']);
     } else if (agent.provider === 'together') {
       setAvailableModels(['llama-2-70b', 'falcon-40b', 'mistral-7b']);
+    } else if (agent.provider === 'perplexity') {
+      setAvailableModels(['llama-3.1-sonar-small-128k-online', 'llama-3.1-sonar-large-128k-online', 'llama-3.1-sonar-huge-128k-online']);
+    } else if (agent.provider === 'v0') {
+      setAvailableModels(['v0-1']);
     } else {
       setAvailableModels([]);
     }
@@ -357,6 +361,8 @@ const AgentDetail = () => {
                     <MenuItem value="openai">OpenAI</MenuItem>
                     <MenuItem value="anthropic">Anthropic</MenuItem>
                     <MenuItem value="together">Together AI</MenuItem>
+                    <MenuItem value="perplexity">Perplexity</MenuItem>
+                    <MenuItem value="v0">v0 by Vercel</MenuItem>
                   </Select>
                 </FormControl>
                 

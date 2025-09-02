@@ -539,8 +539,10 @@ const Dashboard = () => {
             sx={{ 
               height: '100%',
               borderRadius: 3,
-              boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-              border: '1px solid #e2e8f0'
+              boxShadow: (theme) => theme.palette.mode === 'dark' 
+                ? '0 4px 20px rgba(0,0,0,0.3)' 
+                : '0 4px 20px rgba(0,0,0,0.08)',
+              border: (theme) => `1px solid ${theme.palette.divider}`
             }}
           >
             <CardHeader 
@@ -584,12 +586,14 @@ const Dashboard = () => {
                         sx={{
                           borderRadius: 2,
                           mb: 1,
-                          border: '1px solid #f1f5f9',
-                          background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                          border: (theme) => `1px solid ${theme.palette.divider}`,
+                          backgroundColor: 'background.paper',
                           '&:hover': {
-                            background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)',
+                            backgroundColor: 'action.hover',
                             transform: 'translateX(4px)',
-                            boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                            boxShadow: (theme) => theme.palette.mode === 'dark' 
+                              ? '0 4px 12px rgba(0,0,0,0.4)' 
+                              : '0 4px 12px rgba(0,0,0,0.1)'
                           },
                           transition: 'all 0.3s ease'
                         }}
@@ -631,9 +635,9 @@ const Dashboard = () => {
                   sx={{ 
                     textAlign: 'center', 
                     py: 6,
-                    background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+                    backgroundColor: 'action.hover',
                     borderRadius: 2,
-                    border: '2px dashed #cbd5e1'
+                    border: (theme) => `2px dashed ${theme.palette.divider}`
                   }}
                 >
                   <MessageIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }} />
@@ -671,8 +675,10 @@ const Dashboard = () => {
             sx={{ 
               height: '100%',
               borderRadius: 3,
-              boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-              border: '1px solid #e2e8f0'
+              boxShadow: (theme) => theme.palette.mode === 'dark' 
+                ? '0 4px 20px rgba(0,0,0,0.3)' 
+                : '0 4px 20px rgba(0,0,0,0.08)',
+              border: (theme) => `1px solid ${theme.palette.divider}`
             }}
           >
             <CardHeader 
@@ -717,13 +723,15 @@ const Dashboard = () => {
                           flexDirection: 'column',
                           height: '100%',
                           borderRadius: 3,
-                          border: '1px solid #f1f5f9',
-                          background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+                          border: (theme) => `1px solid ${theme.palette.divider}`,
+                          backgroundColor: 'background.paper',
                           cursor: 'pointer',
                           '&:hover': { 
-                            background: 'linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)',
+                            backgroundColor: 'action.hover',
                             transform: 'translateY(-2px)',
-                            boxShadow: '0 8px 25px rgba(0,0,0,0.1)'
+                            boxShadow: (theme) => theme.palette.mode === 'dark' 
+                              ? '0 8px 25px rgba(0,0,0,0.4)' 
+                              : '0 8px 25px rgba(0,0,0,0.1)'
                           },
                           transition: 'all 0.3s ease'
                         }}

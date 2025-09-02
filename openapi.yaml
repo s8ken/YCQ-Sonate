@@ -21,6 +21,195 @@ servers:
     description: Development server
 
 paths:
+  /api/ledger:
+    get:
+      summary: Get ledger events
+      tags: [Ledger]
+      parameters:
+        - in: query
+          name: session_id
+          required: true
+          schema: { type: string }
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1, default: 1 }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+      responses:
+        '200': { description: OK }
+
+  /api/ledger/verify:
+    get:
+      summary: Verify ledger hash-chain
+      tags: [Ledger]
+      parameters:
+        - in: query
+          name: session_id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+
+  /api/events:
+    post:
+      summary: Ingest interaction event
+      tags: [Ledger]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                session_id: { type: string }
+                prompt: { type: string }
+                response: { type: string }
+      responses:
+        '201': { description: Created }
+
+  /api/analyze/turn:
+    post:
+      summary: Analyze a conversation turn
+      tags: [Analysis]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                session_id: { type: string }
+                prompt: { type: string }
+                response: { type: string }
+      responses:
+        '200': { description: OK }
+
+  /api/guardrails/apply:
+    post:
+      summary: Apply guardrail transforms
+      tags: [Guardrails]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                draft_response: { type: string }
+                signals: { type: object }
+      responses:
+        '200': { description: OK }
+
+  /api/insights/timeline:
+    get:
+      summary: Get change-points timeline
+      tags: [Insights]
+      parameters:
+        - in: query
+          name: session_id
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+
+  /api/sessions/recent:
+    get:
+      summary: List recent session IDs
+      tags: [Ledger]
+      parameters:
+        - in: query
+          name: limit
+          schema: { type: integer, default: 50 }
+      responses:
+        '200': { description: OK }
+
+  /api/assistant/create:
+    post:
+      summary: Create assistant
+      tags: [Assistants]
+      responses:
+        '200': { description: OK }
+  /api/assistant/list:
+    get:
+      summary: List assistants
+      tags: [Assistants]
+      responses:
+        '200': { description: OK }
+  /api/assistant/latest:
+    get:
+      summary: Latest assistant
+      tags: [Assistants]
+      responses:
+        '200': { description: OK }
+  /api/assistant/{assistantId}:
+    put:
+      summary: Update assistant
+      tags: [Assistants]
+      parameters:
+        - in: path
+          name: assistantId
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+    delete:
+      summary: Delete assistant
+      tags: [Assistants]
+      parameters:
+        - in: path
+          name: assistantId
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+  /api/assistant/thread/create:
+    post:
+      summary: Create thread
+      tags: [Assistants]
+      responses:
+        '200': { description: OK }
+  /api/assistant/thread/{threadId}/messages:
+    get:
+      summary: Get thread messages
+      tags: [Assistants]
+      parameters:
+        - in: path
+          name: threadId
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+  /api/assistant/message:
+    post:
+      summary: Send message to assistant
+      tags: [Assistants]
+      responses:
+        '200': { description: OK }
+
+  /api/llm/models/{provider}:
+    get:
+      summary: List models
+      tags: [LLM]
+      parameters:
+        - in: path
+          name: provider
+          required: true
+          schema: { type: string }
+      responses:
+        '200': { description: OK }
+  /api/llm/generate:
+    post:
+      summary: Generate completion
+      tags: [LLM]
+      responses:
+        '200': { description: OK }
+  /api/llm/stream:
+    post:
+      summary: Stream completion (SSE)
+      tags: [LLM]
+      responses:
+        '200': { description: OK }
   /declarations:
     get:
       summary: List trust declarations

@@ -6,11 +6,12 @@ const ApiKeySchema = new mongoose.Schema({
   provider: {
     type: String,
     required: [true, 'Provider name is required'],
-    enum: ['openai', 'together', 'anthropic', 'cohere', 'custom'],
+    enum: ['openai', 'together', 'anthropic', 'cohere', 'custom', 'perplexity', 'v0'],
   },
   key: {
     type: String,
     required: [true, 'API key is required'],
+    select: false,
   },
   name: {
     type: String,

@@ -277,6 +277,8 @@ const Settings = () => {
       case 'openai': return 'OpenAI';
       case 'anthropic': return 'Anthropic';
       case 'together': return 'Together AI';
+      case 'perplexity': return 'Perplexity';
+      case 'v0': return 'v0 by Vercel';
       default: return provider;
     }
   };
@@ -287,6 +289,8 @@ const Settings = () => {
       case 'openai': return 'primary';
       case 'anthropic': return 'secondary';
       case 'together': return 'success';
+      case 'perplexity': return 'info';
+      case 'v0': return 'warning';
       default: return 'default';
     }
   };
@@ -877,6 +881,8 @@ const Settings = () => {
               <MenuItem value="openai">OpenAI</MenuItem>
               <MenuItem value="anthropic">Anthropic</MenuItem>
               <MenuItem value="together">Together AI</MenuItem>
+              <MenuItem value="perplexity">Perplexity</MenuItem>
+              <MenuItem value="v0">v0 by Vercel</MenuItem>
             </Select>
           </FormControl>
           

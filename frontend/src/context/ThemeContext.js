@@ -14,7 +14,13 @@ export const ThemeProvider = ({ children }) => {
 
   useEffect(() => {
     localStorage.setItem('themeMode', mode);
+    document.body.setAttribute('data-theme', mode);
   }, [mode]);
+
+  // Set initial theme attribute on mount
+  useEffect(() => {
+    document.body.setAttribute('data-theme', mode);
+  }, []);
 
   const toggleTheme = () => {
     setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));

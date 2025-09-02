@@ -4,11 +4,13 @@ const assistantController = require('../controllers/assistant.controller');
 const authMiddleware = require('../middleware/auth.middleware');
 
 // Apply authentication middleware to all assistant routes
-router.use(authMiddleware.authenticate);
+router.use(authMiddleware.protect);
 
 // Assistant management routes
 router.post('/create', assistantController.createAssistant);
 router.get('/list', assistantController.listAssistants);
+router.get('/latest', assistantController.getLatest);
+router.put('/:assistantId', assistantController.updateAssistant);
 router.delete('/:assistantId', assistantController.deleteAssistant);
 
 // Thread management routes

@@ -110,9 +110,12 @@ const addApiKey = asyncHandler(async (req, res) => {
     user.apiKeys.push(newApiKey);
     await user.save();
 
+    // Do not return the raw key value in responses
+    const { key: _omitted, ...safeKey } = newApiKey;
+
     res.status(201).json({
       success: true,
-      data: newApiKey,
+      data: safeKey,
       message: 'API key added successfully'
     });
   } else {
@@ -134,14 +137,18 @@ const updateApiKey = asyncHandler(async (req, res) => {
     if (apiKey) {
       apiKey.name = name || apiKey.name;
       apiKey.provider = provider || apiKey.provider;
-      apiKey.key = key || apiKey.key;
+      if (key) apiKey.key = key;
       apiKey.updatedAt = new Date();
 
       await user.save();
 
+      // Avoid returning secret key material
+      const apiKeyObj = apiKey.toObject ? apiKey.toObject() : { ...apiKey };
+      delete apiKeyObj.key;
+
       res.json({
         success: true,
-        data: apiKey,
+        data: apiKeyObj,
         message: 'API key updated successfully'
       });
     } else {

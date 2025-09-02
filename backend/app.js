@@ -15,6 +15,7 @@ const {
   validateContentType,
   requestSizeLimiter
 } = require('./middleware/security.middleware');
+const path = require('path');
 
 // Load environment variables
 dotenv.config();
@@ -26,25 +27,36 @@ const app = express();
 app.use(securityHeaders);
 app.use(compression);
 app.use(requestSizeLimiter('10mb'));
-app.use(validateContentType(['application/json', 'application/x-www-form-urlencoded', 'multipart/form-data']));
+// Restrict to JSON and URL-encoded payloads
+app.use(validateContentType(['application/json', 'application/x-www-form-urlencoded']))
 
 // CORS Configuration
 const corsOptions = {
   origin: function (origin, callback) {
-    const allowedOrigins = [
-      process.env.CORS_ORIGIN || 'http://localhost:3000',
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'https://symbi-trust-protocol.vercel.app',
-      'https://symbi-synergy-hl88yxu91-symbi.vercel.app'
-    ];
-    
-    const isVercelDomain = origin && (origin.includes('symbi-synergy') && origin.includes('vercel.app'));
-    const isSymbiDomain = origin && (origin.includes('symbi') && origin.includes('vercel.app'));
-    
+    // Allow requests with no origin (mobile apps, curl)
     if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development' || isVercelDomain || isSymbiDomain) {
+
+    const listFromEnv = (process.env.CORS_ORIGINS || '')
+      .split(',')
+      .map(s => s.trim())
+      .filter(Boolean);
+
+    const single = process.env.CORS_ORIGIN ? [process.env.CORS_ORIGIN] : [];
+
+    const allowedOrigins = [
+      ...new Set([
+        ...listFromEnv,
+        ...single,
+        'http://localhost:3000',
+        'http://localhost:3001'
+      ])
+    ];
+
+    if (process.env.NODE_ENV === 'development') {
+      return callback(null, true);
+    }
+
+    if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -59,9 +71,16 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
+// Capture raw body for webhook signature verification
+const rawBodySaver = (req, res, buf) => {
+  if (buf && buf.length) {
+    req.rawBody = buf.toString('utf8');
+  }
+};
+
 // Body parsing middleware
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '10mb', verify: rawBodySaver }));
+app.use(express.urlencoded({ extended: true, limit: '10mb', verify: rawBodySaver }));
 
 // Input sanitization
 app.use(sanitizeInput);
@@ -107,6 +126,12 @@ const webhookRoutes = require('./routes/webhook.routes');
 const trustRoutes = require('./routes/trust.routes');
 const snowflakeRoutes = require('./routes/snowflake.routes');
 const assistantRoutes = require('./routes/assistant.routes');
+const eventRoutes = require('./routes/events.routes');
+const analysisRoutes = require('./routes/analysis.routes');
+const guardrailsRoutes = require('./routes/guardrails.routes');
+const insightsRoutes = require('./routes/insights.routes');
+const ledgerRoutes = require('./routes/ledger.routes');
+const sessionsRoutes = require('./routes/sessions.routes');
 
 // Root endpoint
 app.get('/', (req, res) => {
@@ -141,6 +166,38 @@ app.use('/api/webhooks', webhookRoutes);
 app.use('/api/trust', trustRoutes);
 app.use('/api/snowflake', snowflakeRoutes);
 app.use('/api/assistant', assistantRoutes);
+app.use('/api/events', eventRoutes);
+app.use('/api/analyze', analysisRoutes);
+app.use('/api/guardrails', guardrailsRoutes);
+app.use('/api/insights', insightsRoutes);
+app.use('/api/ledger', ledgerRoutes);
+app.use('/api/sessions', sessionsRoutes);
+
+// Developer docs: Swagger UI (non-production only)
+if (process.env.NODE_ENV !== 'production') {
+  try {
+    const swaggerUi = require('swagger-ui-express');
+    const fs = require('fs');
+    const yaml = require('js-yaml');
+    const specPath = path.resolve(__dirname, '..', 'openapi.yaml');
+    const spec = yaml.load(fs.readFileSync(specPath, 'utf8'));
+    app.use('/docs', swaggerUi.serve, swaggerUi.setup(spec, { explorer: true }));
+    console.log('Swagger UI mounted at /docs');
+  } catch (e) {
+    console.warn('Swagger UI not available:', e.message);
+  }
+}
+
+// Health and readiness endpoints
+app.get('/healthz', (req, res) => {
+  res.status(200).json({ status: 'ok', uptime: process.uptime() });
+});
+
+app.get('/readyz', (req, res) => {
+  const dbState = mongoose.connection.readyState;
+  const isReady = dbState === 1; // 1 = connected
+  res.status(isReady ? 200 : 503).json({ ready: isReady });
+});
 
 // Serve static assets in production
 if (process.env.NODE_ENV === 'production') {

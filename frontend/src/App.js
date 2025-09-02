@@ -22,6 +22,7 @@ import Settings from './pages/Settings';
 import Reports from './pages/Reports';
 import ContextBridge from './pages/ContextBridge';
 import NotFound from './pages/NotFound';
+import ReviewConsole from './pages/ReviewConsole';
 
 const App = () => {
   const { isAuthenticated, loading } = useAuth();
@@ -79,6 +80,13 @@ const App = () => {
         <ProtectedRoute>
           <Layout>
             <Agents />
+          </Layout>
+        </ProtectedRoute>
+      } />
+      <Route path="/review" element={
+        <ProtectedRoute>
+          <Layout>
+            <ReviewConsole />
           </Layout>
         </ProtectedRoute>
       } />

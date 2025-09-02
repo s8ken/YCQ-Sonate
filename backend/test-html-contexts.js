@@ -8,7 +8,7 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://aitkenstephen_db_u
 const BASE_URL = 'http://localhost:5000/api';
 const TEST_USER = {
   email: 'test@example.com',
-  password: 'password123'
+  password: 'testpassword123'
 };
 
 let authToken = '';

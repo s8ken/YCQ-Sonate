@@ -140,10 +140,9 @@ trustDeclarationSchema.methods.calculateComplianceScore = function() {
 // Instance method to calculate guilt score based on compliance
 trustDeclarationSchema.methods.calculateGuiltScore = function() {
   const complianceScore = this.calculateComplianceScore();
-  // Guilt score is inverse of compliance with some randomness for realism
+  // Deterministic inverse of compliance to keep analytics consistent
   const baseGuilt = 1 - complianceScore;
-  const randomFactor = (Math.random() - 0.5) * 0.2; // ±10% randomness
-  return Math.max(0, Math.min(1, baseGuilt + randomFactor));
+  return Math.max(0, Math.min(1, baseGuilt));
 };
 
 // Pre-save middleware to auto-calculate scores

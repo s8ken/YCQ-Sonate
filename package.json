@@ -13,6 +13,8 @@
     "test:backend": "cd backend && jest --config=jest.config.js --detectOpenHandles --forceExit"
   },
   "dependencies": {
+    "js-yaml": "^4.1.0",
+    "swagger-ui-express": "^5.0.1",
     "@anthropic-ai/sdk": "^0.60.0",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",

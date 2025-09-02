@@ -18,7 +18,7 @@ const AgentSchema = new mongoose.Schema({
   provider: {
     type: String,
     required: [true, 'LLM provider is required'],
-    enum: ['openai', 'together', 'anthropic', 'cohere', 'custom'],
+    enum: ['openai', 'together', 'anthropic', 'cohere', 'custom', 'perplexity', 'v0'],
   },
   model: {
     type: String,
