@@ -31,7 +31,7 @@ const querySchema = commonSchemas.pagination.extend({
   isPublic: z.coerce.boolean().optional(),
 })
 
-async function GET(req: NextRequest, context: ApiContext) {
+async function getAgents(req: NextRequest, context: ApiContext) {
   const url = new URL(req.url)
   const query = Object.fromEntries(url.searchParams.entries())
   const { page, limit, search, provider, isPublic, sort, order } = querySchema.parse(query)
@@ -81,7 +81,7 @@ async function GET(req: NextRequest, context: ApiContext) {
   }
 }
 
-async function POST(req: NextRequest, context: ApiContext) {
+async function createAgent(req: NextRequest, context: ApiContext) {
   const validatedBody = (req as any).validatedBody
 
   try {
@@ -138,7 +138,7 @@ async function POST(req: NextRequest, context: ApiContext) {
 }
 
 // Export handlers with middleware
-export const GET_HANDLER = withApiMiddleware(GET, {
+export const GET = withApiMiddleware(getAgents, {
   auth: "required",
   methods: ["GET"],
   rateLimit: "agents",
@@ -147,7 +147,7 @@ export const GET_HANDLER = withApiMiddleware(GET, {
   },
 })
 
-export const POST_HANDLER = withApiMiddleware(POST, {
+export const POST = withApiMiddleware(createAgent, {
   auth: "required",
   methods: ["POST"],
   rateLimit: "agents",
@@ -155,6 +155,3 @@ export const POST_HANDLER = withApiMiddleware(POST, {
     body: createAgentSchema,
   },
 })
-
-// Next.js App Router exports
-export { GET_HANDLER as GET, POST_HANDLER as POST }
