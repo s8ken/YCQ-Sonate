@@ -80,9 +80,23 @@ const createAgent = asyncHandler(async (req, res) => {
     ciModel
   } = req.body;
 
-  // Verify API key belongs to user
+  // Verify API key belongs to user or use default
   const user = await User.findById(req.user.id);
-  const apiKey = user.apiKeys.id(apiKeyId);
+  let selectedApiKeyId = apiKeyId;
+  
+  // If no API key specified, use the first available key for the provider
+  if (!apiKeyId || apiKeyId === '') {
+    const defaultKey = user.apiKeys.find(key => key.provider === provider && key.isActive);
+    if (!defaultKey) {
+      return res.status(400).json({
+        success: false,
+        message: `No API key found for provider: ${provider}. Please add an API key in Settings.`
+      });
+    }
+    selectedApiKeyId = defaultKey._id;
+  }
+  
+  const apiKey = user.apiKeys.id(selectedApiKeyId);
   
   if (!apiKey) {
     return res.status(400).json({
@@ -97,7 +111,7 @@ const createAgent = asyncHandler(async (req, res) => {
     user: req.user.id,
     provider,
     model,
-    apiKeyId,
+    apiKeyId: selectedApiKeyId,
     systemPrompt,
     temperature,
     maxTokens,

@@ -18,7 +18,7 @@ This document defines the MongoDB collection schemas for the Symbi Trust Protoco
 
 ### 1. Users Collection
 
-```javascript
+\`\`\`javascript
 db.createCollection("users", {
   validator: {
     $jsonSchema: {
@@ -83,11 +83,11 @@ db.users.createIndex({ "role": 1 });
 db.users.createIndex({ "createdAt": 1 });
 db.users.createIndex({ "lastLoginAt": 1 });
 db.users.createIndex({ "security.accountLocked": 1, "security.lockoutUntil": 1 });
-```
+\`\`\`
 
 ### 2. Agents Collection
 
-```javascript
+\`\`\`javascript
 db.createCollection("agents", {
   validator: {
     $jsonSchema: {
@@ -175,11 +175,11 @@ db.agents.createIndex({ "trustScore.current": -1 });
 db.agents.createIndex({ "createdAt": 1 });
 db.agents.createIndex({ "name": "text", "metadata.description": "text" });
 db.agents.createIndex({ "ownerId": 1, "isActive": 1 });
-```
+\`\`\`
 
 ### 3. Trust Declarations Collection
 
-```javascript
+\`\`\`javascript
 db.createCollection("trust_declarations", {
   validator: {
     $jsonSchema: {
@@ -244,11 +244,11 @@ db.trust_declarations.createIndex({ "targetAgentId": 1, "trustLevel": -1 });
 db.trust_declarations.createIndex({ "context": 1, "trustLevel": -1 });
 db.trust_declarations.createIndex({ "createdAt": 1 });
 db.trust_declarations.createIndex({ "isActive": 1, "expiresAt": 1 });
-```
+\`\`\`
 
 ### 4. Conversations Collection
 
-```javascript
+\`\`\`javascript
 db.createCollection("conversations", {
   validator: {
     $jsonSchema: {
@@ -338,11 +338,11 @@ db.conversations.createIndex({ "status": 1, "updatedAt": -1 });
 db.conversations.createIndex({ "createdAt": 1 });
 db.conversations.createIndex({ "metadata.tags": 1 });
 db.conversations.createIndex({ "participants.id": 1, "status": 1 });
-```
+\`\`\`
 
 ### 5. Contexts Collection
 
-```javascript
+\`\`\`javascript
 db.createCollection("contexts", {
   validator: {
     $jsonSchema: {
@@ -390,11 +390,11 @@ db.contexts.createIndex({ "expiresAt": 1 }, { expireAfterSeconds: 0 });
 db.contexts.createIndex({ "conversationId": 1, "agentId": 1 }, { unique: true });
 db.contexts.createIndex({ "agentId": 1 });
 db.contexts.createIndex({ "updatedAt": 1 });
-```
+\`\`\`
 
 ### 6. Reports Collection
 
-```javascript
+\`\`\`javascript
 db.createCollection("reports", {
   validator: {
     $jsonSchema: {
@@ -479,11 +479,11 @@ db.reports.createIndex({ "type": 1, "createdAt": -1 });
 db.reports.createIndex({ "generatedBy": 1 });
 db.reports.createIndex({ "status": 1 });
 db.reports.createIndex({ "scope.agentIds": 1 });
-```
+\`\`\`
 
 ### 7. Audit Events Collection
 
-```javascript
+\`\`\`javascript
 db.createCollection("audit_events", {
   validator: {
     $jsonSchema: {
@@ -555,11 +555,11 @@ db.audit_events.createIndex({ "severity": 1, "timestamp": -1 });
 db.audit_events.createIndex({ "actor.id": 1, "timestamp": -1 });
 db.audit_events.createIndex({ "target.id": 1, "timestamp": -1 });
 db.audit_events.createIndex({ "timestamp": -1 });
-```
+\`\`\`
 
 ### 8. Sessions Collection
 
-```javascript
+\`\`\`javascript
 db.createCollection("sessions", {
   validator: {
     $jsonSchema: {
@@ -598,11 +598,11 @@ db.sessions.createIndex({ "expiresAt": 1 }, { expireAfterSeconds: 0 });
 db.sessions.createIndex({ "sessionId": 1 }, { unique: true });
 db.sessions.createIndex({ "userId": 1 });
 db.sessions.createIndex({ "isActive": 1, "data.lastActivity": -1 });
-```
+\`\`\`
 
 ### 9. Verification Credentials Collection
 
-```javascript
+\`\`\`javascript
 db.createCollection("verification_credentials", {
   validator: {
     $jsonSchema: {
@@ -672,13 +672,13 @@ db.verification_credentials.createIndex({ "subject.agentId": 1 });
 db.verification_credentials.createIndex({ "issuer.id": 1 });
 db.verification_credentials.createIndex({ "status": 1, "expiresAt": 1 });
 db.verification_credentials.createIndex({ "type": 1 });
-```
+\`\`\`
 
 ## TTL (Time To Live) Configurations
 
 ### Automatic Data Cleanup
 
-```javascript
+\`\`\`javascript
 // Trust declarations expire after 1 year
 db.trust_declarations.createIndex(
   { "createdAt": 1 },
@@ -708,13 +708,13 @@ db.reports.createIndex(
   { "createdAt": 1 },
   { expireAfterSeconds: 31536000 } // 365 days
 );
-```
+\`\`\`
 
 ## Compound Indexes for Performance
 
 ### High-Performance Query Patterns
 
-```javascript
+\`\`\`javascript
 // Trust analysis queries
 db.trust_declarations.createIndex({
   "targetAgentId": 1,
@@ -751,7 +751,7 @@ db.audit_events.createIndex({
   "eventType": 1,
   "timestamp": -1
 });
-```
+\`\`\`
 
 ## Data Retention Policies
 
@@ -770,7 +770,7 @@ db.audit_events.createIndex({
 
 ### Monitoring and Maintenance
 
-```javascript
+\`\`\`javascript
 // Check index usage
 db.runCommand({ "collStats": "trust_declarations", "indexDetails": true });
 
@@ -785,7 +785,7 @@ db.trust_declarations.explain("executionStats").find({
 
 // Compact collections to reclaim space
 db.runCommand({ "compact": "audit_events" });
-```
+\`\`\`
 
 ### Backup Strategy
 

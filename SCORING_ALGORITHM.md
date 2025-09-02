@@ -27,7 +27,7 @@ The scoring algorithm considers the following input factors:
 
 ### 2. Weight Configuration
 
-```javascript
+\`\`\`javascript
 const SCORING_WEIGHTS = {
   // Primary factors (total: 0.60)
   declaration_count: 0.20,
@@ -44,16 +44,16 @@ const SCORING_WEIGHTS = {
   recency_factor: 0.05,
   penalty_score: -0.05  // Negative weight for penalties
 };
-```
+\`\`\`
 
 ### 3. Temporal Decay Functions
 
 #### Exponential Decay
 Used for declaration relevance over time:
 
-```
+\`\`\`
 decay_factor = e^(-λt)
-```
+\`\`\`
 
 Where:
 - `λ` (lambda) = decay constant (0.1 per day)
@@ -62,9 +62,9 @@ Where:
 #### Linear Decay
 Used for penalty reduction:
 
-```
+\`\`\`
 penalty_decay = max(0, 1 - (t / recovery_period))
-```
+\`\`\`
 
 Where:
 - `recovery_period` = 30 days (configurable)
@@ -72,9 +72,9 @@ Where:
 #### Sigmoid Decay
 Used for network effect propagation:
 
-```
+\`\`\`
 network_decay = 1 / (1 + e^(k(d - d0)))
-```
+\`\`\`
 
 Where:
 - `k` = steepness parameter (2.0)
@@ -85,7 +85,7 @@ Where:
 
 ### Base Score Calculation
 
-```javascript
+\`\`\`javascript
 function calculateBaseScore(factors, weights) {
   let baseScore = 0;
   
@@ -99,11 +99,11 @@ function calculateBaseScore(factors, weights) {
   // Normalize to 0-1 range
   return Math.max(0, Math.min(1, baseScore));
 }
-```
+\`\`\`
 
 ### Temporal Adjustment
 
-```javascript
+\`\`\`javascript
 function applyTemporalDecay(score, declarations) {
   let adjustedScore = 0;
   let totalWeight = 0;
@@ -119,11 +119,11 @@ function applyTemporalDecay(score, declarations) {
   
   return totalWeight > 0 ? adjustedScore / totalWeight : score;
 }
-```
+\`\`\`
 
 ### Confidence Interval Calculation
 
-```javascript
+\`\`\`javascript
 function calculateConfidenceInterval(score, sampleSize, variance) {
   // Use Student's t-distribution for small samples
   const confidenceLevel = 0.95;
@@ -139,7 +139,7 @@ function calculateConfidenceInterval(score, sampleSize, variance) {
     confidence: confidenceLevel
   };
 }
-```
+\`\`\`
 
 ## Scoring Examples
 
@@ -157,13 +157,13 @@ function calculateConfidenceInterval(score, sampleSize, variance) {
 - Penalty Score: 0.0
 
 **Calculation:**
-```
+\`\`\`
 Base Score = (150/200 * 0.20) + (0.92 * 0.15) + (0.88 * 0.15) + 
              (0.95 * 0.10) + (0.85 * 0.10) + (0.78 * 0.10) + 
              (0.82 * 0.10) + (0.15 * 0.05) + (0.0 * -0.05)
            = 0.15 + 0.138 + 0.132 + 0.095 + 0.085 + 0.078 + 0.082 + 0.0075 + 0
            = 0.7675
-```
+\`\`\`
 
 **Temporal Adjustment:** 0.7675 * 0.95 = 0.729
 **Final Score:** 0.729
@@ -183,13 +183,13 @@ Base Score = (150/200 * 0.20) + (0.92 * 0.15) + (0.88 * 0.15) +
 - Penalty Score: 0.1
 
 **Calculation:**
-```
+\`\`\`
 Base Score = (45/200 * 0.20) + (0.72 * 0.15) + (0.65 * 0.15) + 
              (0.78 * 0.10) + (0.68 * 0.10) + (0.55 * 0.10) + 
              (0.62 * 0.10) + (0.08 * 0.05) + (0.1 * -0.05)
            = 0.045 + 0.108 + 0.0975 + 0.078 + 0.068 + 0.055 + 0.062 + 0.004 - 0.005
            = 0.5125
-```
+\`\`\`
 
 **Temporal Adjustment:** 0.5125 * 0.92 = 0.471
 **Final Score:** 0.471
@@ -228,7 +228,7 @@ Base Score = (45/200 * 0.20) + (0.72 * 0.15) + (0.65 * 0.15) +
 
 Each score update includes detailed attribution:
 
-```javascript
+\`\`\`javascript
 {
   "scoreChange": {
     "previous": 0.652,
@@ -254,7 +254,7 @@ Each score update includes detailed attribution:
     ]
   }
 }
-```
+\`\`\`
 
 ### Why Trail Components
 
@@ -268,7 +268,7 @@ Each score update includes detailed attribution:
 
 ### Adjustable Parameters
 
-```javascript
+\`\`\`javascript
 const ALGORITHM_CONFIG = {
   // Decay parameters
   temporal_decay_lambda: 0.1,        // per day
@@ -287,7 +287,7 @@ const ALGORITHM_CONFIG = {
   max_declaration_count: 200,
   network_distance_limit: 5
 };
-```
+\`\`\`
 
 ### A/B Testing Framework
 

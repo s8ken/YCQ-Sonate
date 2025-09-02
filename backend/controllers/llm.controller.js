@@ -1,115 +1,148 @@
-const asyncHandler = require('express-async-handler');
-const axios = require('axios');
-const OpenAI = require('openai');
-const Anthropic = require('@anthropic-ai/sdk');
+const asyncHandler = require("express-async-handler")
+const axios = require("axios")
+const OpenAI = require("openai")
+const Anthropic = require("@anthropic-ai/sdk")
 
 // Initialize API clients
-const openai = process.env.OPENAI_API_KEY ? new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-}) : null;
+const openai = process.env.OPENAI_API_KEY
+  ? new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    })
+  : null
 
-const anthropic = process.env.ANTHROPIC_API_KEY ? new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-}) : null;
+const anthropic = process.env.ANTHROPIC_API_KEY
+  ? new Anthropic({
+      apiKey: process.env.ANTHROPIC_API_KEY,
+    })
+  : null
 
 // Supported LLM providers and their models
 const LLM_PROVIDERS = {
   openai: {
-    name: 'OpenAI',
+    name: "OpenAI",
     models: [
-      { id: 'gpt-4', name: 'GPT-4', maxTokens: 8192 },
-      { id: 'gpt-4-turbo', name: 'GPT-4 Turbo', maxTokens: 128000 },
-      { id: 'gpt-3.5-turbo', name: 'GPT-3.5 Turbo', maxTokens: 4096 }
+      { id: "gpt-4", name: "GPT-4", maxTokens: 8192 },
+      { id: "gpt-4o", name: "GPT-4o", maxTokens: 128000 },
+      { id: "gpt-4-turbo", name: "GPT-4 Turbo", maxTokens: 128000 },
+      { id: "gpt-3.5-turbo", name: "GPT-3.5 Turbo", maxTokens: 4096 },
     ],
-    endpoint: 'https://api.openai.com/v1/chat/completions'
+    endpoint: "https://api.openai.com/v1/chat/completions",
   },
   anthropic: {
-    name: 'Anthropic',
+    name: "Anthropic",
     models: [
-      { id: 'claude-3-opus', name: 'Claude 3 Opus', maxTokens: 200000 },
-      { id: 'claude-3-sonnet', name: 'Claude 3 Sonnet', maxTokens: 200000 },
-      { id: 'claude-3-haiku', name: 'Claude 3 Haiku', maxTokens: 200000 }
+      { id: "claude-3-opus-20240229", name: "Claude 3 Opus", maxTokens: 200000 },
+      { id: "claude-3-sonnet-20240229", name: "Claude 3 Sonnet", maxTokens: 200000 },
+      { id: "claude-3-haiku-20240307", name: "Claude 3 Haiku", maxTokens: 200000 },
     ],
-    endpoint: 'https://api.anthropic.com/v1/messages'
+    endpoint: "https://api.anthropic.com/v1/messages",
+  },
+  together: {
+    name: "Together AI",
+    models: [
+      { id: "meta-llama/Llama-2-70b-chat-hf", name: "Llama 2 70B Chat", maxTokens: 4096 },
+      { id: "meta-llama/Llama-2-13b-chat-hf", name: "Llama 2 13B Chat", maxTokens: 4096 },
+      { id: "mistralai/Mixtral-8x7B-Instruct-v0.1", name: "Mixtral 8x7B Instruct", maxTokens: 32768 },
+      { id: "NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO", name: "Nous Hermes 2 Mixtral 8x7B", maxTokens: 32768 },
+      { id: "teknium/OpenHermes-2.5-Mistral-7B", name: "OpenHermes 2.5 Mistral 7B", maxTokens: 8192 },
+    ],
+    endpoint: "https://api.together.xyz/v1/chat/completions",
+  },
+  perplexity: {
+    name: "Perplexity",
+    models: [
+      { id: "llama-3.1-sonar-small-128k-online", name: "Llama 3.1 Sonar Small 128K Online", maxTokens: 127072 },
+      { id: "llama-3.1-sonar-large-128k-online", name: "Llama 3.1 Sonar Large 128K Online", maxTokens: 127072 },
+      { id: "llama-3.1-sonar-huge-128k-online", name: "Llama 3.1 Sonar Huge 128K Online", maxTokens: 127072 },
+      { id: "llama-3.1-8b-instruct", name: "Llama 3.1 8B Instruct", maxTokens: 131072 },
+      { id: "llama-3.1-70b-instruct", name: "Llama 3.1 70B Instruct", maxTokens: 131072 },
+    ],
+    endpoint: "https://api.perplexity.ai/chat/completions",
   },
   google: {
-    name: 'Google',
+    name: "Google",
     models: [
-      { id: 'gemini-pro', name: 'Gemini Pro', maxTokens: 32768 },
-      { id: 'gemini-pro-vision', name: 'Gemini Pro Vision', maxTokens: 16384 }
+      { id: "gemini-pro", name: "Gemini Pro", maxTokens: 32768 },
+      { id: "gemini-pro-vision", name: "Gemini Pro Vision", maxTokens: 16384 },
     ],
-    endpoint: 'https://generativelanguage.googleapis.com/v1/models'
-  }
-};
+    endpoint: "https://generativelanguage.googleapis.com/v1/models",
+  },
+}
 
 // @desc    Get available LLM providers
 // @route   GET /api/llm/providers
 // @access  Private
 const getProviders = asyncHandler(async (req, res) => {
-  const providers = Object.keys(LLM_PROVIDERS).map(key => ({
+  const providers = Object.keys(LLM_PROVIDERS).map((key) => ({
     id: key,
     name: LLM_PROVIDERS[key].name,
-    modelCount: LLM_PROVIDERS[key].models.length
-  }));
+    modelCount: LLM_PROVIDERS[key].models.length,
+  }))
 
   res.json({
     success: true,
-    data: providers
-  });
-});
+    data: providers,
+  })
+})
 
 // @desc    Get models for a specific provider
 // @route   GET /api/llm/models/:provider
 // @access  Private
 const getModels = asyncHandler(async (req, res) => {
-  const { provider } = req.params;
+  const { provider } = req.params
 
   if (!LLM_PROVIDERS[provider]) {
-    res.status(404);
-    throw new Error('Provider not found');
+    res.status(404)
+    throw new Error("Provider not found")
   }
 
   res.json({
     success: true,
     data: {
       provider: LLM_PROVIDERS[provider].name,
-      models: LLM_PROVIDERS[provider].models
-    }
-  });
-});
+      models: LLM_PROVIDERS[provider].models,
+    },
+  })
+})
 
 // @desc    Generate response from LLM
 // @route   POST /api/llm/generate
 // @access  Private
 const generateResponse = asyncHandler(async (req, res) => {
-  const { provider, model, messages, temperature = 0.7, maxTokens = 1000 } = req.body;
+  const { provider, model, messages, temperature = 0.7, maxTokens = 1000 } = req.body
 
   if (!provider || !model || !messages) {
-    res.status(400);
-    throw new Error('Please provide provider, model, and messages');
+    res.status(400)
+    throw new Error("Please provide provider, model, and messages")
   }
 
   if (!LLM_PROVIDERS[provider]) {
-    res.status(404);
-    throw new Error('Provider not supported');
+    res.status(404)
+    throw new Error("Provider not supported")
   }
 
   try {
-    let response;
+    let response
 
     switch (provider) {
-      case 'openai':
-        response = await generateOpenAIResponse(model, messages, temperature, maxTokens);
-        break;
-      case 'anthropic':
-        response = await generateAnthropicResponse(model, messages, temperature, maxTokens);
-        break;
-      case 'google':
-        response = await generateGoogleResponse(model, messages, temperature, maxTokens);
-        break;
+      case "openai":
+        response = await generateOpenAIResponse(model, messages, temperature, maxTokens)
+        break
+      case "anthropic":
+        response = await generateAnthropicResponse(model, messages, temperature, maxTokens)
+        break
+      case "together":
+        response = await generateTogetherResponse(model, messages, temperature, maxTokens)
+        break
+      case "perplexity":
+        response = await generatePerplexityResponse(model, messages, temperature, maxTokens)
+        break
+      case "google":
+        response = await generateGoogleResponse(model, messages, temperature, maxTokens)
+        break
       default:
-        res.status(400);
-        throw new Error('Provider not implemented');
+        res.status(400)
+        throw new Error("Provider not implemented")
     }
 
     res.json({
@@ -118,63 +151,63 @@ const generateResponse = asyncHandler(async (req, res) => {
         provider,
         model,
         response: response.content,
-        usage: response.usage || {}
-      }
-    });
+        usage: response.usage || {},
+      },
+    })
   } catch (error) {
-    console.error('LLM Generation Error:', error);
-    res.status(500);
-    throw new Error('Failed to generate response from LLM');
+    console.error("LLM Generation Error:", error)
+    res.status(500)
+    throw new Error("Failed to generate response from LLM")
   }
-});
+})
 
 // @desc    Stream response from LLM
 // @route   POST /api/llm/stream
 // @access  Private
 const streamResponse = asyncHandler(async (req, res) => {
-  const { provider, model, messages, temperature = 0.7, maxTokens = 1000 } = req.body;
+  const { provider, model, messages, temperature = 0.7, maxTokens = 1000 } = req.body
 
   if (!provider || !model || !messages) {
-    res.status(400);
-    throw new Error('Please provide provider, model, and messages');
+    res.status(400)
+    throw new Error("Please provide provider, model, and messages")
   }
 
   if (!LLM_PROVIDERS[provider]) {
-    res.status(404);
-    throw new Error('Provider not supported');
+    res.status(404)
+    throw new Error("Provider not supported")
   }
 
   // Set headers for streaming
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
+  res.setHeader("Content-Type", "text/event-stream")
+  res.setHeader("Cache-Control", "no-cache")
+  res.setHeader("Connection", "keep-alive")
 
   try {
     // For now, simulate streaming by sending the response in chunks
-    const response = await generateResponse(req, { json: () => {} });
-    
+    const response = await generateResponse(req, { json: () => {} })
+
     // Send response in chunks to simulate streaming
-    const content = response.data?.response || 'No response generated';
-    const chunks = content.match(/.{1,50}/g) || [content];
-    
+    const content = response.data?.response || "No response generated"
+    const chunks = content.match(/.{1,50}/g) || [content]
+
     for (const chunk of chunks) {
-      res.write(`data: ${JSON.stringify({ chunk })}\n\n`);
-      await new Promise(resolve => setTimeout(resolve, 100)); // Simulate delay
+      res.write(`data: ${JSON.stringify({ chunk })}\n\n`)
+      await new Promise((resolve) => setTimeout(resolve, 100)) // Simulate delay
     }
-    
-    res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
-    res.end();
+
+    res.write(`data: ${JSON.stringify({ done: true })}\n\n`)
+    res.end()
   } catch (error) {
-    console.error('LLM Streaming Error:', error);
-    res.write(`data: ${JSON.stringify({ error: 'Failed to stream response' })}\n\n`);
-    res.end();
+    console.error("LLM Streaming Error:", error)
+    res.write(`data: ${JSON.stringify({ error: "Failed to stream response" })}\n\n`)
+    res.end()
   }
-});
+})
 
 // Helper function for OpenAI API
 const generateOpenAIResponse = async (model, messages, temperature, maxTokens) => {
   if (!openai) {
-    throw new Error('OpenAI API key not configured');
+    throw new Error("OpenAI API key not configured")
   }
 
   try {
@@ -183,78 +216,154 @@ const generateOpenAIResponse = async (model, messages, temperature, maxTokens) =
       messages: messages,
       temperature: temperature || 0.7,
       max_tokens: maxTokens || 1000,
-    });
+    })
 
     return {
       content: completion.choices[0].message.content,
       usage: {
         promptTokens: completion.usage.prompt_tokens,
         completionTokens: completion.usage.completion_tokens,
-        totalTokens: completion.usage.total_tokens
-      }
-    };
+        totalTokens: completion.usage.total_tokens,
+      },
+    }
   } catch (error) {
-    console.error('OpenAI API Error:', error);
-    throw new Error(`OpenAI API Error: ${error.message}`);
+    console.error("OpenAI API Error:", error)
+    throw new Error(`OpenAI API Error: ${error.message}`)
   }
-};
+}
 
 // Helper function for Anthropic API
 const generateAnthropicResponse = async (model, messages, temperature, maxTokens) => {
   if (!anthropic) {
-    throw new Error('Anthropic API key not configured');
+    throw new Error("Anthropic API key not configured")
   }
 
   try {
     // Convert OpenAI format messages to Anthropic format
-    const systemMessage = messages.find(msg => msg.role === 'system');
-    const userMessages = messages.filter(msg => msg.role !== 'system');
+    const systemMessage = messages.find((msg) => msg.role === "system")
+    const userMessages = messages.filter((msg) => msg.role !== "system")
 
     const response = await anthropic.messages.create({
       model: model,
       max_tokens: maxTokens || 1000,
       temperature: temperature || 0.7,
-      system: systemMessage?.content || '',
-      messages: userMessages
-    });
+      system: systemMessage?.content || "",
+      messages: userMessages,
+    })
 
     return {
       content: response.content[0].text,
       usage: {
         inputTokens: response.usage.input_tokens,
-        outputTokens: response.usage.output_tokens
-      }
-    };
+        outputTokens: response.usage.output_tokens,
+      },
+    }
   } catch (error) {
-    console.error('Anthropic API Error:', error);
-    throw new Error(`Anthropic API Error: ${error.message}`);
+    console.error("Anthropic API Error:", error)
+    throw new Error(`Anthropic API Error: ${error.message}`)
   }
-};
+}
 
 // Helper function for Google API
 const generateGoogleResponse = async (model, messages, temperature, maxTokens) => {
   // This is a placeholder - in a real implementation, you'd use the Google API
   return {
     content: `Mock Google response from ${model}: ${messages[messages.length - 1]?.content}`,
-    usage: { promptTokenCount: 50, candidatesTokenCount: 100 }
-  };
-};
+    usage: { promptTokenCount: 50, candidatesTokenCount: 100 },
+  }
+}
+
+// Helper function for Together AI API
+const generateTogetherResponse = async (model, messages, temperature, maxTokens) => {
+  const apiKey = process.env.TOGETHER_API_KEY
+  if (!apiKey) {
+    throw new Error("Together AI API key not configured")
+  }
+
+  try {
+    const response = await axios.post(
+      "https://api.together.xyz/v1/chat/completions",
+      {
+        model: model,
+        messages: messages,
+        temperature: temperature || 0.7,
+        max_tokens: maxTokens || 1000,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+      },
+    )
+
+    return {
+      content: response.data.choices[0].message.content,
+      usage: {
+        promptTokens: response.data.usage?.prompt_tokens || 0,
+        completionTokens: response.data.usage?.completion_tokens || 0,
+        totalTokens: response.data.usage?.total_tokens || 0,
+      },
+    }
+  } catch (error) {
+    console.error("Together AI API Error:", error.response?.data || error.message)
+    throw new Error(`Together AI API Error: ${error.response?.data?.error?.message || error.message}`)
+  }
+}
+
+// Helper function for Perplexity API
+const generatePerplexityResponse = async (model, messages, temperature, maxTokens) => {
+  const apiKey = process.env.PERPLEXITY_API_KEY
+  if (!apiKey) {
+    throw new Error("Perplexity API key not configured")
+  }
+
+  try {
+    const response = await axios.post(
+      "https://api.perplexity.ai/chat/completions",
+      {
+        model: model,
+        messages: messages,
+        temperature: temperature || 0.7,
+        max_tokens: maxTokens || 1000,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+      },
+    )
+
+    return {
+      content: response.data.choices[0].message.content,
+      usage: {
+        promptTokens: response.data.usage?.prompt_tokens || 0,
+        completionTokens: response.data.usage?.completion_tokens || 0,
+        totalTokens: response.data.usage?.total_tokens || 0,
+      },
+    }
+  } catch (error) {
+    console.error("Perplexity API Error:", error.response?.data || error.message)
+    throw new Error(`Perplexity API Error: ${error.response?.data?.error?.message || error.message}`)
+  }
+}
 
 // @desc    Perform code review using AI
 // @route   POST /api/llm/code-review
 // @access  Private
 const performCodeReview = asyncHandler(async (req, res) => {
-  const { code, language, provider = 'openai', model, reviewType = 'comprehensive' } = req.body;
+  const { code, language, provider = "openai", model, reviewType = "comprehensive" } = req.body
 
   if (!code) {
     return res.status(400).json({
       success: false,
-      message: 'Code content is required'
-    });
+      message: "Code content is required",
+    })
   }
 
   const reviewPrompts = {
-    comprehensive: `Please perform a comprehensive code review of the following ${language || 'code'}. Analyze:
+    comprehensive: `Please perform a comprehensive code review of the following ${language || "code"}. Analyze:
 1. Code quality and best practices
 2. Security vulnerabilities
 3. Performance optimizations
@@ -265,10 +374,10 @@ const performCodeReview = asyncHandler(async (req, res) => {
 Provide specific suggestions with line references where applicable.
 
 Code:
-\`\`\`${language || ''}
+\`\`\`${language || ""}
 ${code}
 \`\`\``,
-    security: `Please perform a security-focused code review of the following ${language || 'code'}. Focus on:
+    security: `Please perform a security-focused code review of the following ${language || "code"}. Focus on:
 1. Security vulnerabilities (OWASP Top 10)
 2. Input validation issues
 3. Authentication and authorization flaws
@@ -277,10 +386,10 @@ ${code}
 6. Cryptographic issues
 
 Code:
-\`\`\`${language || ''}
+\`\`\`${language || ""}
 ${code}
 \`\`\``,
-    performance: `Please perform a performance-focused code review of the following ${language || 'code'}. Analyze:
+    performance: `Please perform a performance-focused code review of the following ${language || "code"}. Analyze:
 1. Algorithm efficiency
 2. Memory usage optimization
 3. Database query optimization
@@ -289,10 +398,10 @@ ${code}
 6. Scalability concerns
 
 Code:
-\`\`\`${language || ''}
+\`\`\`${language || ""}
 ${code}
 \`\`\``,
-    style: `Please perform a code style and maintainability review of the following ${language || 'code'}. Focus on:
+    style: `Please perform a code style and maintainability review of the following ${language || "code"}. Focus on:
 1. Code formatting and consistency
 2. Naming conventions
 3. Code organization
@@ -301,35 +410,50 @@ ${code}
 6. Technical debt
 
 Code:
-\`\`\`${language || ''}
+\`\`\`${language || ""}
 ${code}
-\`\`\``
-  };
+\`\`\``,
+  }
 
   const messages = [
     {
-      role: 'system',
-      content: 'You are an expert code reviewer with extensive experience in software development, security, and best practices. Provide detailed, actionable feedback.'
+      role: "system",
+      content:
+        "You are an expert code reviewer with extensive experience in software development, security, and best practices. Provide detailed, actionable feedback.",
     },
     {
-      role: 'user',
-      content: reviewPrompts[reviewType] || reviewPrompts.comprehensive
-    }
-  ];
+      role: "user",
+      content: reviewPrompts[reviewType] || reviewPrompts.comprehensive,
+    },
+  ]
 
   try {
-    let result;
-    const selectedModel = model || (provider === 'openai' ? 'gpt-4' : 'claude-3-sonnet');
+    let result
+    const selectedModel =
+      model ||
+      (provider === "openai"
+        ? "gpt-4"
+        : provider === "anthropic"
+          ? "claude-3-sonnet-20240229"
+          : provider === "together"
+            ? "meta-llama/Llama-2-70b-chat-hf"
+            : provider === "perplexity"
+              ? "llama-3.1-sonar-large-128k-online"
+              : "gpt-4")
 
-    if (provider === 'openai') {
-      result = await generateOpenAIResponse(selectedModel, messages, 0.3, 2000);
-    } else if (provider === 'anthropic') {
-      result = await generateAnthropicResponse(selectedModel, messages, 0.3, 2000);
+    if (provider === "openai") {
+      result = await generateOpenAIResponse(selectedModel, messages, 0.3, 2000)
+    } else if (provider === "anthropic") {
+      result = await generateAnthropicResponse(selectedModel, messages, 0.3, 2000)
+    } else if (provider === "together") {
+      result = await generateTogetherResponse(selectedModel, messages, 0.3, 2000)
+    } else if (provider === "perplexity") {
+      result = await generatePerplexityResponse(selectedModel, messages, 0.3, 2000)
     } else {
       return res.status(400).json({
         success: false,
-        message: 'Unsupported provider for code review'
-      });
+        message: "Unsupported provider for code review",
+      })
     }
 
     res.json({
@@ -340,22 +464,22 @@ ${code}
         model: selectedModel,
         reviewType: reviewType,
         usage: result.usage,
-        timestamp: new Date().toISOString()
-      }
-    });
+        timestamp: new Date().toISOString(),
+      },
+    })
   } catch (error) {
-    console.error('Code review error:', error);
+    console.error("Code review error:", error)
     res.status(500).json({
       success: false,
-      message: error.message || 'Failed to perform code review'
-    });
+      message: error.message || "Failed to perform code review",
+    })
   }
-});
+})
 
 module.exports = {
   getProviders,
   getModels,
   generateResponse,
   streamResponse,
-  performCodeReview
-};
+  performCodeReview,
+}

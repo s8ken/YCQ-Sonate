@@ -15,7 +15,7 @@ This document outlines the integration of Decentralized Identifiers (DIDs) and V
 - **did:ion** - Bitcoin-anchored DIDs via Microsoft ION
 
 #### DID Document Structure
-```json
+\`\`\`json
 {
   "@context": [
     "https://www.w3.org/ns/did/v1",
@@ -36,12 +36,12 @@ This document outlines the integration of Decentralized Identifiers (DIDs) and V
     "serviceEndpoint": "https://api.symbi.trust/v1/trust"
   }]
 }
-```
+\`\`\`
 
 ### 2. Verifiable Credentials (VCs)
 
 #### Trust Declaration Credential
-```json
+\`\`\`json
 {
   "@context": [
     "https://www.w3.org/2018/credentials/v1",

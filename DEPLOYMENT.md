@@ -35,7 +35,7 @@
 
 #### Option B: Deploy via Vercel CLI
 
-```bash
+\`\`\`bash
 # Install Vercel CLI
 npm i -g vercel
 
@@ -44,13 +44,13 @@ vercel login
 
 # Deploy from project root
 vercel --prod
-```
+\`\`\`
 
 ### 3. **Environment Variables in Vercel**
 
 In your Vercel project dashboard, go to Settings → Environment Variables and add:
 
-```bash
+\`\`\`bash
 # Database
 MONGODB_URI=mongodb+srv://symbi-user:<password>@cluster0.xxxxx.mongodb.net/symbi-trust?retryWrites=true&w=majority
 
@@ -64,13 +64,13 @@ PORT=5000
 
 # CORS (Optional - for custom domains)
 CLIENT_URL=https://your-vercel-app.vercel.app
-```
+\`\`\`
 
 ### 4. **Build Scripts Configuration**
 
 Your `package.json` should include these scripts (already configured):
 
-```json
+\`\`\`json
 {
   "scripts": {
     "build": "cd frontend && npm install && npm run build",
@@ -80,12 +80,12 @@ Your `package.json` should include these scripts (already configured):
     "dev:frontend": "cd frontend && npm start"
   }
 }
-```
+\`\`\`
 
 ### 5. **Alternative Cloud Providers**
 
 #### **Railway** (Backend-focused)
-```bash
+\`\`\`bash
 # Install Railway CLI
 npm install -g @railway/cli
 
@@ -93,7 +93,7 @@ npm install -g @railway/cli
 railway login
 railway link
 railway up
-```
+\`\`\`
 
 #### **Render** (Full-stack)
 1. Connect GitHub repository
@@ -102,7 +102,7 @@ railway up
 4. Start Command: `npm start`
 
 #### **Heroku** (Traditional)
-```bash
+\`\`\`bash
 # Install Heroku CLI
 npm install -g heroku
 
@@ -111,7 +111,7 @@ heroku create symbi-trust-protocol
 heroku config:set MONGODB_URI=your-mongodb-uri
 heroku config:set JWT_SECRET=your-jwt-secret
 git push heroku main
-```
+\`\`\`
 
 ### 6. **Database Collections Auto-Creation**
 
@@ -126,7 +126,7 @@ Your app will automatically create these collections:
 
 Test your deployed API endpoints:
 
-```bash
+\`\`\`bash
 # Replace with your Vercel URL
 export API_URL="https://your-app.vercel.app"
 
@@ -140,7 +140,7 @@ curl -X POST $API_URL/api/trust \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -d '{"declaration_type":"compliance","content":"Test declaration","metadata":{"source":"api_test"}}'
-```
+\`\`\`
 
 ### 8. **Monitoring & Analytics**
 

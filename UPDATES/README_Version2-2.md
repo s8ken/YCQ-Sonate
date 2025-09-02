@@ -1,4 +1,4 @@
-```text
+\`\`\`text
 # Symbi Trust Protocol
 
 Brief: Symbi Trust Protocol is a signature-oriented application (frontend + backend) designed to manage cryptographic signing operations and trust workflows. This repository contains the application code, CI, and governance files.
@@ -30,4 +30,4 @@ Roadmap
 - Add MFA and WebAuthn support
 - Implement API rate limiting and signing policy enforcement
 - Add automated security scanning and periodic pentest
-```
+\`\`\`

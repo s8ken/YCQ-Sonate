@@ -8,7 +8,7 @@ import Layout from './components/layout/Layout';
 
 // Pages
 import Login from './pages/Login';
-import Register from './pages/Register';
+// import Register from './pages/Register'; // Temporarily disabled
 import Dashboard from './pages/Dashboard';
 import Conversations from './pages/Conversations';
 import ConversationDetail from './pages/ConversationDetail';
@@ -38,7 +38,7 @@ const App = () => {
     <Routes>
       {/* Public routes */}
       <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+      {/* <Route path="/register" element={<Register />} /> */} {/* Temporarily disabled */}
       
       {/* Protected routes - wrapped in Layout */}
       <Route path="/" element={

@@ -5,18 +5,18 @@ This document describes how to use the AI-powered code review functionality in t
 ## Setup
 
 1. **Add your API keys** to the `.env` file:
-   ```bash
+   \`\`\`bash
    # Replace with your actual OpenAI API key
    OPENAI_API_KEY=sk-your-actual-openai-key-here
    
    # Replace with your actual Anthropic API key
    ANTHROPIC_API_KEY=your-actual-anthropic-key-here
-   ```
+   \`\`\`
 
 2. **Start the server**:
-   ```bash
+   \`\`\`bash
    npm run dev
-   ```
+   \`\`\`
 
 ## API Endpoint
 
@@ -25,13 +25,13 @@ This document describes how to use the AI-powered code review functionality in t
 Perform AI-powered code review using OpenAI or Anthropic models.
 
 #### Headers
-```
+\`\`\`
 Content-Type: application/json
 Authorization: Bearer <your-jwt-token>
-```
+\`\`\`
 
 #### Request Body
-```json
+\`\`\`json
 {
   "code": "function example() { return 'Hello World'; }",
   "language": "javascript",
@@ -39,7 +39,7 @@ Authorization: Bearer <your-jwt-token>
   "model": "gpt-4",
   "reviewType": "comprehensive"
 }
-```
+\`\`\`
 
 #### Parameters
 
@@ -56,7 +56,7 @@ Authorization: Bearer <your-jwt-token>
   - "style": Code style and maintainability review
 
 #### Response
-```json
+\`\`\`json
 {
   "success": true,
   "data": {
@@ -72,13 +72,13 @@ Authorization: Bearer <your-jwt-token>
     "timestamp": "2024-01-20T10:30:00.000Z"
   }
 }
-```
+\`\`\`
 
 ## Example Usage
 
 ### Using cURL
 
-```bash
+\`\`\`bash
 # First, get an authentication token
 curl -X POST http://localhost:5000/api/auth/login \
   -H "Content-Type: application/json" \
@@ -94,11 +94,11 @@ curl -X POST http://localhost:5000/api/llm/code-review \
     "provider": "openai",
     "reviewType": "comprehensive"
   }'
-```
+\`\`\`
 
 ### Using JavaScript/Fetch
 
-```javascript
+\`\`\`javascript
 const reviewCode = async (code, options = {}) => {
   const response = await fetch('/api/llm/code-review', {
     method: 'POST',
@@ -136,7 +136,7 @@ reviewCode(codeToReview, {
     console.log('Code Review:', result.data.review);
   }
 });
-```
+\`\`\`
 
 ## Review Types
 
@@ -186,12 +186,12 @@ The API returns appropriate HTTP status codes:
 - **500**: Server error (API key issues, provider errors, etc.)
 
 Example error response:
-```json
+\`\`\`json
 {
   "success": false,
   "message": "OpenAI API key not configured"
 }
-```
+\`\`\`
 
 ## Security Notes
 

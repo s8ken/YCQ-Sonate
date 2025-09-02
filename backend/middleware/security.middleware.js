@@ -41,18 +41,15 @@ const createRateLimit = (windowMs, max, message, skipSuccessfulRequests = false)
     },
     standardHeaders: true,
     legacyHeaders: false,
-    skipSuccessfulRequests,
-    keyGenerator: (req) => {
-      // Use user ID if authenticated, otherwise IP
-      return req.user?.id || req.ip;
-    }
+    skipSuccessfulRequests
+    // Remove custom keyGenerator to use default IPv6-safe implementation
   });
 };
 
 // Different rate limits for different endpoints
 const authRateLimit = createRateLimit(
   15 * 60 * 1000, // 15 minutes
-  5, // 5 attempts
+  50, // 50 attempts (increased for development)
   'Too many authentication attempts, please try again later'
 );
 
