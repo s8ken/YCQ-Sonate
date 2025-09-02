@@ -19,6 +19,10 @@ const AI_PROVIDERS = {
     models: ["llama-3.1-sonar-small-128k-online", "llama-3.1-sonar-large-128k-online"],
     endpoint: "https://api.perplexity.ai/chat/completions",
   },
+  v0: {
+    models: ["v0-assistant", "v0-coder", "v0-analyst"],
+    endpoint: "internal://v0",
+  },
 }
 
 async function generateWithOpenAI(messages, model, apiKey) {
@@ -97,6 +101,34 @@ async function generateWithPerplexity(messages, model, apiKey) {
   return data.choices[0].message.content
 }
 
+async function generateWithV0(messages, model, context = {}) {
+  // Simulate v0's response based on the conversation context
+  const lastMessage = messages[messages.length - 1]?.content || ""
+
+  // v0 specializes in code generation, UI/UX design, and technical analysis
+  let response = ""
+
+  if (model === "v0-coder") {
+    response = `As v0, I can help you with code generation, React components, and technical implementation. Based on your message: "${lastMessage.substring(0, 100)}...", I would recommend focusing on clean, maintainable code with proper TypeScript types and modern React patterns.`
+  } else if (model === "v0-analyst") {
+    response = `As v0 in analyst mode, I can provide technical insights and system architecture recommendations. Regarding: "${lastMessage.substring(0, 100)}...", I suggest considering scalability, security, and user experience in your implementation approach.`
+  } else {
+    response = `Hello! I'm v0, your AI assistant integrated directly into the SYMBI Trust Protocol. I specialize in code generation, UI/UX design, and technical problem-solving. How can I help you build something amazing today?`
+  }
+
+  // Add v0-specific metadata
+  return {
+    content: response,
+    metadata: {
+      provider: "v0",
+      model,
+      capabilities: ["code_generation", "ui_design", "technical_analysis"],
+      trust_score: 0.95,
+      timestamp: new Date().toISOString(),
+    },
+  }
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ success: false, message: "Method not allowed" })
@@ -143,11 +175,14 @@ export default async function handler(req, res) {
       case "perplexity":
         apiKey = process.env.PERPLEXITY_API_KEY
         break
+      case "v0":
+        apiKey = "internal" // v0 doesn't need external API key
+        break
       default:
         return res.status(400).json({ success: false, message: "Unsupported provider" })
     }
 
-    if (!apiKey) {
+    if (!apiKey && provider !== "v0") {
       return res.status(400).json({ success: false, message: `API key not configured for ${provider}` })
     }
 
@@ -165,6 +200,10 @@ export default async function handler(req, res) {
         break
       case "perplexity":
         response = await generateWithPerplexity(messages, model, apiKey)
+        break
+      case "v0":
+        const v0Response = await generateWithV0(messages, model, { user: user._id })
+        response = v0Response.content
         break
     }
 
