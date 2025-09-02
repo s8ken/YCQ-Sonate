@@ -16,7 +16,7 @@ const loginSchema = z.object({
   rememberMe: z.boolean().default(false),
 })
 
-async function POST(req: NextRequest, context: ApiContext) {
+async function loginHandler(req: NextRequest, context: ApiContext) {
   const { email, password, rememberMe } = (req as any).validatedBody
 
   try {
@@ -106,7 +106,7 @@ async function POST(req: NextRequest, context: ApiContext) {
   }
 }
 
-export const POST_HANDLER = withApiMiddleware(POST, {
+export const POST = withApiMiddleware(loginHandler, {
   auth: "none",
   methods: ["POST"],
   rateLimit: "auth",
@@ -114,5 +114,3 @@ export const POST_HANDLER = withApiMiddleware(POST, {
     body: loginSchema,
   },
 })
-
-export { POST_HANDLER as POST }
