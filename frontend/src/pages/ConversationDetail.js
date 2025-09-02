@@ -44,6 +44,15 @@ const ConversationDetail = () => {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState(null);
+
+  // Validate conversation ID on component mount
+  useEffect(() => {
+    if (!id || id === 'undefined' || id === 'null') {
+      console.error('Invalid conversation ID:', id);
+      navigate('/conversations', { replace: true });
+      return;
+    }
+  }, [id, navigate]);
   const [agents, setAgents] = useState([]);
   const [selectedAgent, setSelectedAgent] = useState('');
   const [ciEnabled, setCiEnabled] = useState(true);
@@ -58,7 +67,7 @@ const ConversationDetail = () => {
     socketRef.current = io();
     
     // Join conversation room
-    if (id) {
+    if (id && id !== 'undefined' && id !== 'null') {
       socketRef.current.emit('joinConversation', id);
     }
     
@@ -83,6 +92,11 @@ const ConversationDetail = () => {
   // Fetch conversation data
   useEffect(() => {
     const fetchConversation = async () => {
+      // Skip if ID is invalid
+      if (!id || id === 'undefined' || id === 'null') {
+        return;
+      }
+
       try {
         setLoading(true);
         const res = await axios.get(`/api/conversations/${id}`);
@@ -91,7 +105,15 @@ const ConversationDetail = () => {
         setLoading(false);
       } catch (err) {
         console.error('Error fetching conversation:', err);
-        setError('Failed to load conversation');
+        if (err.response?.status === 404) {
+          setError('Conversation not found');
+          // Redirect to conversations list after a short delay
+          setTimeout(() => {
+            navigate('/conversations', { replace: true });
+          }, 2000);
+        } else {
+          setError('Failed to load conversation');
+        }
         setLoading(false);
       }
     };
@@ -111,7 +133,7 @@ const ConversationDetail = () => {
       }
     };
 
-    if (id) {
+    if (id && id !== 'undefined' && id !== 'null') {
       fetchConversation();
       fetchAgents();
     }

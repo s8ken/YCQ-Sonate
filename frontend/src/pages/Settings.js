@@ -66,7 +66,7 @@ const Settings = () => {
     key: ''
   });
   const [preferences, setPreferences] = useState({
-    defaultModel: 'gpt-4',
+    defaultModel: 'gpt-4o',
     theme: mode,
     notifications: true
   });
@@ -94,8 +94,8 @@ const Settings = () => {
   const fetchApiKeys = async () => {
     try {
       setLoading(true);
-      const res = await axios.get('/api/users/apikeys');
-      setApiKeys(res.data);
+      const res = await axios.get('/api/users/api-keys');
+      setApiKeys(res.data.data || []);
       setLoading(false);
     } catch (err) {
       console.error('Error fetching API keys:', err);
@@ -234,7 +234,7 @@ const Settings = () => {
       setLoading(true);
       setError(null);
       
-      await axios.post('/api/users/apikeys', newApiKey);
+      await axios.post('/api/users/api-keys', newApiKey);
       
       fetchApiKeys();
       handleAddKeyDialogClose();
@@ -255,7 +255,7 @@ const Settings = () => {
     try {
       setLoading(true);
       
-      await axios.delete(`/api/users/apikeys/${keyId}`);
+      await axios.delete(`/api/users/api-keys/${keyId}`);
       
       fetchApiKeys();
       setSuccess('API key deleted successfully');
@@ -670,6 +670,8 @@ const Settings = () => {
               >
                 <MenuItem value="gpt-3.5-turbo">GPT-3.5 Turbo</MenuItem>
                 <MenuItem value="gpt-4">GPT-4</MenuItem>
+                <MenuItem value="gpt-4o">GPT-4o</MenuItem>
+                <MenuItem value="gpt-4-turbo">GPT-4 Turbo</MenuItem>
                 <MenuItem value="claude-2">Claude 2</MenuItem>
               </Select>
             </FormControl>

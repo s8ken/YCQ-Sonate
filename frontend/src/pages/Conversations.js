@@ -65,12 +65,31 @@ const Conversations = () => {
 
   const handleCreateConversation = async () => {
     try {
+      // First, fetch available agents to get a default agent
+      const agentsRes = await axios.get('/api/agents');
+      const agents = agentsRes.data.data || [];
+      
+      if (agents.length === 0) {
+        console.error('No agents available. Please create an agent first.');
+        // Navigate to agent creation page
+        navigate('/agents/new');
+        return;
+      }
+      
+      // Use the first available agent as default
+      const defaultAgent = agents[0]._id;
+      
       const res = await axios.post('/api/conversations', {
         title: 'New Conversation',
+        agent: defaultAgent
       });
       navigate(`/conversations/${res.data._id}`);
     } catch (err) {
       console.error('Error creating conversation:', err);
+      // If it's an auth error, the user might need to log in again
+      if (err.response?.status === 401) {
+        console.error('Authentication failed. Please log in again.');
+      }
     }
   };
 

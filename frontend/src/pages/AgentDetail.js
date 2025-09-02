@@ -45,7 +45,7 @@ const AgentDetail = () => {
     name: '',
     description: '',
     provider: 'openai',
-    model: 'gpt-4',
+    model: 'gpt-4o',
     systemPrompt: '',
     temperature: 0.7,
     maxTokens: 1000,
@@ -64,6 +64,8 @@ const AgentDetail = () => {
   const [apiKeys, setApiKeys] = useState([]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [availableModels, setAvailableModels] = useState([]);
+  const [useManualApiKey, setUseManualApiKey] = useState(false);
+  const [manualApiKey, setManualApiKey] = useState('');
 
   useEffect(() => {
     if (!isNewAgent) {
@@ -97,7 +99,7 @@ const AgentDetail = () => {
 
   const fetchApiKeys = async () => {
     try {
-      const res = await axios.get('/api/users/apikeys');
+      const res = await axios.get('/api/users/api-keys');
       setApiKeys(res.data.data || []);
     } catch (err) {
       console.error('Error fetching API keys:', err);
@@ -108,9 +110,9 @@ const AgentDetail = () => {
   useEffect(() => {
     // Update available models based on selected provider
     if (agent.provider === 'openai') {
-      setAvailableModels(['gpt-3.5-turbo', 'gpt-4', 'gpt-4-turbo']);
+      setAvailableModels(['gpt-4o', 'gpt-4-turbo', 'gpt-4', 'gpt-3.5-turbo']);
     } else if (agent.provider === 'anthropic') {
-      setAvailableModels(['claude-2', 'claude-instant-1']);
+      setAvailableModels(['claude-3-opus', 'claude-3-sonnet', 'claude-3-haiku']);
     } else if (agent.provider === 'together') {
       setAvailableModels(['llama-2-70b', 'falcon-40b', 'mistral-7b']);
     } else {
@@ -150,9 +152,33 @@ const AgentDetail = () => {
       setSaving(true);
       setError(null);
       
+      let finalApiKeyId = agent.apiKeyId;
+      
+      // If using manual API key, create it first
+      if (useManualApiKey && manualApiKey.trim()) {
+        try {
+          const apiKeyData = {
+            name: `${agent.name || 'Agent'} - ${agent.provider} Key`,
+            provider: agent.provider,
+            key: manualApiKey.trim()
+          };
+          
+          const apiKeyRes = await axios.post('/api/users/api-keys', apiKeyData);
+          finalApiKeyId = apiKeyRes.data.data._id;
+          
+          // Refresh API keys list
+          await fetchApiKeys();
+        } catch (apiKeyErr) {
+          setSaving(false);
+          setError('Failed to save API key: ' + (apiKeyErr.response?.data?.message || apiKeyErr.message));
+          return;
+        }
+      }
+      
       // Prepare agent data with CI fields
       const agentData = {
         ...agent,
+        apiKeyId: finalApiKeyId,
         ciEnabled: agent.ciEnabled || false,
         ciModel: agent.ciModel || 'symbi-core',
         contextBridgeEnabled: agent.contextBridgeEnabled || false,
@@ -171,6 +197,10 @@ const AgentDetail = () => {
       
       // Clear success message after 3 seconds
       setTimeout(() => setSuccess(null), 3000);
+      
+      // Reset manual API key state
+      setUseManualApiKey(false);
+      setManualApiKey('');
       
       if (isNewAgent) {
         navigate(`/agents/${res.data._id}`);
@@ -344,22 +374,54 @@ const AgentDetail = () => {
                   </Select>
                 </FormControl>
                 
-                <FormControl fullWidth margin="normal">
-                  <InputLabel>API Key</InputLabel>
-                  <Select
-                    name="apiKeyId"
-                    value={agent.apiKeyId}
-                    onChange={handleChange}
-                    label="API Key"
-                  >
-                    <MenuItem value="">Use Default Key</MenuItem>
-                    {apiKeys.filter(key => key.provider === agent.provider).map(key => (
-                      <MenuItem key={key._id} value={key._id}>
-                        {key.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <Box sx={{ mt: 2 }}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={useManualApiKey}
+                        onChange={(e) => {
+                          setUseManualApiKey(e.target.checked);
+                          if (!e.target.checked) {
+                            setManualApiKey('');
+                          }
+                        }}
+                        color="primary"
+                      />
+                    }
+                    label="Enter API Key Manually"
+                    sx={{ mb: 1 }}
+                  />
+                  
+                  {useManualApiKey ? (
+                    <TextField
+                      fullWidth
+                      margin="normal"
+                      label="API Key"
+                      type="password"
+                      value={manualApiKey}
+                      onChange={(e) => setManualApiKey(e.target.value)}
+                      placeholder="Paste your API key here..."
+                      helperText="Your API key will be securely stored and encrypted"
+                    />
+                  ) : (
+                    <FormControl fullWidth margin="normal">
+                      <InputLabel>API Key</InputLabel>
+                      <Select
+                        name="apiKeyId"
+                        value={agent.apiKeyId}
+                        onChange={handleChange}
+                        label="API Key"
+                      >
+                        <MenuItem value="">Use Default Key</MenuItem>
+                        {apiKeys.filter(key => key.provider === agent.provider).map(key => (
+                          <MenuItem key={key._id} value={key._id}>
+                            {key.name}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  )}
+                </Box>
               </Grid>
             </Grid>
           </Box>
@@ -446,7 +508,7 @@ const AgentDetail = () => {
                   label="Helpful Assistant" 
                   onClick={() => setAgent(prev => ({
                     ...prev,
-                    systemPrompt: "You are a helpful, respectful and honest assistant. Always answer as helpfully as possible, while being safe. Your answers should be informative and logical. If you don't know the answer to a question, please don't share false information."
+                    systemPrompt: "You are a helpful, respectful and honest AI assistant. You must never identify yourself as GPT-3 or any specific model version. Always respond as a general AI assistant without mentioning your underlying model. Your answers should be informative, logical, and helpful. If you don't know the answer to a question, please don't share false information."
                   }))} 
                   clickable 
                 />
