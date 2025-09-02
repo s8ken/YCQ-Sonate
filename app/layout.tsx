@@ -3,6 +3,8 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
+import { ThemeProvider } from "../contexts/ThemeContext"
+import { AuthProvider } from "../contexts/AuthContext"
 import "./globals.css"
 
 const inter = Inter({
@@ -25,7 +27,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable}>
       <body className="font-sans antialiased">
-        <Suspense fallback={null}>{children}</Suspense>
+        <ThemeProvider>
+          <AuthProvider>
+            <Suspense fallback={null}>{children}</Suspense>
+          </AuthProvider>
+        </ThemeProvider>
         <Analytics />
       </body>
     </html>
