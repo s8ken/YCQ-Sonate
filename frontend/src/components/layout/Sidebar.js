@@ -32,7 +32,6 @@ const Sidebar = ({ open, toggleDrawer }) => {
      { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard', color: '#667eea' },
      { text: 'Conversations', icon: <ChatIcon />, path: '/conversations', color: '#10b981' },
      { text: 'Agents', icon: <SmartToyIcon />, path: '/agents', color: '#8b5cf6' },
-     { text: 'Assistants', icon: <SmartToyIcon />, path: '/assistants', color: '#ec4899' },
      { text: 'Symbi Logs', icon: <AssessmentIcon />, path: '/reports', color: '#f59e0b' },
      { text: 'Context Bridge', icon: <LinkIcon />, path: '/context-bridge', color: '#3b82f6' },
      { text: 'Settings', icon: <SettingsIcon />, path: '/settings', color: '#6b7280' },

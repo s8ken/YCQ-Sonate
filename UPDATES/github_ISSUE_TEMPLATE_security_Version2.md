@@ -1,4 +1,4 @@
-```text
+\`\`\`text
 ---
 name: Security vulnerability report
 about: Report a vulnerability privately
@@ -17,4 +17,4 @@ assignees: ''
 - Proof-of-concept or PoC link:
 - Impact:
 - Suggested mitigation:
-```
+\`\`\`

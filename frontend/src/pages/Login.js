@@ -40,13 +40,7 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Form submitted with:', formData);
-    try {
-      const result = await login(formData.email, formData.password);
-      console.log('Login result:', result);
-    } catch (error) {
-      console.error('Login error:', error);
-    }
+    await login(formData.email, formData.password);
   };
 
   const toggleShowPassword = () => {
@@ -270,7 +264,8 @@ const Login = () => {
           >
             {loading ? <CircularProgress size={24} color="inherit" /> : 'Sign In'}
           </Button>
-          <Box sx={{ textAlign: 'center', mt: 3 }}>
+          {/* Registration temporarily disabled */}
+          {/* <Box sx={{ textAlign: 'center', mt: 3 }}>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
               Don't have an account?
             </Typography>
@@ -294,7 +289,7 @@ const Login = () => {
             >
               Create Account
             </MuiLink>
-           </Box>
+           </Box> */}
          </Box>
         </Paper>
       </Box>

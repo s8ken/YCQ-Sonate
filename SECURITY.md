@@ -119,13 +119,13 @@ Please include the following information in your report:
 ### API Security Controls
 
 #### Rate Limiting
-```yaml
+\`\`\`yaml
 Endpoint Limits:
   POST /declarations: 10 requests/minute per user
   GET /scores: 100 requests/minute per user
   POST /audits: 5 requests/minute per user
   Authentication: 5 attempts/minute per IP
-```
+\`\`\`
 
 #### Replay Protection
 - **Nonces**: Cryptographic nonces for write operations

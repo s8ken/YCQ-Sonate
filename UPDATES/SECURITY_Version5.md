@@ -1,4 +1,4 @@
-```text
+\`\`\`text
 # Security Policy
 
 Report a vulnerability privately: security@s8ken (replace with a monitored address).
@@ -17,4 +17,4 @@ PGP key (optional)
 - Add a maintainer PGP fingerprint or URL here if you prefer encrypted reports.
 
 Responsible disclosure: we request that reporters allow us reasonable time to fix issues before public disclosure.
-```
+\`\`\`

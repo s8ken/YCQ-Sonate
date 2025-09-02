@@ -8,16 +8,12 @@ import Layout from './components/layout/Layout';
 
 // Pages
 import Login from './pages/Login';
-import Register from './pages/Register';
+// import Register from './pages/Register'; // Temporarily disabled
 import Dashboard from './pages/Dashboard';
 import Conversations from './pages/Conversations';
 import ConversationDetail from './pages/ConversationDetail';
-import ConversationGuard from './components/guards/ConversationGuard';
 import Agents from './pages/Agents';
 import AgentDetail from './pages/AgentDetail';
-import Assistants from './pages/Assistants';
-import AssistantDetail from './pages/AssistantDetail';
-import AssistantChat from './pages/AssistantChat';
 import Settings from './pages/Settings';
 import Reports from './pages/Reports';
 import ContextBridge from './pages/ContextBridge';
@@ -42,7 +38,7 @@ const App = () => {
     <Routes>
       {/* Public routes */}
       <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+      {/* <Route path="/register" element={<Register />} /> */} {/* Temporarily disabled */}
       
       {/* Protected routes - wrapped in Layout */}
       <Route path="/" element={
@@ -69,9 +65,7 @@ const App = () => {
       <Route path="/conversations/:id" element={
         <ProtectedRoute>
           <Layout>
-            <ConversationGuard>
-              <ConversationDetail />
-            </ConversationGuard>
+            <ConversationDetail />
           </Layout>
         </ProtectedRoute>
       } />
@@ -87,25 +81,6 @@ const App = () => {
           <Layout>
             <AgentDetail />
           </Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/assistants" element={
-        <ProtectedRoute>
-          <Layout>
-            <Assistants />
-          </Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/assistants/new" element={
-        <ProtectedRoute>
-          <Layout>
-            <AssistantDetail />
-          </Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/assistants/:assistantId/chat" element={
-        <ProtectedRoute>
-          <AssistantChat />
         </ProtectedRoute>
       } />
       <Route path="/settings" element={

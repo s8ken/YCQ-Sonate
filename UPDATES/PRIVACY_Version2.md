@@ -1,4 +1,4 @@
-```text
+\`\`\`text
 # Privacy & Data Handling
 
 This document explains what personal data Symbi Trust Protocol collects, why we collect it, and how long we keep it.
@@ -32,4 +32,4 @@ This document explains what personal data Symbi Trust Protocol collects, why we 
 
 7) Contact
 - For privacy inquiries: privacy@s8ken
-```
+\`\`\`

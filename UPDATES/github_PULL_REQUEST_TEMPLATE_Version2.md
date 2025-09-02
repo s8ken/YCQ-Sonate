@@ -1,4 +1,4 @@
-```text
+\`\`\`text
 ## Summary
 
 Describe the changes and why they are required.
@@ -13,4 +13,4 @@ Describe the changes and why they are required.
 
 ## Release notes
 - Add any notes for deployment or required infra changes.
-```
+\`\`\`

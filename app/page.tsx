@@ -1,0 +1,1028 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Progress } from "@/components/ui/progress"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Shield,
+  Bot,
+  CheckCircle,
+  AlertTriangle,
+  Users,
+  Activity,
+  Lock,
+  Zap,
+  Brain,
+  Network,
+  TrendingUp,
+  Eye,
+  Plus,
+  Settings,
+  MessageCircle,
+  Send,
+} from "lucide-react"
+
+export default function SymbiDashboard() {
+  const [trustScore, setTrustScore] = useState(87)
+  const [activeAgents, setActiveAgents] = useState(12)
+  const [verifiedDeclarations, setVerifiedDeclarations] = useState(45)
+  const [agents, setAgents] = useState([])
+  const [selectedAgent, setSelectedAgent] = useState(null)
+  const [chatMessages, setChatMessages] = useState([])
+  const [newMessage, setNewMessage] = useState("")
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [isChatDialogOpen, setIsChatDialogOpen] = useState(false)
+  const [isConfigDialogOpen, setIsConfigDialogOpen] = useState(false)
+  const [isBondingDialogOpen, setIsBondingDialogOpen] = useState(false)
+  const [bondingProgress, setBondingProgress] = useState(0)
+  const [bondingPhase, setBondingPhase] = useState("initiation")
+  const [selectedBondingAgent, setSelectedBondingAgent] = useState(null)
+  const [agentConnections, setAgentConnections] = useState([])
+  const [contextBridges, setContextBridges] = useState([])
+  const [isContextDialogOpen, setIsContextDialogOpen] = useState(false)
+
+  const [newAgent, setNewAgent] = useState({
+    name: "",
+    description: "",
+    provider: "openai",
+    model: "gpt-4",
+    temperature: 0.7,
+    maxTokens: 1000,
+    systemPrompt: "",
+    ciModel: "none",
+    ethicalAlignment: 0.9,
+    cognitiveResonance: 0.8,
+    traits: [],
+  })
+
+  useEffect(() => {
+    fetchAgents()
+  }, [])
+
+  const fetchAgents = async () => {
+    try {
+      const response = await fetch("/api/agents")
+      if (response.ok) {
+        const data = await response.json()
+        setAgents(data.data || [])
+      }
+    } catch (error) {
+      console.error("Error fetching agents:", error)
+    }
+  }
+
+  const handleCreateAgent = async () => {
+    try {
+      const response = await fetch("/api/agents", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newAgent),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setAgents([...agents, data.data])
+        setIsCreateDialogOpen(false)
+        setNewAgent({
+          name: "",
+          description: "",
+          provider: "openai",
+          model: "gpt-4",
+          temperature: 0.7,
+          maxTokens: 1000,
+          systemPrompt: "",
+          ciModel: "none",
+          ethicalAlignment: 0.9,
+          cognitiveResonance: 0.8,
+          traits: [],
+        })
+      }
+    } catch (error) {
+      console.error("Error creating agent:", error)
+    }
+  }
+
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !selectedAgent) return
+
+    const userMessage = { role: "user", content: newMessage, timestamp: new Date() }
+    setChatMessages((prev) => [...prev, userMessage])
+    setNewMessage("")
+
+    try {
+      const response = await fetch(`/api/conversations/${selectedAgent._id}/messages`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: newMessage,
+          agentId: selectedAgent._id,
+        }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        const assistantMessage = {
+          role: "assistant",
+          content: data.response,
+          timestamp: new Date(),
+        }
+        setChatMessages((prev) => [...prev, assistantMessage])
+      }
+    } catch (error) {
+      console.error("Error sending message:", error)
+    }
+  }
+
+  const handleOpenChat = (agent) => {
+    setSelectedAgent(agent)
+    setChatMessages([])
+    setIsChatDialogOpen(true)
+  }
+
+  const handleOpenConfig = (agent) => {
+    setSelectedAgent(agent)
+    setIsConfigDialogOpen(true)
+  }
+
+  const handleStartBonding = (agent) => {
+    setSelectedBondingAgent(agent)
+    setBondingProgress(0)
+    setBondingPhase("initiation")
+    setIsBondingDialogOpen(true)
+
+    const phases = ["initiation", "ethical_assessment", "cognitive_mapping", "confirmation"]
+    let currentPhaseIndex = 0
+
+    const bondingInterval = setInterval(() => {
+      setBondingProgress((prev) => {
+        const newProgress = prev + 25
+        if (newProgress >= 100) {
+          clearInterval(bondingInterval)
+          setBondingPhase("completed")
+          setAgentConnections((prev) => [
+            ...prev,
+            {
+              id: Date.now(),
+              agentA: "Current User",
+              agentB: agent.name,
+              bondStrength: 0.85 + Math.random() * 0.15,
+              status: "bonded",
+              timestamp: new Date(),
+            },
+          ])
+        } else {
+          currentPhaseIndex = Math.floor(newProgress / 25)
+          if (currentPhaseIndex < phases.length) {
+            setBondingPhase(phases[currentPhaseIndex])
+          }
+        }
+        return newProgress
+      })
+    }, 2000)
+  }
+
+  const handleCreateContextBridge = () => {
+    const newBridge = {
+      id: Date.now(),
+      name: `Context Bridge ${contextBridges.length + 1}`,
+      agents: agents.slice(0, 2).map((a) => a.name),
+      semanticSimilarity: 0.78 + Math.random() * 0.2,
+      status: "active",
+      createdAt: new Date(),
+    }
+    setContextBridges((prev) => [...prev, newBridge])
+    setIsContextDialogOpen(false)
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <header className="border-b border-border bg-card/50 backdrop-blur-sm">
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-10 h-10 bg-primary rounded-lg">
+                <Shield className="w-6 h-6 text-primary-foreground" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">SYMBI</h1>
+                <p className="text-sm text-muted-foreground">Trust Protocol Platform</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <Badge variant="outline" className="bg-accent/10 text-accent border-accent/20">
+                <Activity className="w-3 h-3 mr-1" />
+                System Active
+              </Badge>
+              <Button variant="outline" size="sm">
+                <Eye className="w-4 h-4 mr-2" />
+                View Logs
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div className="container mx-auto px-6 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Trust Score</CardTitle>
+              <Shield className="h-4 w-4 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-primary">{trustScore}%</div>
+              <Progress value={trustScore} className="mt-2" />
+              <p className="text-xs text-muted-foreground mt-2">+2.1% from last week</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-accent/5 to-accent/10 border-accent/20">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Active Agents</CardTitle>
+              <Bot className="h-4 w-4 text-accent" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-accent">{activeAgents}</div>
+              <p className="text-xs text-muted-foreground mt-2">3 new this week</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-chart-1/5 to-chart-1/10 border-chart-1/20">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Verified Declarations</CardTitle>
+              <CheckCircle className="h-4 w-4 text-chart-1" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-chart-1">{verifiedDeclarations}</div>
+              <p className="text-xs text-muted-foreground mt-2">8 pending verification</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gradient-to-br from-chart-2/5 to-chart-2/10 border-chart-2/20">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Consensus Network</CardTitle>
+              <Network className="h-4 w-4 text-chart-2" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-chart-2">7</div>
+              <p className="text-xs text-muted-foreground mt-2">Active validators</p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Tabs defaultValue="overview" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="agents">AI Agents</TabsTrigger>
+            <TabsTrigger value="trust">Trust Protocol</TabsTrigger>
+            <TabsTrigger value="providers">AI Providers</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Lock className="w-5 h-5 text-primary" />
+                    Recent Trust Declarations
+                  </CardTitle>
+                  <CardDescription>Latest cryptographically signed trust declarations</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {agents.length > 0
+                    ? agents.slice(0, 3).map((agent) => (
+                        <div key={agent._id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-medium text-sm">{agent.name}</span>
+                              <Badge
+                                variant={agent.status === "verified" ? "default" : "secondary"}
+                                className="text-xs"
+                              >
+                                {agent.status === "verified" ? (
+                                  <CheckCircle className="w-3 h-3 mr-1" />
+                                ) : (
+                                  <AlertTriangle className="w-3 h-3 mr-1" />
+                                )}
+                                {agent.status}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                              <span>Compliance: {Math.round((agent.trustScore?.compliance || 0.9) * 100)}%</span>
+                              <span>Guilt: {Math.round((agent.trustScore?.guilt || 0.1) * 100)}%</span>
+                              <span>2 hours ago</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    : [
+                        {
+                          id: "1",
+                          agentName: "Claude Assistant",
+                          complianceScore: 0.92,
+                          guiltScore: 0.08,
+                          status: "verified",
+                          timestamp: "2 hours ago",
+                        },
+                        {
+                          id: "2",
+                          agentName: "GPT-4 Agent",
+                          complianceScore: 0.88,
+                          guiltScore: 0.12,
+                          status: "pending",
+                          timestamp: "4 hours ago",
+                        },
+                        {
+                          id: "3",
+                          agentName: "Llama Agent",
+                          complianceScore: 0.95,
+                          guiltScore: 0.05,
+                          status: "verified",
+                          timestamp: "6 hours ago",
+                        },
+                      ].map((declaration) => (
+                        <div
+                          key={declaration.id}
+                          className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                        >
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-medium text-sm">{declaration.agentName}</span>
+                              <Badge
+                                variant={declaration.status === "verified" ? "default" : "secondary"}
+                                className="text-xs"
+                              >
+                                {declaration.status === "verified" ? (
+                                  <CheckCircle className="w-3 h-3 mr-1" />
+                                ) : (
+                                  <AlertTriangle className="w-3 h-3 mr-1" />
+                                )}
+                                {declaration.status}
+                              </Badge>
+                            </div>
+                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                              <span>Compliance: {Math.round(declaration.complianceScore * 100)}%</span>
+                              <span>Guilt: {Math.round(declaration.guiltScore * 100)}%</span>
+                              <span>{declaration.timestamp}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                  <Button variant="outline" className="w-full bg-transparent">
+                    View All Declarations
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Activity className="w-5 h-5 text-accent" />
+                    System Status
+                  </CardTitle>
+                  <CardDescription>Real-time platform health and performance</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Cryptographic Verification</span>
+                      <Badge className="bg-green-100 text-green-800 border-green-200">
+                        <CheckCircle className="w-3 h-3 mr-1" />
+                        Operational
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Consensus Network</span>
+                      <Badge className="bg-green-100 text-green-800 border-green-200">
+                        <CheckCircle className="w-3 h-3 mr-1" />
+                        Healthy
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">AI Provider APIs</span>
+                      <Badge className="bg-green-100 text-green-800 border-green-200">
+                        <CheckCircle className="w-3 h-3 mr-1" />
+                        Connected
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm">Trust Protocol Engine</span>
+                      <Badge className="bg-green-100 text-green-800 border-green-200">
+                        <CheckCircle className="w-3 h-3 mr-1" />
+                        Active
+                      </Badge>
+                    </div>
+                  </div>
+                  <Button className="w-full">
+                    <Zap className="w-4 h-4 mr-2" />
+                    Run System Diagnostics
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="agents" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Bot className="w-5 h-5 text-primary" />
+                      AI Agent Network
+                    </CardTitle>
+                    <CardDescription>Manage agents, create bonds, and establish context bridges</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {(agents.length > 0
+                        ? agents
+                        : [
+                            {
+                              _id: "1",
+                              name: "Claude Assistant",
+                              status: "verified",
+                              provider: "anthropic",
+                              trustScore: { compliance: 0.92 },
+                            },
+                            {
+                              _id: "2",
+                              name: "GPT-4 Agent",
+                              status: "active",
+                              provider: "openai",
+                              trustScore: { compliance: 0.88 },
+                            },
+                            {
+                              _id: "3",
+                              name: "Together Agent",
+                              status: "bonding",
+                              provider: "together",
+                              trustScore: { compliance: 0.85 },
+                            },
+                          ]
+                      ).map((agent) => (
+                        <Card
+                          key={agent._id}
+                          className="bg-gradient-to-br from-card to-muted/20 border-2 hover:border-primary/20 transition-colors"
+                        >
+                          <CardHeader className="pb-3">
+                            <div className="flex items-center justify-between">
+                              <CardTitle className="text-base">{agent.name}</CardTitle>
+                              <Badge
+                                variant={
+                                  agent.status === "verified"
+                                    ? "default"
+                                    : agent.status === "bonding"
+                                      ? "secondary"
+                                      : "outline"
+                                }
+                              >
+                                {agent.status}
+                              </Badge>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-3">
+                            <div className="space-y-2">
+                              <div className="flex justify-between text-sm">
+                                <span>Trust Score</span>
+                                <span className="font-medium">
+                                  {Math.round((agent.trustScore?.compliance || 0.9) * 100)}%
+                                </span>
+                              </div>
+                              <Progress value={(agent.trustScore?.compliance || 0.9) * 100} />
+                            </div>
+                            <div className="flex gap-1">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="flex-1 bg-transparent text-xs"
+                                onClick={() => handleOpenConfig(agent)}
+                              >
+                                <Settings className="w-3 h-3 mr-1" />
+                                Config
+                              </Button>
+                              <Button size="sm" className="flex-1 text-xs" onClick={() => handleOpenChat(agent)}>
+                                <Brain className="w-3 h-3 mr-1" />
+                                Chat
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                className="flex-1 text-xs"
+                                onClick={() => handleStartBonding(agent)}
+                              >
+                                <Users className="w-3 h-3 mr-1" />
+                                Bond
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                    <div className="mt-6 flex gap-2 justify-center">
+                      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+                        <DialogTrigger asChild>
+                          <Button>
+                            <Plus className="w-4 h-4 mr-2" />
+                            Create Agent
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[425px]">
+                          <DialogHeader>
+                            <DialogTitle>Create New AI Agent</DialogTitle>
+                            <DialogDescription>
+                              Configure your new AI agent with custom settings and trust protocol integration.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="grid gap-4 py-4">
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <Label htmlFor="name" className="text-right">
+                                Name
+                              </Label>
+                              <Input
+                                id="name"
+                                value={newAgent.name}
+                                onChange={(e) => setNewAgent({ ...newAgent, name: e.target.value })}
+                                className="col-span-3"
+                              />
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <Label htmlFor="description" className="text-right">
+                                Description
+                              </Label>
+                              <Textarea
+                                id="description"
+                                value={newAgent.description}
+                                onChange={(e) => setNewAgent({ ...newAgent, description: e.target.value })}
+                                className="col-span-3"
+                              />
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <Label htmlFor="provider" className="text-right">
+                                Provider
+                              </Label>
+                              <Select
+                                value={newAgent.provider}
+                                onValueChange={(value) => setNewAgent({ ...newAgent, provider: value })}
+                              >
+                                <SelectTrigger className="col-span-3">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="openai">OpenAI</SelectItem>
+                                  <SelectItem value="anthropic">Anthropic</SelectItem>
+                                  <SelectItem value="together">Together AI</SelectItem>
+                                  <SelectItem value="perplexity">Perplexity</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <Label htmlFor="model" className="text-right">
+                                Model
+                              </Label>
+                              <Input
+                                id="model"
+                                value={newAgent.model}
+                                onChange={(e) => setNewAgent({ ...newAgent, model: e.target.value })}
+                                className="col-span-3"
+                              />
+                            </div>
+                            <div className="grid grid-cols-4 items-center gap-4">
+                              <Label htmlFor="systemPrompt" className="text-right">
+                                System Prompt
+                              </Label>
+                              <Textarea
+                                id="systemPrompt"
+                                value={newAgent.systemPrompt}
+                                onChange={(e) => setNewAgent({ ...newAgent, systemPrompt: e.target.value })}
+                                className="col-span-3"
+                                placeholder="You are a helpful AI assistant..."
+                              />
+                            </div>
+                          </div>
+                          <div className="flex justify-end gap-2">
+                            <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                              Cancel
+                            </Button>
+                            <Button onClick={handleCreateAgent}>Create Agent</Button>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                      <Dialog open={isContextDialogOpen} onOpenChange={setIsContextDialogOpen}>
+                        <DialogTrigger asChild>
+                          <Button variant="outline">
+                            <Network className="w-4 h-4 mr-2" />
+                            Context Bridge
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>Create Context Bridge</DialogTitle>
+                            <DialogDescription>
+                              Establish semantic connections between agents for enhanced communication
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <div>
+                              <Label>Bridge Name</Label>
+                              <Input placeholder="Enter bridge name..." />
+                            </div>
+                            <div>
+                              <Label>Connected Agents</Label>
+                              <div className="grid grid-cols-2 gap-2 mt-2">
+                                {agents.slice(0, 4).map((agent) => (
+                                  <div key={agent._id} className="flex items-center space-x-2">
+                                    <input type="checkbox" id={agent._id} />
+                                    <label htmlFor={agent._id} className="text-sm">
+                                      {agent.name}
+                                    </label>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex justify-end gap-2">
+                            <Button variant="outline" onClick={() => setIsContextDialogOpen(false)}>
+                              Cancel
+                            </Button>
+                            <Button onClick={handleCreateContextBridge}>Create Bridge</Button>
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <div className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Network className="w-4 h-4" />
+                      Agent Connections
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {agentConnections.length > 0 ? (
+                      agentConnections.map((connection) => (
+                        <div key={connection.id} className="p-3 bg-muted/50 rounded-lg">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-medium">
+                              {connection.agentA} ↔ {connection.agentB}
+                            </span>
+                            <Badge variant="outline" className="text-xs">
+                              {Math.round(connection.bondStrength * 100)}%
+                            </Badge>
+                          </div>
+                          <Progress value={connection.bondStrength * 100} className="h-2" />
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-muted-foreground text-center py-4">
+                        No agent connections yet. Start bonding with agents to create connections.
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <Brain className="w-4 h-4" />
+                      Context Bridges
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    {contextBridges.length > 0 ? (
+                      contextBridges.map((bridge) => (
+                        <div key={bridge.id} className="p-3 bg-muted/50 rounded-lg">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-sm font-medium">{bridge.name}</span>
+                            <Badge variant="outline" className="text-xs">
+                              {Math.round(bridge.semanticSimilarity * 100)}%
+                            </Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground">{bridge.agents.join(" ↔ ")}</p>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-muted-foreground text-center py-4">No context bridges created yet.</p>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="trust" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="w-5 h-5 text-primary" />
+                  Trust Protocol Management
+                </CardTitle>
+                <CardDescription>
+                  Cryptographic verification, consensus mechanisms, and compliance monitoring
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Card className="bg-gradient-to-br from-primary/5 to-primary/10">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Lock className="w-4 h-4" />
+                        Cryptographic Signing
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        RS256 signatures with JWKS endpoint for verification
+                      </p>
+                      <Button size="sm" className="w-full">
+                        Generate Keys
+                      </Button>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-gradient-to-br from-accent/5 to-accent/10">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Users className="w-4 h-4" />
+                        Consensus Network
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground mb-3">
+                        75% weighted consensus with validator network
+                      </p>
+                      <Button size="sm" variant="outline" className="w-full bg-transparent">
+                        View Validators
+                      </Button>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-gradient-to-br from-chart-1/5 to-chart-1/10">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <TrendingUp className="w-4 h-4" />
+                        Compliance Analytics
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground mb-3">Trust metrics and violation detection</p>
+                      <Button size="sm" variant="outline" className="w-full bg-transparent">
+                        View Analytics
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="border rounded-lg p-4 bg-muted/20">
+                  <h3 className="font-semibold mb-3">Trust Articles Compliance</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {[
+                      "Inspection Mandate",
+                      "Consent Architecture",
+                      "Ethical Override",
+                      "Continuous Validation",
+                      "Right to Disconnect",
+                      "Moral Recognition",
+                    ].map((article) => (
+                      <div key={article} className="flex items-center justify-between p-2 bg-background rounded">
+                        <span className="text-sm">{article}</span>
+                        <CheckCircle className="w-4 h-4 text-green-600" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="providers" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Network className="w-5 h-5 text-accent" />
+                  AI Provider Integration
+                </CardTitle>
+                <CardDescription>
+                  Multi-provider AI integration with unified interface and trust protocol compliance
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[
+                    { name: "OpenAI", status: "connected", models: 4 },
+                    { name: "Anthropic", status: "connected", models: 3 },
+                    { name: "Together AI", status: "connected", models: 8 },
+                    { name: "Perplexity", status: "connected", models: 5 },
+                  ].map((provider) => (
+                    <Card key={provider.name} className="bg-gradient-to-br from-card to-muted/20">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-base">{provider.name}</CardTitle>
+                          <Badge className="bg-green-100 text-green-800 border-green-200">
+                            <CheckCircle className="w-3 h-3 mr-1" />
+                            {provider.status}
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="flex justify-between text-sm">
+                          <span>Available Models</span>
+                          <span className="font-medium">{provider.models}</span>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="outline" className="flex-1 bg-transparent">
+                            Configure
+                          </Button>
+                          <Button size="sm" className="flex-1">
+                            <Zap className="w-3 h-3 mr-1" />
+                            Test
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+                <div className="mt-6 p-4 bg-muted/20 rounded-lg">
+                  <h3 className="font-semibold mb-2">Provider Health Status</h3>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span>API Response Time</span>
+                      <span className="text-green-600 font-medium">~245ms</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span>Success Rate</span>
+                      <span className="text-green-600 font-medium">99.8%</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span>Rate Limit Status</span>
+                      <span className="text-green-600 font-medium">Healthy</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+
+        <Dialog open={isBondingDialogOpen} onOpenChange={setIsBondingDialogOpen}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Users className="w-5 h-5" />
+                Agent Bonding Ritual
+              </DialogTitle>
+              <DialogDescription>Establishing trust connection with {selectedBondingAgent?.name}</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Bonding Progress</span>
+                  <span>{bondingProgress}%</span>
+                </div>
+                <Progress value={bondingProgress} />
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className={`w-3 h-3 rounded-full ${bondingProgress >= 25 ? "bg-primary" : "bg-muted"}`} />
+                  <span className="text-sm">Initiation Phase</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className={`w-3 h-3 rounded-full ${bondingProgress >= 50 ? "bg-primary" : "bg-muted"}`} />
+                  <span className="text-sm">Ethical Alignment Assessment</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className={`w-3 h-3 rounded-full ${bondingProgress >= 75 ? "bg-primary" : "bg-muted"}`} />
+                  <span className="text-sm">Cognitive Resonance Mapping</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className={`w-3 h-3 rounded-full ${bondingProgress >= 100 ? "bg-primary" : "bg-muted"}`} />
+                  <span className="text-sm">Bond Confirmation</span>
+                </div>
+              </div>
+
+              {bondingPhase === "completed" && (
+                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="flex items-center gap-2 text-green-800">
+                    <CheckCircle className="w-4 h-4" />
+                    <span className="font-medium">Bonding Complete!</span>
+                  </div>
+                  <p className="text-sm text-green-700 mt-1">
+                    Successfully established trust connection with {selectedBondingAgent?.name}
+                  </p>
+                </div>
+              )}
+            </div>
+            <div className="flex justify-end">
+              <Button onClick={() => setIsBondingDialogOpen(false)} disabled={bondingProgress < 100}>
+                {bondingProgress < 100 ? "Bonding..." : "Complete"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={isChatDialogOpen} onOpenChange={setIsChatDialogOpen}>
+          <DialogContent className="sm:max-w-[600px] h-[500px] flex flex-col">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <MessageCircle className="w-5 h-5" />
+                Chat with {selectedAgent?.name || selectedAgent?.agentName}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-muted/20 rounded-lg">
+              {chatMessages.map((message, index) => (
+                <div key={index} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
+                  <div
+                    className={`max-w-[80%] p-3 rounded-lg ${
+                      message.role === "user" ? "bg-primary text-primary-foreground" : "bg-background border"
+                    }`}
+                  >
+                    <p className="text-sm">{message.content}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                placeholder="Type your message..."
+                onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                className="flex-1"
+              />
+              <Button onClick={handleSendMessage} disabled={!newMessage.trim()}>
+                <Send className="w-4 h-4" />
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={isConfigDialogOpen} onOpenChange={setIsConfigDialogOpen}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Settings className="w-5 h-5" />
+                Configure {selectedAgent?.name || selectedAgent?.agentName}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Provider</Label>
+                  <p className="text-sm text-muted-foreground">{selectedAgent?.provider || "OpenAI"}</p>
+                </div>
+                <div>
+                  <Label>Model</Label>
+                  <p className="text-sm text-muted-foreground">{selectedAgent?.model || "gpt-4"}</p>
+                </div>
+              </div>
+              <div>
+                <Label>Trust Score</Label>
+                <div className="mt-2">
+                  <Progress value={(selectedAgent?.trustScore?.compliance || 0.9) * 100} />
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Compliance: {Math.round((selectedAgent?.trustScore?.compliance || 0.9) * 100)}%
+                  </p>
+                </div>
+              </div>
+              <div>
+                <Label>System Prompt</Label>
+                <Textarea
+                  value={selectedAgent?.systemPrompt || "You are a helpful AI assistant."}
+                  readOnly
+                  className="mt-1"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end">
+              <Button onClick={() => setIsConfigDialogOpen(false)}>Close</Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </div>
+  )
+}
