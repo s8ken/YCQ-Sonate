@@ -35,7 +35,7 @@
 
 #### Option B: Deploy via Vercel CLI
 
-```bash
+\`\`\`bash
 # Install Vercel CLI
 npm i -g vercel
 
