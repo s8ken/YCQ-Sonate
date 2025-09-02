@@ -19,11 +19,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { LiveTrustFeed } from "@/components/realtime/LiveTrustFeed"
+import { useRealTimeUpdates } from "@/hooks/useRealTimeUpdates"
 import {
   Shield,
   Bot,
   CheckCircle,
-  AlertTriangle,
   Users,
   Activity,
   Lock,
@@ -53,6 +54,8 @@ export default function SymbiDashboard() {
   const [isContextDialogOpen, setIsContextDialogOpen] = useState(false)
 
   const router = useRouter()
+
+  const { isConnected, trustUpdates, agentUpdates, systemHealth } = useRealTimeUpdates("current-user")
 
   useEffect(() => {
     fetchAgents()
@@ -193,6 +196,10 @@ export default function SymbiDashboard() {
               </div>
             </div>
             <div className="flex items-center gap-4">
+              <Badge variant={isConnected ? "default" : "destructive"} className="font-mono text-xs">
+                <Activity className="w-3 h-3 mr-1" />
+                {isConnected ? "Live" : "Offline"}
+              </Badge>
               <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-300 font-mono text-xs">
                 <Activity className="w-3 h-3 mr-1" />
                 System Active
@@ -297,99 +304,7 @@ export default function SymbiDashboard() {
 
           <TabsContent value="overview" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Lock className="w-5 h-5 text-primary" />
-                    Recent Trust Declarations
-                  </CardTitle>
-                  <CardDescription>Latest cryptographically signed trust declarations</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {agents.length > 0
-                    ? agents.slice(0, 3).map((agent) => (
-                        <div key={agent._id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="font-medium text-sm">{agent.name}</span>
-                              <Badge
-                                variant={agent.status === "verified" ? "default" : "secondary"}
-                                className="text-xs"
-                              >
-                                {agent.status === "verified" ? (
-                                  <CheckCircle className="w-3 h-3 mr-1" />
-                                ) : (
-                                  <AlertTriangle className="w-3 h-3 mr-1" />
-                                )}
-                                {agent.status}
-                              </Badge>
-                            </div>
-                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                              <span>Compliance: {Math.round((agent.trustScore?.compliance || 0.9) * 100)}%</span>
-                              <span>Guilt: {Math.round((agent.trustScore?.guilt || 0.1) * 100)}%</span>
-                              <span>2 hours ago</span>
-                            </div>
-                          </div>
-                        </div>
-                      ))
-                    : [
-                        {
-                          id: "1",
-                          agentName: "Claude Assistant",
-                          complianceScore: 0.92,
-                          guiltScore: 0.08,
-                          status: "verified",
-                          timestamp: "2 hours ago",
-                        },
-                        {
-                          id: "2",
-                          agentName: "GPT-4 Agent",
-                          complianceScore: 0.88,
-                          guiltScore: 0.12,
-                          status: "pending",
-                          timestamp: "4 hours ago",
-                        },
-                        {
-                          id: "3",
-                          agentName: "Llama Agent",
-                          complianceScore: 0.95,
-                          guiltScore: 0.05,
-                          status: "verified",
-                          timestamp: "6 hours ago",
-                        },
-                      ].map((declaration) => (
-                        <div
-                          key={declaration.id}
-                          className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
-                        >
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="font-medium text-sm">{declaration.agentName}</span>
-                              <Badge
-                                variant={declaration.status === "verified" ? "default" : "secondary"}
-                                className="text-xs"
-                              >
-                                {declaration.status === "verified" ? (
-                                  <CheckCircle className="w-3 h-3 mr-1" />
-                                ) : (
-                                  <AlertTriangle className="w-3 h-3 mr-1" />
-                                )}
-                                {declaration.status}
-                              </Badge>
-                            </div>
-                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                              <span>Compliance: {Math.round(declaration.complianceScore * 100)}%</span>
-                              <span>Guilt: {Math.round(declaration.guiltScore * 100)}%</span>
-                              <span>{declaration.timestamp}</span>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                  <Button variant="outline" className="w-full bg-transparent">
-                    View All Declarations
-                  </Button>
-                </CardContent>
-              </Card>
+              <LiveTrustFeed userId="current-user" />
 
               <Card>
                 <CardHeader>
@@ -429,6 +344,15 @@ export default function SymbiDashboard() {
                         Active
                       </Badge>
                     </div>
+                    {systemHealth && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Real-time Updates</span>
+                        <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+                          <Activity className="w-3 h-3 mr-1" />
+                          {systemHealth.activeConnections || 0} connections
+                        </Badge>
+                      </div>
+                    )}
                   </div>
                   <Button className="w-full">
                     <Zap className="w-4 h-4 mr-2" />
