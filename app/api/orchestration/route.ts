@@ -3,7 +3,7 @@ import { agentOrchestrator, type WorkflowDefinition, type AgentCapabilities } fr
 import { withApiMiddleware } from "@/lib/api-middleware"
 
 export async function POST(request: NextRequest) {
-  return withApiMiddleware(request, async (req) => {
+  const middlewareResult = withApiMiddleware(request, async (req) => {
     const { action, data } = await req.json()
 
     switch (action) {
@@ -73,10 +73,12 @@ export async function POST(request: NextRequest) {
         )
     }
   })
+
+  return await middlewareResult
 }
 
 export async function GET(request: NextRequest) {
-  return withApiMiddleware(request, async (req) => {
+  const middlewareResult = withApiMiddleware(request, async (req) => {
     const { searchParams } = new URL(req.url)
     const executionId = searchParams.get("executionId")
 
@@ -108,4 +110,6 @@ export async function GET(request: NextRequest) {
       },
     })
   })
+
+  return await middlewareResult
 }
