@@ -4,9 +4,6 @@ const morgan = require('morgan');
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const path = require('path');
-const http = require('http');
-const socketIo = require('socket.io');
-const { setSocketIO } = require('./utils/socket');
 const {
   securityHeaders,
   sanitizeInput,
@@ -18,23 +15,12 @@ const {
   validateContentType,
   requestSizeLimiter
 } = require('./middleware/security.middleware');
-const app = require('./app');
 
 // Load environment variables
 dotenv.config();
 
-// Initialize Express app (app is already imported from './app')
-const server = http.createServer(app);
-const io = socketIo(server, {
-  cors: {
-    origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
-    methods: ['GET', 'POST'],
-    credentials: true
-  }
-});
-
-// Initialize socket utility
-setSocketIO(io);
+// Initialize Express app
+const app = express();
 
 // Security Middleware (applied first)
 app.use(securityHeaders);
@@ -53,11 +39,9 @@ const corsOptions = {
       'https://symbi-synergy-hl88yxu91-symbi.vercel.app'
     ];
     
-    // Allow all Vercel deployment URLs for this project
     const isVercelDomain = origin && (origin.includes('symbi-synergy') && origin.includes('vercel.app'));
     const isSymbiDomain = origin && (origin.includes('symbi') && origin.includes('vercel.app'));
     
-    // Allow requests with no origin (mobile apps, etc.)
     if (!origin) return callback(null, true);
     
     if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development' || isVercelDomain || isSymbiDomain) {
@@ -70,7 +54,7 @@ const corsOptions = {
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   exposedHeaders: ['X-RateLimit-Limit', 'X-RateLimit-Remaining', 'X-RateLimit-Reset'],
-  maxAge: 86400 // 24 hours
+  maxAge: 86400
 };
 
 app.use(cors(corsOptions));
@@ -96,20 +80,20 @@ app.use(morgan('combined', {
 // General API rate limiting
 app.use('/api/', apiRateLimit);
 
-// Database connection
-// Configure mongoose to handle buffering timeouts
-mongoose.set('bufferCommands', false);
-
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/symbi-synergy', {
-  serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
-  socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
-  maxPoolSize: 10, // Maintain up to 10 socket connections
-  minPoolSize: 5, // Maintain a minimum of 5 socket connections
-  maxIdleTimeMS: 30000, // Close connections after 30 seconds of inactivity
-  family: 4 // Use IPv4, skip trying IPv6
-})
-  .then(() => console.log('MongoDB connected successfully'))
-  .catch(err => console.error('MongoDB connection error:', err));
+// Database connection - only connect if not in test mode
+if (process.env.NODE_ENV !== 'test') {
+  mongoose.set('bufferCommands', false);
+  mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/symbi-synergy', {
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 45000,
+    maxPoolSize: 10,
+    minPoolSize: 5,
+    maxIdleTimeMS: 30000,
+    family: 4
+  })
+    .then(() => console.log('MongoDB connected successfully'))
+    .catch(err => console.error('MongoDB connection error:', err));
+}
 
 // Import routes
 const authRoutes = require('./routes/auth.routes');
@@ -121,8 +105,10 @@ const reportRoutes = require('./routes/reports');
 const contextRoutes = require('./routes/context');
 const webhookRoutes = require('./routes/webhook.routes');
 const trustRoutes = require('./routes/trust.routes');
+const snowflakeRoutes = require('./routes/snowflake.routes');
+const assistantRoutes = require('./routes/assistant.routes');
 
-// Root endpoint for API status
+// Root endpoint
 app.get('/', (req, res) => {
   res.json({
     success: true,
@@ -143,7 +129,7 @@ app.get('/', (req, res) => {
   });
 });
 
-// API routes with specific rate limiting
+// API routes
 app.use('/api/auth', authRateLimit, authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/conversations', conversationRoutes);
@@ -153,6 +139,8 @@ app.use('/api/reports', reportRoutes);
 app.use('/api/context', contextRoutes);
 app.use('/api/webhooks', webhookRoutes);
 app.use('/api/trust', trustRoutes);
+app.use('/api/snowflake', snowflakeRoutes);
+app.use('/api/assistant', assistantRoutes);
 
 // Serve static assets in production
 if (process.env.NODE_ENV === 'production') {
@@ -163,32 +151,60 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-// Socket.io connection handling
-io.on('connection', (socket) => {
-  console.log('New client connected');
+// CORS Error Handler
+app.use((err, req, res, next) => {
+  if (err.message === 'Not allowed by CORS') {
+    return res.status(403).json({
+      success: false,
+      error: 'CORS Error',
+      message: 'Origin not allowed by CORS policy'
+    });
+  }
+  next(err);
+});
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+  if (err.status === 401 || err.status === 403 || err.status === 429) {
+    console.warn(JSON.stringify({
+      type: 'security_error',
+      error: err.message,
+      status: err.status,
+      requestId: req.requestId,
+      ip: req.ip,
+      userAgent: req.get('User-Agent'),
+      userId: req.user?.id,
+      timestamp: new Date().toISOString()
+    }));
+  } else {
+    console.error('Server Error:', {
+      message: err.message,
+      stack: err.stack,
+      requestId: req.requestId,
+      method: req.method,
+      path: req.path
+    });
+  }
+
+  const isDevelopment = process.env.NODE_ENV === 'development';
   
-  socket.on('joinConversation', (conversationId) => {
-    socket.join(conversationId);
-    console.log(`User joined conversation: ${conversationId}`);
-  });
-  
-  socket.on('new_message', (data) => {
-    io.to(data.conversationId).emit('message_received', data);
-  });
-  
-  socket.on('ai_communication', (data) => {
-    io.to(data.targetAgentId).emit('ai_message', data);
-  });
-  
-  socket.on('disconnect', () => {
-    console.log('Client disconnected');
+  res.status(err.status || 500).json({
+    success: false,
+    error: err.name || 'Server Error',
+    message: err.message || 'Internal server error',
+    requestId: req.requestId,
+    ...(isDevelopment && { stack: err.stack })
   });
 });
 
-// Start server
-const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
-  console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+// 404 Handler
+app.use('*', (req, res) => {
+  res.status(404).json({
+    success: false,
+    error: 'Not Found',
+    message: `Route ${req.method} ${req.originalUrl} not found`,
+    requestId: req.requestId
+  });
 });
 
-module.exports = { app, server, io };
+module.exports = app;

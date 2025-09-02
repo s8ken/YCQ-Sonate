@@ -4,7 +4,7 @@ const { registerUser, loginUser, getMe, updateProfile } = require('../controller
 const { protect } = require('../middleware/auth.middleware');
 
 // Authentication routes
-// router.post('/register', registerUser); // Temporarily disabled
+router.post('/register', registerUser);
 router.post('/login', loginUser);
 router.get('/me', protect, getMe);
 router.put('/profile', protect, updateProfile);

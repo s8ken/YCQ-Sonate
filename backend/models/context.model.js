@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const weaviateService = require('../services/weaviate.service');
 
 const ContextSchema = new mongoose.Schema({
   tag: {
@@ -51,6 +52,20 @@ const ContextSchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true
+  },
+  // Weaviate integration fields
+  weaviateId: {
+    type: String,
+    index: true,
+    sparse: true
+  },
+  vectorized: {
+    type: Boolean,
+    default: false
+  },
+  lastVectorUpdate: {
+    type: Date,
+    default: null
   }
 });
 
@@ -89,6 +104,118 @@ ContextSchema.statics.getActiveByTag = async function(tag) {
   }).sort({ createdAt: -1 }).exec();
 };
 
+// Method to sync with Weaviate
+ContextSchema.methods.syncToWeaviate = async function() {
+  try {
+    if (!weaviateService.isConnected) {
+      console.warn('Weaviate service not connected, skipping sync');
+      return;
+    }
+
+    if (this.weaviateId) {
+      // Update existing vector
+      await weaviateService.updateContext(this.weaviateId, {
+        data: this.data,
+        trustScore: this.trustScore,
+        isActive: this.isActive
+      });
+    } else {
+      // Create new vector
+      const result = await weaviateService.storeContext(this.toObject());
+      this.weaviateId = result.weaviateId;
+      this.vectorized = true;
+      this.lastVectorUpdate = new Date();
+      await this.save();
+    }
+  } catch (error) {
+    console.error('Failed to sync context to Weaviate:', error.message);
+  }
+};
+
+// Method to remove from Weaviate
+ContextSchema.methods.removeFromWeaviate = async function() {
+  try {
+    if (this.weaviateId && weaviateService.isConnected) {
+      await weaviateService.deleteContext(this.weaviateId);
+    }
+  } catch (error) {
+    console.error('Failed to remove context from Weaviate:', error.message);
+  }
+};
+
+// Static method to perform semantic search
+ContextSchema.statics.semanticSearch = async function(query, options = {}) {
+  try {
+    if (!weaviateService.isConnected) {
+      console.warn('Weaviate service not connected, falling back to MongoDB search');
+      return this.find({
+        $or: [
+          { tag: { $regex: query, $options: 'i' } },
+          { 'data': { $regex: query, $options: 'i' } }
+        ],
+        isActive: true
+      }).limit(options.limit || 10).exec();
+    }
+
+    const weaviateResults = await weaviateService.searchContexts(query, options);
+    
+    // Fetch full MongoDB documents for the results
+    const mongoIds = weaviateResults
+      .map(result => result.mongoId)
+      .filter(id => id);
+    
+    if (mongoIds.length === 0) {
+      return [];
+    }
+
+    const contexts = await this.find({
+      _id: { $in: mongoIds }
+    }).exec();
+
+    // Maintain order from Weaviate results
+    const orderedContexts = weaviateResults.map(wResult => 
+      contexts.find(ctx => ctx._id.toString() === wResult.mongoId)
+    ).filter(ctx => ctx);
+
+    return orderedContexts;
+  } catch (error) {
+    console.error('Semantic search failed:', error.message);
+    throw error;
+  }
+};
+
+// Static method to get bridge recommendations
+ContextSchema.statics.getBridgeRecommendations = async function(sourceTag, limit = 5) {
+  try {
+    if (!weaviateService.isConnected) {
+      console.warn('Weaviate service not connected, using basic recommendations');
+      return this.find({
+        tag: { $ne: sourceTag },
+        isActive: true
+      }).limit(limit).exec();
+    }
+
+    const recommendations = await weaviateService.getBridgeRecommendations(sourceTag, limit);
+    
+    const mongoIds = recommendations
+      .map(rec => rec.mongoId)
+      .filter(id => id);
+    
+    if (mongoIds.length === 0) {
+      return [];
+    }
+
+    const contexts = await this.find({
+      _id: { $in: mongoIds }
+    }).exec();
+
+    return contexts;
+  } catch (error) {
+    console.error('Failed to get bridge recommendations:', error.message);
+    throw error;
+  }
+};
+
 // Static method to create context bridge between Symbi and Overseer
 ContextSchema.statics.createBridge = async function(fromTag, toTag, data) {
   const sourceContext = await this.findOne({ tag: fromTag }).sort({ createdAt: -1 }).exec();
@@ -109,7 +236,30 @@ ContextSchema.statics.createBridge = async function(fromTag, toTag, data) {
     trustScore: sourceContext.trustScore
   });
   
-  return bridgeContext.save();
+  const savedContext = await bridgeContext.save();
+  
+  // Sync to Weaviate after saving
+  await savedContext.syncToWeaviate();
+  
+  return savedContext;
 };
+
+// Post-save middleware to sync with Weaviate
+ContextSchema.post('save', async function(doc) {
+  // Only sync if the document is new or data has changed
+  if (this.isNew || this.isModified('data') || this.isModified('trustScore') || this.isModified('isActive')) {
+    await doc.syncToWeaviate();
+  }
+});
+
+// Pre-remove middleware to clean up Weaviate
+ContextSchema.pre('remove', async function() {
+  await this.removeFromWeaviate();
+});
+
+// Pre-deleteOne middleware to clean up Weaviate
+ContextSchema.pre('deleteOne', { document: true, query: false }, async function() {
+  await this.removeFromWeaviate();
+});
 
 module.exports = mongoose.model('Context', ContextSchema);
