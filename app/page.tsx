@@ -34,8 +34,6 @@ import {
   Eye,
   Plus,
   Settings,
-  MessageCircle,
-  Send,
 } from "lucide-react"
 
 export default function SymbiDashboard() {
@@ -44,32 +42,15 @@ export default function SymbiDashboard() {
   const [verifiedDeclarations, setVerifiedDeclarations] = useState(45)
   const [agents, setAgents] = useState([])
   const [selectedAgent, setSelectedAgent] = useState(null)
-  const [chatMessages, setChatMessages] = useState([])
-  const [newMessage, setNewMessage] = useState("")
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
-  const [isChatDialogOpen, setIsChatDialogOpen] = useState(false)
   const [isConfigDialogOpen, setIsConfigDialogOpen] = useState(false)
   const [isBondingDialogOpen, setIsBondingDialogOpen] = useState(false)
   const [bondingProgress, setBondingProgress] = useState(0)
   const [bondingPhase, setBondingPhase] = useState("initiation")
   const [selectedBondingAgent, setSelectedBondingAgent] = useState(null)
-  const [agentConnections, setAgentConnections] = useState([])
+  const [agentConnections, setAgentConnections] = useState([]) // Declare setAgentConnections variable
   const [contextBridges, setContextBridges] = useState([])
   const [isContextDialogOpen, setIsContextDialogOpen] = useState(false)
-
-  const [newAgent, setNewAgent] = useState({
-    name: "",
-    description: "",
-    provider: "openai",
-    model: "gpt-4",
-    temperature: 0.7,
-    maxTokens: 1000,
-    systemPrompt: "",
-    ciModel: "none",
-    ethicalAlignment: 0.9,
-    cognitiveResonance: 0.8,
-    traits: [],
-  })
 
   const router = useRouter()
 
@@ -122,42 +103,7 @@ export default function SymbiDashboard() {
     }
   }
 
-  const handleSendMessage = async () => {
-    if (!newMessage.trim() || !selectedAgent) return
-
-    const userMessage = { role: "user", content: newMessage, timestamp: new Date() }
-    setChatMessages((prev) => [...prev, userMessage])
-    setNewMessage("")
-
-    try {
-      const response = await fetch(`/api/conversations/${selectedAgent._id}/messages`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          message: newMessage,
-          agentId: selectedAgent._id,
-        }),
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        const assistantMessage = {
-          role: "assistant",
-          content: data.response,
-          timestamp: new Date(),
-        }
-        setChatMessages((prev) => [...prev, assistantMessage])
-      }
-    } catch (error) {
-      console.error("Error sending message:", error)
-    }
-  }
-
   const handleOpenChat = (agent) => {
-    setSelectedAgent(agent)
-    setChatMessages([])
     router.push(`/chat/${agent._id}`)
   }
 
@@ -215,6 +161,20 @@ export default function SymbiDashboard() {
     setContextBridges((prev) => [...prev, newBridge])
     setIsContextDialogOpen(false)
   }
+
+  const [newAgent, setNewAgent] = useState({
+    name: "",
+    description: "",
+    provider: "openai",
+    model: "gpt-4",
+    temperature: 0.7,
+    maxTokens: 1000,
+    systemPrompt: "",
+    ciModel: "none",
+    ethicalAlignment: 0.9,
+    cognitiveResonance: 0.8,
+    traits: [],
+  })
 
   return (
     <div className="min-h-screen bg-white">
@@ -983,42 +943,6 @@ export default function SymbiDashboard() {
             <div className="flex justify-end">
               <Button onClick={() => setIsBondingDialogOpen(false)} disabled={bondingProgress < 100}>
                 {bondingProgress < 100 ? "Bonding..." : "Complete"}
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        <Dialog open={isChatDialogOpen} onOpenChange={setIsChatDialogOpen}>
-          <DialogContent className="sm:max-w-[600px] h-[500px] flex flex-col">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <MessageCircle className="w-5 h-5" />
-                Chat with {selectedAgent?.name || selectedAgent?.agentName}
-              </DialogTitle>
-            </DialogHeader>
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-muted/20 rounded-lg">
-              {chatMessages.map((message, index) => (
-                <div key={index} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
-                  <div
-                    className={`max-w-[80%] p-3 rounded-lg ${
-                      message.role === "user" ? "bg-primary text-primary-foreground" : "bg-background border"
-                    }`}
-                  >
-                    <p className="text-sm">{message.content}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <Input
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                placeholder="Type your message..."
-                onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                className="flex-1"
-              />
-              <Button onClick={handleSendMessage} disabled={!newMessage.trim()}>
-                <Send className="w-4 h-4" />
               </Button>
             </div>
           </DialogContent>
