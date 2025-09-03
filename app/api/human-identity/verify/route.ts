@@ -55,6 +55,8 @@ async function verifyIdentityHandler(req: NextRequest) {
 
 export const POST = withApiMiddleware(verifyIdentityHandler, {
   auth: "required",
-  validation: VerificationSchema,
+  validation: {
+    body: VerificationSchema,
+  },
   rateLimit: { maxRequests: 10, windowMs: 60000 },
 })
