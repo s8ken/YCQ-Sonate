@@ -70,6 +70,7 @@
     "react-dom": "^19",
     "react-router-dom": "latest",
     "readline": "latest",
+    "recharts": "latest",
     "snappy": "latest",
     "snowflake-sdk": "latest",
     "socket.io": "latest",
