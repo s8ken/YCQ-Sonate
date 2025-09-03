@@ -48,7 +48,9 @@ async function createConsentEnvelopeHandler(req: NextRequest) {
 }
 
 export const POST = withApiMiddleware(createConsentEnvelopeHandler, {
-  requireAuth: true,
-  validateInput: true,
+  auth: "required",
+  validation: {
+    body: ConsentEnvelopeSchema,
+  },
   rateLimit: { maxRequests: 5, windowMs: 60000 },
 })
