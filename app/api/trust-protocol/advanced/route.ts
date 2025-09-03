@@ -2,8 +2,8 @@ import { type NextRequest, NextResponse } from "next/server"
 import { advancedTrustProtocol } from "@/lib/advanced-trust-protocol"
 import { withApiMiddleware } from "@/lib/api-middleware"
 
-export async function POST(request: NextRequest) {
-  return withApiMiddleware(request, async (req) => {
+export const POST = withApiMiddleware(
+  async (req: NextRequest) => {
     const { action, data } = await req.json()
 
     switch (action) {
@@ -72,5 +72,10 @@ export async function POST(request: NextRequest) {
           { status: 400 },
         )
     }
-  })
-}
+  },
+  {
+    requireAuth: true,
+    methods: ["POST"],
+    rateLimit: { requests: 10, window: 60000 },
+  },
+)
