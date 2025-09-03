@@ -37,7 +37,7 @@ const querySchema = commonSchemas.pagination.extend({
   sort_order: z.enum(["asc", "desc"]).default("desc"),
 })
 
-async function GET(req: NextRequest, context: ApiContext) {
+async function getTrustDeclarations(req: NextRequest, context: ApiContext) {
   const url = new URL(req.url)
   const query = Object.fromEntries(url.searchParams.entries())
   const { page, limit, agent_id, min_compliance_score, max_guilt_score, sort_by, sort_order } = querySchema.parse(query)
@@ -93,7 +93,7 @@ async function GET(req: NextRequest, context: ApiContext) {
   }
 }
 
-async function POST(req: NextRequest, context: ApiContext) {
+async function createTrustDeclaration(req: NextRequest, context: ApiContext) {
   const validatedBody = (req as any).validatedBody
 
   try {
@@ -144,7 +144,7 @@ async function POST(req: NextRequest, context: ApiContext) {
   }
 }
 
-export const GET_HANDLER = withApiMiddleware(GET, {
+export const GET = withApiMiddleware(getTrustDeclarations, {
   auth: "required",
   methods: ["GET"],
   rateLimit: "trust",
@@ -153,7 +153,7 @@ export const GET_HANDLER = withApiMiddleware(GET, {
   },
 })
 
-export const POST_HANDLER = withApiMiddleware(POST, {
+export const POST = withApiMiddleware(createTrustDeclaration, {
   auth: "required",
   methods: ["POST"],
   rateLimit: "trust",
@@ -161,5 +161,3 @@ export const POST_HANDLER = withApiMiddleware(POST, {
     body: trustDeclarationSchema,
   },
 })
-
-export { GET_HANDLER as GET, POST_HANDLER as POST }
