@@ -45,7 +45,7 @@ async function establishTrustHandler(req: NextRequest) {
 }
 
 export const POST = withApiMiddleware(establishTrustHandler, {
-  requireAuth: true,
-  validateInput: true,
-  rateLimit: { requests: 10, window: 60 },
+  auth: "required",
+  validation: { body: EstablishTrustSchema },
+  rateLimit: { maxRequests: 10, windowMs: 60000 },
 })
