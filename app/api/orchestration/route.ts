@@ -1,9 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { agentOrchestrator, type WorkflowDefinition, type AgentCapabilities } from "@/lib/agent-orchestrator"
-import { withApiMiddleware } from "@/lib/api-middleware"
+import { withApiMiddleware, type ApiContext } from "@/lib/api-middleware"
 
-export async function POST(request: NextRequest) {
-  const middlewareResult = withApiMiddleware(request, async (req) => {
+export const POST = withApiMiddleware(
+  async (req: NextRequest, context: ApiContext) => {
     const { action, data } = await req.json()
 
     switch (action) {
@@ -72,13 +72,16 @@ export async function POST(request: NextRequest) {
           { status: 400 },
         )
     }
-  })
+  },
+  {
+    auth: "required",
+    methods: ["POST"],
+    rateLimit: "agents",
+  },
+)
 
-  return await middlewareResult
-}
-
-export async function GET(request: NextRequest) {
-  const middlewareResult = withApiMiddleware(request, async (req) => {
+export const GET = withApiMiddleware(
+  async (req: NextRequest, context: ApiContext) => {
     const { searchParams } = new URL(req.url)
     const executionId = searchParams.get("executionId")
 
@@ -109,7 +112,10 @@ export async function GET(request: NextRequest) {
         },
       },
     })
-  })
-
-  return await middlewareResult
-}
+  },
+  {
+    auth: "optional",
+    methods: ["GET"],
+    rateLimit: "agents",
+  },
+)
