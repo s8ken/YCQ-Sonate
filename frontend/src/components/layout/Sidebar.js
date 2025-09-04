@@ -20,23 +20,27 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import LinkIcon from '@mui/icons-material/Link';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useAuth } from '../../context/AuthContext';
 import { ThemeContext } from '../../context/ThemeContext';
+import { useTheme } from '@mui/material/styles';
 
 const Sidebar = ({ open, toggleDrawer }) => {
    const { user, logout } = useAuth();
    const { mode } = useContext(ThemeContext);
+   const theme = useTheme();
    const location = useLocation();
   const menuItems = [
-     { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard', color: '#667eea' },
+     { text: 'Dashboard', icon: <DashboardIcon />, path: '/', useTheme: 'primary' },
      { text: 'Conversations', icon: <ChatIcon />, path: '/conversations', color: '#10b981' },
-     { text: 'Agents', icon: <SmartToyIcon />, path: '/agents', color: '#8b5cf6' },
-     { text: 'Assistants', icon: <SmartToyIcon />, path: '/assistants', color: '#ec4899' },
+     { text: 'Agents', icon: <SmartToyIcon />, path: '/agents', useTheme: 'primary' },
+     { text: 'Assistants', icon: <SmartToyIcon />, path: '/assistants', useTheme: 'secondary' },
      { text: 'Symbi Logs', icon: <AssessmentIcon />, path: '/reports', color: '#f59e0b' },
      { text: 'Review Console', icon: <TimelineIcon />, path: '/review', color: '#0ea5e9' },
      { text: 'Context Bridge', icon: <LinkIcon />, path: '/context-bridge', color: '#3b82f6' },
+     { text: 'Documentation', icon: <MenuBookIcon />, path: '/documentation', color: '#16a34a' },
      { text: 'Settings', icon: <SettingsIcon />, path: '/settings', color: '#6b7280' },
    ];
 
@@ -55,61 +59,55 @@ const Sidebar = ({ open, toggleDrawer }) => {
       ModalProps={{ keepMounted: true }}
       sx={{
         '& .MuiDrawer-paper': { 
-          width: 280,
+          width: 300,
           boxSizing: 'border-box',
-          background: mode === 'dark' 
-            ? 'linear-gradient(180deg, #1a1a1a 0%, #2d2d2d 100%)'
-            : 'linear-gradient(180deg, #ffffff 0%, #f8fafc 100%)',
-          borderRight: '1px solid',
-          borderColor: mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.12)'
+          background: theme.palette.background.paper,
+          borderRight: `1px solid ${theme.palette.divider}`,
+          borderRadius: 0,
+          boxShadow: theme.shadows[2]
         },
       }}
     >
       <Box 
         sx={{ 
           p: 3,
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          color: 'white',
-          position: 'relative',
-          overflow: 'hidden'
+          background: theme.palette.background.paper,
+          borderBottom: `1px solid ${theme.palette.divider}`,
+          position: 'relative'
         }}
       >
-        <Box sx={{ position: 'relative', zIndex: 1 }}>
-          <Typography variant="h5" component="div" sx={{ fontWeight: 800, mb: 0.5 }}>
-            SYMBI
-          </Typography>
-          <Typography variant="subtitle1" sx={{ opacity: 0.9, fontWeight: 600 }}>
-            Synergy Platform
-          </Typography>
-          <Chip 
-            label="AI Powered" 
-            size="small" 
+        <Box>
+          <Typography 
+            variant="h5" 
+            component="div" 
             sx={{ 
-              mt: 1,
-              bgcolor: 'rgba(255,255,255,0.2)', 
-              color: 'white',
-              fontWeight: 600,
-              fontSize: '0.7rem'
-            }} 
-          />
+              fontFamily: theme.typography.fontFamily,
+              fontWeight: 700, 
+              mb: 0.5,
+              color: theme.palette.text.primary,
+              letterSpacing: '-0.01em'
+            }}
+          >
+            SYMBI SYNERGY
+          </Typography>
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              fontFamily: theme.typography.fontFamily,
+              fontWeight: 500,
+              color: theme.palette.text.secondary,
+              mb: 2
+            }}
+          >
+            Trust First Platform
+          </Typography>
         </Box>
-        <Box 
-          sx={{
-            position: 'absolute',
-            top: -20,
-            right: -20,
-            width: 60,
-            height: 60,
-            borderRadius: '50%',
-            background: 'rgba(255,255,255,0.1)'
-          }}
-        />
       </Box>
       
       <List sx={{ px: 2, py: 1 }}>
         {menuItems.map((item) => {
           const isSelected = location.pathname === item.path;
+          const itemColor = item.useTheme ? theme.palette[item.useTheme].main : item.color;
           return (
             <ListItem
               key={item.text}
@@ -117,30 +115,26 @@ const Sidebar = ({ open, toggleDrawer }) => {
               to={item.path}
               onClick={toggleDrawer}
               sx={{
-                color: isSelected ? 'white' : 'text.primary',
-                background: isSelected 
-                  ? `linear-gradient(135deg, ${item.color} 0%, ${item.color}dd 100%)`
-                  : 'transparent',
-                '&:hover': {
-                  background: isSelected 
-                    ? `linear-gradient(135deg, ${item.color} 0%, ${item.color}dd 100%)`
-                    : mode === 'dark' 
-                      ? 'rgba(255,255,255,0.05)' 
-                      : 'rgba(0,0,0,0.04)',
-                  transform: 'translateX(4px)',
-                },
-                borderRadius: 2,
+                color: isSelected ? theme.palette.primary.contrastText : theme.palette.text.primary,
+                background: isSelected ? theme.palette.primary.main : 'transparent',
+                borderRadius: theme.shape.borderRadius,
                 mb: 1,
-                transition: 'all 0.2s ease-in-out',
-                boxShadow: isSelected ? `0 4px 12px ${item.color}40` : 'none',
+                mx: 1,
                 position: 'relative',
-                overflow: 'hidden'
+                '&:hover': {
+                  background: isSelected ? theme.palette.primary.dark : theme.palette.action.hover,
+                  color: isSelected ? theme.palette.primary.contrastText : theme.palette.text.primary
+                },
+                transition: 'all 0.2s ease'
               }}
             >
               <ListItemIcon 
                 sx={{ 
-                  color: isSelected ? 'white' : item.color,
-                  minWidth: 40
+                  color: isSelected ? theme.palette.primary.contrastText : itemColor,
+                  minWidth: 40,
+                  '& .MuiSvgIcon-root': {
+                    fontSize: '1.25rem'
+                  }
                 }}
               >
                 {item.icon}
@@ -149,44 +143,35 @@ const Sidebar = ({ open, toggleDrawer }) => {
                 primary={item.text} 
                 sx={{
                   '& .MuiListItemText-primary': {
-                    fontWeight: isSelected ? 600 : 500,
-                    fontSize: '0.95rem'
+                    fontFamily: theme.typography.fontFamily,
+                    fontWeight: 500,
+                    fontSize: '0.95rem',
+                    color: isSelected ? theme.palette.primary.contrastText : theme.palette.text.primary
                   }
                 }}
               />
-              {isSelected && (
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    right: 8,
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    width: 4,
-                    height: 20,
-                    bgcolor: 'white',
-                    borderRadius: 2
-                  }}
-                />
-              )}
+
             </ListItem>
           );
         })}
       </List>
       
       <Box sx={{ mt: 'auto', p: 2 }}>
-        <Divider sx={{ mb: 2, borderColor: mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)' }} />
+        <Divider 
+          sx={{ 
+            mb: 2,
+            borderColor: theme.palette.divider
+          }} 
+        />
         
         <Box 
           sx={{
             display: 'flex',
             alignItems: 'center',
             p: 2,
-            borderRadius: 2,
-            background: mode === 'dark' 
-              ? 'rgba(255,255,255,0.05)' 
-              : 'rgba(0,0,0,0.02)',
-            border: '1px solid',
-            borderColor: mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)',
+            borderRadius: theme.shape.borderRadius,
+            background: theme.palette.background.default,
+            border: `1px solid ${theme.palette.divider}`,
             mb: 1
           }}
         >
@@ -195,23 +180,35 @@ const Sidebar = ({ open, toggleDrawer }) => {
               width: 40, 
               height: 40, 
               mr: 2,
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+              background: theme.palette.primary.main,
+              color: theme.palette.primary.contrastText
             }}
           >
-            <PersonIcon />
+            <PersonIcon sx={{ fontSize: '1.25rem' }} />
           </Avatar>
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 0.5 }}>
+            <Typography 
+              variant="subtitle2" 
+              sx={{ 
+                fontFamily: theme.typography.fontFamily,
+                fontWeight: 600, 
+                mb: 0.5,
+                color: theme.palette.text.primary
+              }}
+            >
               {user?.name || 'User'}
             </Typography>
             <Typography 
               variant="caption" 
-              color="text.secondary"
               sx={{ 
                 display: 'block',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap'
+                whiteSpace: 'nowrap',
+                fontFamily: theme.typography.fontFamily,
+                fontWeight: 400,
+                color: theme.palette.text.secondary,
+                fontSize: '0.75rem'
               }}
             >
               {user?.email || 'user@example.com'}
@@ -221,16 +218,17 @@ const Sidebar = ({ open, toggleDrawer }) => {
             onClick={handleLogout}
             size="small"
             sx={{
-              color: 'text.secondary',
+              bgcolor: theme.palette.error.main,
+              color: theme.palette.error.contrastText,
+              width: 36,
+              height: 36,
               '&:hover': {
-                color: 'error.main',
-                bgcolor: 'error.main',
-                color: 'white'
+                bgcolor: theme.palette.error.dark
               },
-              transition: 'all 0.2s ease-in-out'
+              transition: 'all 0.2s ease'
             }}
           >
-            <LogoutIcon fontSize="small" />
+            <LogoutIcon sx={{ fontSize: '1.1rem' }} />
           </IconButton>
         </Box>
       </Box>

@@ -29,6 +29,7 @@ import {
   Switch
 } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
+import TrustModeInfo from '../components/common/TrustModeInfo';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -39,7 +40,7 @@ import PsychologyIcon from '@mui/icons-material/Psychology';
 import { useAuth } from '../context/AuthContext';
 import { ThemeContext } from '../context/ThemeContext';
 import axios from 'axios';
-import CIModelSettings from '../components/settings/CIModelSettings';
+// POC: CI settings disabled; Trust Mode (heuristic) only
 import '../styles/builder.css';
 
 const Settings = () => {
@@ -296,29 +297,90 @@ const Settings = () => {
   };
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      <Typography variant="h4" gutterBottom>
+    <Box sx={{ flexGrow: 1, p: { xs: 2, md: 3 } }}>
+      <Typography 
+        variant="h4" 
+        gutterBottom
+        sx={{
+          fontWeight: 700,
+          color: 'text.primary',
+          mb: 3
+        }}
+      >
         Settings
       </Typography>
 
       {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
+        <Alert 
+          severity="error" 
+          sx={{ 
+            mb: 3,
+            borderRadius: 2,
+            border: '1px solid #f87171',
+            backgroundColor: '#fef2f2'
+          }}
+        >
           {error}
         </Alert>
       )}
 
       {success && (
-        <Alert severity="success" sx={{ mb: 3 }}>
+        <Alert 
+          severity="success" 
+          sx={{ 
+            mb: 3,
+            borderRadius: 2,
+            border: '1px solid #10b981',
+            backgroundColor: '#f0fdf4'
+          }}
+        >
           {success}
         </Alert>
       )}
 
-      <Paper sx={{ p: 3, mb: 3 }}>
-        <Tabs value={tabValue} onChange={handleTabChange} sx={{ mb: 3 }}>
+      <Paper 
+        sx={{ 
+          p: 4, 
+          mb: 3,
+          borderRadius: 3,
+          backgroundColor: 'background.paper',
+          border: (theme) => `1px solid ${theme.palette.divider}`,
+          boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+        }}
+      >
+        <Tabs 
+          value={tabValue} 
+          onChange={handleTabChange} 
+          sx={{ 
+            mb: 4,
+            '& .MuiTabs-indicator': {
+              backgroundColor: 'primary.main',
+              height: 3,
+              borderRadius: '3px 3px 0 0'
+            },
+            '& .MuiTab-root': {
+              textTransform: 'none',
+              fontWeight: 600,
+              fontSize: '1rem',
+              color: 'text.secondary',
+              '&.Mui-selected': {
+                color: 'primary.main'
+              },
+              '&:hover': {
+                color: 'primary.main',
+                backgroundColor: 'rgba(102, 126, 234, 0.05)'
+              }
+            }
+          }}
+        >
           <Tab label="Profile" />
           <Tab label="API Keys" />
           <Tab label="Preferences" />
-          <Tab label="CI Settings" icon={<PsychologyIcon />} iconPosition="start" />
+          <Tab 
+            label="Trust Mode" 
+            icon={<PsychologyIcon sx={{ color: 'primary.main' }} />} 
+            iconPosition="start" 
+          />
         </Tabs>
 
         {/* Profile Tab */}
@@ -338,15 +400,22 @@ const Settings = () => {
               sx={{
                 '& .MuiOutlinedInput-root': {
                   borderRadius: 2,
-                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                  backgroundColor: 'background.paper',
+                  border: (theme) => `1px solid ${theme.palette.divider}`,
                   transition: 'all 0.3s ease',
                   '&:hover': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+                    borderColor: 'primary.main',
+                    boxShadow: '0 0 0 1px rgba(102, 126, 234, 0.2)'
                   },
                   '&.Mui-focused': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    borderColor: 'primary.main',
                     boxShadow: '0 0 0 2px rgba(102, 126, 234, 0.2)'
+                  }
+                },
+                '& .MuiInputLabel-root': {
+                  color: 'text.secondary',
+                  '&.Mui-focused': {
+                    color: 'primary.main'
                   }
                 }
               }}
@@ -364,10 +433,15 @@ const Settings = () => {
               sx={{
                 '& .MuiOutlinedInput-root': {
                   borderRadius: 2,
-                  backgroundColor: 'rgba(0, 0, 0, 0.02)',
+                  backgroundColor: 'action.hover',
+                  border: (theme) => `1px solid ${theme.palette.divider}`,
                   '&.Mui-disabled': {
-                    backgroundColor: 'rgba(0, 0, 0, 0.05)'
+                    backgroundColor: 'action.disabledBackground',
+                    color: 'text.disabled'
                   }
+                },
+                '& .MuiInputLabel-root': {
+                  color: 'text.disabled'
                 }
               }}
             />
@@ -408,15 +482,22 @@ const Settings = () => {
               sx={{
                 '& .MuiOutlinedInput-root': {
                   borderRadius: 2,
-                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                  backgroundColor: 'background.paper',
+                  border: (theme) => `1px solid ${theme.palette.divider}`,
                   transition: 'all 0.3s ease',
                   '&:hover': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+                    borderColor: 'primary.main',
+                    boxShadow: '0 0 0 1px rgba(102, 126, 234, 0.2)'
                   },
                   '&.Mui-focused': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    borderColor: 'primary.main',
                     boxShadow: '0 0 0 2px rgba(102, 126, 234, 0.2)'
+                  }
+                },
+                '& .MuiInputLabel-root': {
+                  color: 'text.secondary',
+                  '&.Mui-focused': {
+                    color: 'primary.main'
                   }
                 }
               }}
@@ -452,15 +533,22 @@ const Settings = () => {
               sx={{
                 '& .MuiOutlinedInput-root': {
                   borderRadius: 2,
-                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                  backgroundColor: 'background.paper',
+                  border: (theme) => `1px solid ${theme.palette.divider}`,
                   transition: 'all 0.3s ease',
                   '&:hover': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+                    borderColor: 'primary.main',
+                    boxShadow: '0 0 0 1px rgba(102, 126, 234, 0.2)'
                   },
                   '&.Mui-focused': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    borderColor: 'primary.main',
                     boxShadow: '0 0 0 2px rgba(102, 126, 234, 0.2)'
+                  }
+                },
+                '& .MuiInputLabel-root': {
+                  color: 'text.secondary',
+                  '&.Mui-focused': {
+                    color: 'primary.main'
                   }
                 }
               }}
@@ -477,15 +565,22 @@ const Settings = () => {
               sx={{
                 '& .MuiOutlinedInput-root': {
                   borderRadius: 2,
-                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                  backgroundColor: 'background.paper',
+                  border: (theme) => `1px solid ${theme.palette.divider}`,
                   transition: 'all 0.3s ease',
                   '&:hover': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+                    borderColor: 'primary.main',
+                    boxShadow: '0 0 0 1px rgba(102, 126, 234, 0.2)'
                   },
                   '&.Mui-focused': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    borderColor: 'primary.main',
                     boxShadow: '0 0 0 2px rgba(102, 126, 234, 0.2)'
+                  }
+                },
+                '& .MuiInputLabel-root': {
+                  color: 'text.secondary',
+                  '&.Mui-focused': {
+                    color: 'primary.main'
                   }
                 }
               }}
@@ -501,24 +596,20 @@ const Settings = () => {
                 py: 1.5,
                 px: 4,
                 borderRadius: 2,
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)',
+                backgroundColor: 'primary.main',
+                color: 'white',
                 fontWeight: 600,
                 fontSize: '1rem',
                 textTransform: 'none',
+                boxShadow: '0 2px 8px rgba(102, 126, 234, 0.2)',
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 12px 40px rgba(102, 126, 234, 0.4)',
-                  background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)'
-                },
-                '&:active': {
-                  transform: 'translateY(0px)'
+                  backgroundColor: 'primary.dark',
+                  boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
                 },
                 '&:disabled': {
-                  background: 'linear-gradient(135deg, #ccc 0%, #999 100%)',
-                  transform: 'none',
-                  boxShadow: 'none'
+                  backgroundColor: 'action.disabledBackground',
+                  color: 'text.disabled'
                 }
               }}
             >
@@ -549,15 +640,15 @@ const Settings = () => {
                   py: 1.2,
                   px: 3,
                   borderRadius: 2,
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  boxShadow: '0 6px 20px rgba(102, 126, 234, 0.3)',
+                  backgroundColor: 'primary.main',
+                  color: 'white',
                   fontWeight: 600,
                   textTransform: 'none',
+                  boxShadow: '0 2px 8px rgba(102, 126, 234, 0.2)',
                   transition: 'all 0.3s ease',
                   '&:hover': {
-                    transform: 'translateY(-2px)',
-                    boxShadow: '0 8px 25px rgba(102, 126, 234, 0.4)',
-                    background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)'
+                    backgroundColor: 'primary.dark',
+                    boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
                   },
                   '&:active': {
                     transform: 'translateY(0px)'
@@ -576,13 +667,24 @@ const Settings = () => {
               <Grid container spacing={2}>
                 {apiKeys.map((key) => (
                   <Grid item xs={12} md={6} key={key._id}>
-                    <Card variant="outlined">
+                    <Card 
+                      variant="outlined"
+                      sx={{
+                        borderRadius: 2,
+                        border: (theme) => `1px solid ${theme.palette.divider}`,
+                        backgroundColor: 'background.paper',
+                        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+                        '&:hover': {
+                          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
+                        }
+                      }}
+                    >
                       <CardContent>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                          <Typography variant="h6">{key.name}</Typography>
+                          <Typography variant="h6">{key.name || 'Unnamed Key'}</Typography>
                           <Chip 
-                            label={getProviderName(key.provider)} 
-                            color={getProviderColor(key.provider)} 
+                            label={getProviderName(key.provider || 'unknown')} 
+                            color={getProviderColor(key.provider || 'unknown')} 
                             size="small" 
                             variant="outlined" 
                           />
@@ -590,7 +692,7 @@ const Settings = () => {
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
                           <KeyIcon fontSize="small" sx={{ mr: 1, color: 'text.secondary' }} />
                           <Typography variant="body2" color="text.secondary">
-                            {key.key.substring(0, 3)}•••••••••••••{key.key.substring(key.key.length - 4)}
+                            {key.key ? `${key.key.substring(0, 3)}•••••••••••••${key.key.substring(key.key.length - 4)}` : '••••••••••••••••'}
                           </Typography>
                         </Box>
                       </CardContent>
@@ -600,6 +702,15 @@ const Settings = () => {
                           color="error" 
                           startIcon={<DeleteIcon />}
                           onClick={() => handleDeleteApiKey(key._id)}
+                          sx={{
+                            textTransform: 'none',
+                            fontWeight: 500,
+                            borderRadius: 1.5,
+                            '&:hover': {
+                              backgroundColor: 'error.light',
+                              color: 'white'
+                            }
+                          }}
                         >
                           Remove
                         </Button>
@@ -621,19 +732,16 @@ const Settings = () => {
                     py: 1.5,
                     px: 4,
                     borderRadius: 2,
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)',
+                    backgroundColor: 'primary.main',
+                    color: 'white',
                     fontWeight: 600,
                     fontSize: '1rem',
                     textTransform: 'none',
+                    boxShadow: '0 2px 8px rgba(102, 126, 234, 0.2)',
                     transition: 'all 0.3s ease',
                     '&:hover': {
-                      transform: 'translateY(-2px)',
-                      boxShadow: '0 12px 40px rgba(102, 126, 234, 0.4)',
-                      background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)'
-                    },
-                    '&:active': {
-                      transform: 'translateY(0px)'
+                      backgroundColor: 'primary.dark',
+                      boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
                     }
                   }}
                 >
@@ -660,15 +768,22 @@ const Settings = () => {
                 label="Default Model"
                 sx={{
                   borderRadius: 2,
-                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                  backgroundColor: 'background.paper',
+                  border: (theme) => `1px solid ${theme.palette.divider}`,
                   transition: 'all 0.3s ease',
                   '&:hover': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+                    borderColor: 'primary.main',
+                    boxShadow: '0 0 0 1px rgba(102, 126, 234, 0.2)'
                   },
                   '&.Mui-focused': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    borderColor: 'primary.main',
                     boxShadow: '0 0 0 2px rgba(102, 126, 234, 0.2)'
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: 'text.secondary',
+                    '&.Mui-focused': {
+                      color: 'primary.main'
+                    }
                   }
                 }}
               >
@@ -689,15 +804,22 @@ const Settings = () => {
                 label="Theme"
                 sx={{
                   borderRadius: 2,
-                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                  backgroundColor: 'background.paper',
+                  border: (theme) => `1px solid ${theme.palette.divider}`,
                   transition: 'all 0.3s ease',
                   '&:hover': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+                    borderColor: 'primary.main',
+                    boxShadow: '0 0 0 1px rgba(102, 126, 234, 0.2)'
                   },
                   '&.Mui-focused': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                    borderColor: 'primary.main',
                     boxShadow: '0 0 0 2px rgba(102, 126, 234, 0.2)'
+                  },
+                  '& .MuiInputLabel-root': {
+                    color: 'text.secondary',
+                    '&.Mui-focused': {
+                      color: 'primary.main'
+                    }
                   }
                 }}
               >
@@ -716,19 +838,21 @@ const Settings = () => {
                   sx={{
                     '& .MuiSwitch-switchBase': {
                       '&.Mui-checked': {
-                        color: '#667eea',
+                        color: 'primary.main',
                         '& + .MuiSwitch-track': {
-                          backgroundColor: '#667eea',
-                          opacity: 0.5
+                          backgroundColor: 'primary.main',
+                          opacity: 0.6
                         }
                       }
                     },
                     '& .MuiSwitch-track': {
                       borderRadius: 12,
-                      backgroundColor: 'rgba(255, 255, 255, 0.1)'
+                      backgroundColor: 'action.disabled',
+                      border: (theme) => `1px solid ${theme.palette.divider}`
                     },
                     '& .MuiSwitch-thumb': {
-                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)'
+                      backgroundColor: 'background.paper',
+                      boxShadow: '0 1px 3px rgba(0, 0, 0, 0.2)'
                     }
                   }}
                 />
@@ -752,24 +876,20 @@ const Settings = () => {
                 py: 1.5,
                 px: 4,
                 borderRadius: 2,
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)',
+                backgroundColor: 'primary.main',
+                color: 'white',
                 fontWeight: 600,
                 fontSize: '1rem',
                 textTransform: 'none',
+                boxShadow: '0 2px 8px rgba(102, 126, 234, 0.2)',
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 12px 40px rgba(102, 126, 234, 0.4)',
-                  background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)'
-                },
-                '&:active': {
-                  transform: 'translateY(0px)'
+                  backgroundColor: 'primary.dark',
+                  boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
                 },
                 '&:disabled': {
-                  background: 'linear-gradient(135deg, #ccc 0%, #999 100%)',
-                  transform: 'none',
-                  boxShadow: 'none'
+                  backgroundColor: 'action.disabledBackground',
+                  color: 'text.disabled'
                 }
               }}
             >
@@ -785,22 +905,33 @@ const Settings = () => {
           </Box>
         )}
         
-        {/* CI Settings Tab */}
+        {/* Trust Mode Tab (POC: Heuristic only) */}
         {tabValue === 3 && (
           <Box>
-            <Typography variant="h6" gutterBottom>
-              Cognitive Intelligence Settings
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography variant="h6" gutterBottom sx={{ m: 0 }}>
+                Trust Mode
+              </Typography>
+              <TrustModeInfo />
+            </Box>
             <Typography variant="body2" color="text.secondary" paragraph>
-              Configure CI model preferences, ethical alignment, and context bridge settings.
+              POC uses lightweight, on‑server heuristics to compute trust overlays.
             </Typography>
-            
-            <CIModelSettings 
-              onSave={(settings) => {
-                setSuccess('CI settings saved successfully');
-                setTimeout(() => setSuccess(null), 3000);
-              }} 
-            />
+            <Paper 
+              variant="outlined" 
+              sx={{ 
+                p: 2,
+                borderRadius: 2,
+                backgroundColor: 'background.paper',
+                border: (theme) => `1px solid ${theme.palette.divider}`,
+                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+              }}
+            >
+              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>Heuristic (local)</Typography>
+              <Typography variant="body2" color="text.secondary">
+                No external systems or governance layers are used in POC mode.
+              </Typography>
+            </Paper>
           </Box>
         )}
       </Paper>
@@ -814,19 +945,16 @@ const Settings = () => {
         PaperProps={{
           sx: {
             borderRadius: 3,
-            background: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%)',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.1)'
+            backgroundColor: 'background.paper',
+            border: (theme) => `1px solid ${theme.palette.divider}`,
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
           }
         }}
       >
         <DialogTitle sx={{ 
           fontWeight: 600, 
           fontSize: '1.5rem',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
+          color: 'text.primary',
           pb: 1
         }}>
           Add API Key
@@ -843,15 +971,22 @@ const Settings = () => {
             sx={{
               '& .MuiOutlinedInput-root': {
                 borderRadius: 2,
-                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                backgroundColor: 'background.paper',
+                border: (theme) => `1px solid ${theme.palette.divider}`,
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+                  borderColor: 'primary.main',
+                  boxShadow: '0 0 0 1px rgba(102, 126, 234, 0.2)'
                 },
                 '&.Mui-focused': {
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  borderColor: 'primary.main',
                   boxShadow: '0 0 0 2px rgba(102, 126, 234, 0.2)'
+                }
+              },
+              '& .MuiInputLabel-root': {
+                color: 'text.secondary',
+                '&.Mui-focused': {
+                  color: 'primary.main'
                 }
               }
             }}
@@ -866,15 +1001,22 @@ const Settings = () => {
               label="Provider"
               sx={{
                 borderRadius: 2,
-                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                backgroundColor: 'background.paper',
+                border: (theme) => `1px solid ${theme.palette.divider}`,
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+                  borderColor: 'primary.main',
+                  boxShadow: '0 0 0 1px rgba(102, 126, 234, 0.2)'
                 },
                 '&.Mui-focused': {
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  borderColor: 'primary.main',
                   boxShadow: '0 0 0 2px rgba(102, 126, 234, 0.2)'
+                },
+                '& .MuiInputLabel-root': {
+                  color: 'text.secondary',
+                  '&.Mui-focused': {
+                    color: 'primary.main'
+                  }
                 }
               }}
             >
@@ -897,15 +1039,22 @@ const Settings = () => {
             sx={{
               '& .MuiOutlinedInput-root': {
                 borderRadius: 2,
-                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                backgroundColor: 'background.paper',
+                border: (theme) => `1px solid ${theme.palette.divider}`,
                 transition: 'all 0.3s ease',
                 '&:hover': {
-                  backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+                  borderColor: 'primary.main',
+                  boxShadow: '0 0 0 1px rgba(102, 126, 234, 0.2)'
                 },
                 '&.Mui-focused': {
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  borderColor: 'primary.main',
                   boxShadow: '0 0 0 2px rgba(102, 126, 234, 0.2)'
+                }
+              },
+              '& .MuiInputLabel-root': {
+                color: 'text.secondary',
+                '&.Mui-focused': {
+                  color: 'primary.main'
                 }
               }
             }}
@@ -916,9 +1065,9 @@ const Settings = () => {
                     onClick={() => setShowPassword(!showPassword)}
                     edge="end"
                     sx={{
-                      color: 'rgba(255, 255, 255, 0.7)',
+                      color: 'text.secondary',
                       '&:hover': {
-                        color: '#667eea',
+                        color: 'primary.main',
                         backgroundColor: 'rgba(102, 126, 234, 0.1)'
                       }
                     }}
@@ -937,15 +1086,15 @@ const Settings = () => {
               px: 3,
               py: 1,
               borderRadius: 2,
-              color: 'rgba(255, 255, 255, 0.7)',
-              border: '1px solid rgba(255, 255, 255, 0.2)',
+              color: 'text.secondary',
+              border: (theme) => `1px solid ${theme.palette.divider}`,
               textTransform: 'none',
               fontWeight: 500,
               transition: 'all 0.3s ease',
               '&:hover': {
-                backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                color: 'rgba(255, 255, 255, 0.9)',
-                border: '1px solid rgba(255, 255, 255, 0.3)'
+                backgroundColor: 'action.hover',
+                color: 'text.primary',
+                borderColor: 'text.secondary'
               }
             }}
           >
@@ -958,23 +1107,19 @@ const Settings = () => {
               px: 4,
               py: 1,
               borderRadius: 2,
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              boxShadow: '0 4px 16px rgba(102, 126, 234, 0.3)',
+              backgroundColor: 'primary.main',
+              color: 'white',
               fontWeight: 600,
               textTransform: 'none',
+              boxShadow: '0 2px 8px rgba(102, 126, 234, 0.2)',
               transition: 'all 0.3s ease',
               '&:hover': {
-                transform: 'translateY(-1px)',
-                boxShadow: '0 6px 20px rgba(102, 126, 234, 0.4)',
-                background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)'
-              },
-              '&:active': {
-                transform: 'translateY(0px)'
+                backgroundColor: 'primary.dark',
+                boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
               },
               '&:disabled': {
-                background: 'linear-gradient(135deg, #ccc 0%, #999 100%)',
-                transform: 'none',
-                boxShadow: 'none'
+                backgroundColor: 'action.disabledBackground',
+                color: 'text.disabled'
               }
             }}
           >

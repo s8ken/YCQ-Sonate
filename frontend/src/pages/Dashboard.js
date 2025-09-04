@@ -22,6 +22,7 @@ import { Link } from 'react-router-dom';
 import ChatIcon from '@mui/icons-material/Chat';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import AddIcon from '@mui/icons-material/Add';
+import GroupsIcon from '@mui/icons-material/Groups';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import PsychologyIcon from '@mui/icons-material/Psychology';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
@@ -29,6 +30,7 @@ import MessageIcon from '@mui/icons-material/Message';
 import GroupIcon from '@mui/icons-material/Group';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
+import RoundtableDialog from '../components/bridge/RoundtableDialog';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -40,6 +42,7 @@ const Dashboard = () => {
     totalAgents: 0,
     totalMessages: 0
   });
+  const [roundtableOpen, setRoundtableOpen] = useState(false);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -99,21 +102,37 @@ const Dashboard = () => {
       {/* Welcome Header */}
       <Box 
         sx={{ 
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          borderRadius: 4,
+          background: (theme) => theme.palette.background.paper,
+          border: (theme) => `1px solid ${theme.palette.divider}`,
+          borderRadius: 2,
           p: 4,
           mb: 4,
-          color: 'white',
-          position: 'relative',
-          overflow: 'hidden'
+          color: (theme) => theme.palette.text.primary,
+          boxShadow: (theme) => theme.palette.mode === 'dark' 
+            ? '0 4px 20px rgba(0,0,0,0.3)' 
+            : '0 4px 20px rgba(0,0,0,0.08)'
         }}
       >
-        <Box sx={{ position: 'relative', zIndex: 1 }}>
-          <Typography variant="h3" gutterBottom sx={{ fontWeight: 700 }}>
-            Welcome back, {user?.name || 'User'}! 👋
+          <Typography 
+            variant="h3" 
+            gutterBottom 
+            sx={{ 
+              fontWeight: 700,
+              letterSpacing: '-0.02em',
+              color: (theme) => theme.palette.text.primary
+            }}
+          >
+            Welcome back, {user?.name || 'User'}!
           </Typography>
-          <Typography variant="h6" sx={{ opacity: 0.9, mb: 2 }}>
-            Ready to continue your AI conversations and manage your agents?
+          <Typography 
+            variant="h6" 
+            sx={{ 
+              fontWeight: 400,
+              mb: 3,
+              color: (theme) => theme.palette.text.secondary
+            }}
+          >
+            Ready to continue your AI conversations?
           </Typography>
           <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
             <Button 
@@ -121,186 +140,262 @@ const Dashboard = () => {
               to="/conversations/new"
               variant="contained"
               sx={{ 
-                bgcolor: 'rgba(255,255,255,0.2)', 
-                backdropFilter: 'blur(10px)',
-                '&:hover': { bgcolor: 'rgba(255,255,255,0.3)' }
+                bgcolor: (theme) => theme.palette.primary.main,
+                color: (theme) => theme.palette.primary.contrastText,
+                borderRadius: 2,
+                fontWeight: 600,
+                textTransform: 'none',
+                px: 3,
+                py: 1.5,
+                '&:hover': { 
+                  bgcolor: (theme) => theme.palette.primary.dark,
+                  transform: 'translateY(-1px)',
+                  boxShadow: (theme) => theme.palette.mode === 'dark' 
+                    ? '0 8px 25px rgba(0,0,0,0.4)' 
+                    : '0 8px 25px rgba(0,0,0,0.15)'
+                },
+                transition: 'all 0.2s ease'
               }}
-              startIcon={<ChatIcon />}
+              startIcon={<ChatIcon sx={{ color: (theme) => theme.palette.info.main }} />}
             >
               New Conversation
             </Button>
             <Button 
               component={Link} 
               to="/agents/new"
-              variant="outlined"
+              variant="contained"
               sx={{ 
-                borderColor: 'rgba(255,255,255,0.5)', 
-                color: 'white',
+                bgcolor: (theme) => theme.palette.primary.main,
+                color: (theme) => theme.palette.primary.contrastText,
+                borderRadius: 2,
+                fontWeight: 600,
+                textTransform: 'none',
+                px: 3,
+                py: 1.5,
                 '&:hover': { 
-                  borderColor: 'white',
-                  bgcolor: 'rgba(255,255,255,0.1)'
-                }
+                  bgcolor: (theme) => theme.palette.primary.dark,
+                  transform: 'translateY(-1px)',
+                  boxShadow: (theme) => theme.palette.mode === 'dark' 
+                    ? '0 8px 25px rgba(0,0,0,0.4)' 
+                    : '0 8px 25px rgba(0,0,0,0.15)'
+                },
+                transition: 'all 0.2s ease'
               }}
-              startIcon={<SmartToyIcon />}
+              startIcon={<SmartToyIcon sx={{ color: (theme) => theme.palette.success.main }} />}
             >
               Create Agent
             </Button>
+            <Button
+              variant="contained"
+              onClick={() => setRoundtableOpen(true)}
+              sx={{
+                bgcolor: (theme) => theme.palette.primary.main,
+                color: (theme) => theme.palette.primary.contrastText,
+                borderRadius: 2,
+                fontWeight: 600,
+                textTransform: 'none',
+                px: 3,
+                py: 1.5,
+                '&:hover': { 
+                  bgcolor: (theme) => theme.palette.primary.dark,
+                  transform: 'translateY(-1px)',
+                  boxShadow: (theme) => theme.palette.mode === 'dark' 
+                    ? '0 8px 25px rgba(0,0,0,0.4)' 
+                    : '0 8px 25px rgba(0,0,0,0.15)'
+                },
+                transition: 'all 0.2s ease'
+              }}
+              startIcon={<GroupsIcon sx={{ color: (theme) => theme.palette.warning.main }} />}
+            >
+              Roundtable
+            </Button>
           </Box>
         </Box>
-        <Box 
-          sx={{
-            position: 'absolute',
-            top: -50,
-            right: -50,
-            width: 200,
-            height: 200,
-            borderRadius: '50%',
-            background: 'rgba(255,255,255,0.1)',
-            zIndex: 0
-          }}
-        />
-      </Box>
-      
-      <Grid container spacing={3}>
+        
+        <RoundtableDialog open={roundtableOpen} onClose={() => setRoundtableOpen(false)} />
+        
+        <Grid container spacing={3}>
         {/* Stats Cards */}
         <Grid item xs={12} md={4}>
           <Card 
             sx={{ 
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              color: 'white',
-              position: 'relative',
-              overflow: 'hidden',
+              background: (theme) => theme.palette.background.paper,
+              border: (theme) => `1px solid ${theme.palette.divider}`,
+              borderRadius: 2,
               '&:hover': {
-                transform: 'translateY(-4px)',
-                boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)'
+                transform: 'translateY(-2px)',
+                boxShadow: (theme) => theme.palette.mode === 'dark' 
+                  ? '0 8px 25px rgba(0,0,0,0.3)' 
+                  : '0 8px 25px rgba(0,0,0,0.1)'
               },
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+              transition: 'all 0.2s ease'
             }}
           >
-            <CardContent sx={{ position: 'relative', zIndex: 1 }}>
+            <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 600 }}>
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    fontWeight: 600,
+                    color: (theme) => theme.palette.text.primary
+                  }}
+                >
                   Conversations
                 </Typography>
-                <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.2)', width: 48, height: 48 }}>
-                  <ChatIcon />
+                <Avatar sx={{ 
+                  bgcolor: (theme) => theme.palette.background.default,
+                  border: (theme) => `1px solid ${theme.palette.divider}`,
+                  width: 48, 
+                  height: 48
+                }}>
+                  <ChatIcon sx={{ color: (theme) => theme.palette.info.main }} />
                 </Avatar>
               </Box>
-              <Typography variant="h2" sx={{ fontWeight: 700, mb: 1 }}>
+              <Typography 
+                variant="h2" 
+                sx={{ 
+                  fontWeight: 700, 
+                  mb: 1,
+                  color: (theme) => theme.palette.text.primary
+                }}
+              >
                 {stats.totalConversations}
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <TrendingUpIcon sx={{ mr: 0.5, fontSize: 16 }} />
-                <Typography variant="caption" sx={{ opacity: 0.8 }}>
+                <TrendingUpIcon sx={{ mr: 0.5, fontSize: 16, color: (theme) => theme.palette.success.main }} />
+                <Typography 
+                  variant="caption" 
+                  sx={{ 
+                    fontWeight: 500,
+                    color: (theme) => theme.palette.text.secondary
+                  }}
+                >
                   Active discussions
                 </Typography>
               </Box>
             </CardContent>
-            <Box 
-              sx={{
-                position: 'absolute',
-                top: -30,
-                right: -30,
-                width: 100,
-                height: 100,
-                borderRadius: '50%',
-                background: 'rgba(255,255,255,0.1)'
-              }}
-            />
           </Card>
         </Grid>
         
         <Grid item xs={12} md={4}>
           <Card 
             sx={{ 
-              background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-              color: 'white',
-              position: 'relative',
-              overflow: 'hidden',
+              background: (theme) => theme.palette.background.paper,
+              border: (theme) => `1px solid ${theme.palette.divider}`,
+              borderRadius: 2,
               '&:hover': {
-                transform: 'translateY(-4px)',
-                boxShadow: '0 8px 25px rgba(240, 147, 251, 0.3)'
+                transform: 'translateY(-2px)',
+                boxShadow: (theme) => theme.palette.mode === 'dark' 
+                  ? '0 8px 25px rgba(0,0,0,0.3)' 
+                  : '0 8px 25px rgba(0,0,0,0.1)'
               },
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+              transition: 'all 0.2s ease'
             }}
           >
-            <CardContent sx={{ position: 'relative', zIndex: 1 }}>
+            <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 600 }}>
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    fontWeight: 600,
+                    color: (theme) => theme.palette.text.primary
+                  }}
+                >
                   AI Agents
                 </Typography>
-                <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.2)', width: 48, height: 48 }}>
-                  <SmartToyIcon />
+                <Avatar sx={{ 
+                  bgcolor: (theme) => theme.palette.background.default,
+                  border: (theme) => `1px solid ${theme.palette.divider}`,
+                  width: 48, 
+                  height: 48
+                }}>
+                  <SmartToyIcon sx={{ color: (theme) => theme.palette.success.main }} />
                 </Avatar>
               </Box>
-              <Typography variant="h2" sx={{ fontWeight: 700, mb: 1 }}>
+              <Typography 
+                variant="h2" 
+                sx={{ 
+                  fontWeight: 700, 
+                  mb: 1,
+                  color: (theme) => theme.palette.text.primary
+                }}
+              >
                 {stats.totalAgents}
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <GroupIcon sx={{ mr: 0.5, fontSize: 16 }} />
-                <Typography variant="caption" sx={{ opacity: 0.8 }}>
+                <TrendingUpIcon sx={{ mr: 0.5, fontSize: 16, color: (theme) => theme.palette.success.main }} />
+                <Typography 
+                  variant="caption" 
+                  sx={{ 
+                    fontWeight: 500,
+                    color: (theme) => theme.palette.text.secondary
+                  }}
+                >
                   Ready to assist
                 </Typography>
               </Box>
             </CardContent>
-            <Box 
-              sx={{
-                position: 'absolute',
-                top: -30,
-                right: -30,
-                width: 100,
-                height: 100,
-                borderRadius: '50%',
-                background: 'rgba(255,255,255,0.1)'
-              }}
-            />
           </Card>
         </Grid>
         
         <Grid item xs={12} md={4}>
           <Card 
             sx={{ 
-              background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-              color: 'white',
-              position: 'relative',
-              overflow: 'hidden',
+              background: (theme) => theme.palette.background.paper,
+              border: (theme) => `1px solid ${theme.palette.divider}`,
+              borderRadius: 2,
               '&:hover': {
-                transform: 'translateY(-4px)',
-                boxShadow: '0 8px 25px rgba(79, 172, 254, 0.3)'
+                transform: 'translateY(-2px)',
+                boxShadow: (theme) => theme.palette.mode === 'dark' 
+                  ? '0 8px 25px rgba(0,0,0,0.3)' 
+                  : '0 8px 25px rgba(0,0,0,0.1)'
               },
-              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+              transition: 'all 0.2s ease'
             }}
           >
-            <CardContent sx={{ position: 'relative', zIndex: 1 }}>
+            <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 600 }}>
+                <Typography 
+                  variant="h6" 
+                  sx={{ 
+                    fontWeight: 600,
+                    color: (theme) => theme.palette.text.primary
+                  }}
+                >
                   Messages
                 </Typography>
-                <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.2)', width: 48, height: 48 }}>
-                  <MessageIcon />
+                <Avatar sx={{ 
+                  bgcolor: (theme) => theme.palette.background.default,
+                  border: (theme) => `1px solid ${theme.palette.divider}`,
+                  width: 48, 
+                  height: 48
+                }}>
+                  <MessageIcon sx={{ color: (theme) => theme.palette.warning.main }} />
                 </Avatar>
               </Box>
-              <Typography variant="h2" sx={{ fontWeight: 700, mb: 1 }}>
+              <Typography 
+                variant="h2" 
+                sx={{ 
+                  fontWeight: 700, 
+                  mb: 1,
+                  color: (theme) => theme.palette.text.primary
+                }}
+              >
                 {stats.totalMessages}
               </Typography>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <TrendingUpIcon sx={{ mr: 0.5, fontSize: 16 }} />
-                <Typography variant="caption" sx={{ opacity: 0.8 }}>
+                <TrendingUpIcon sx={{ mr: 0.5, fontSize: 16, color: (theme) => theme.palette.success.main }} />
+                <Typography 
+                  variant="caption" 
+                  sx={{ 
+                    fontWeight: 500,
+                    color: (theme) => theme.palette.text.secondary
+                  }}
+                >
                   Total exchanged
                 </Typography>
               </Box>
             </CardContent>
-            <Box 
-              sx={{
-                position: 'absolute',
-                top: -30,
-                right: -30,
-                width: 100,
-                height: 100,
-                borderRadius: '50%',
-                background: 'rgba(255,255,255,0.1)'
-              }}
-            />
           </Card>
         </Grid>
         
@@ -308,8 +403,10 @@ const Dashboard = () => {
         <Grid item xs={12}>
           <Card 
             sx={{ 
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              color: 'white',
+              backgroundColor: 'background.paper',
+              border: (theme) => `1px solid ${theme.palette.divider}`,
+              borderRadius: 3,
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
               position: 'relative',
               overflow: 'hidden'
             }}
@@ -317,8 +414,8 @@ const Dashboard = () => {
             <CardHeader 
               title={
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <PsychologyIcon sx={{ fontSize: 28 }} />
-                  <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                  <PsychologyIcon sx={{ fontSize: 28, color: 'primary.main' }} />
+                  <Typography variant="h5" sx={{ fontWeight: 700, color: 'text.primary' }}>
                     Cognitive Intelligence Status
                   </Typography>
                 </Box>
@@ -333,29 +430,29 @@ const Dashboard = () => {
                     sx={{ 
                       p: 3, 
                       textAlign: 'center', 
-                      background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                      color: 'white',
+                      backgroundColor: 'background.paper',
+                      border: (theme) => `1px solid ${theme.palette.divider}`,
                       borderRadius: 3,
                       position: 'relative',
                       overflow: 'hidden',
                       '&:hover': {
                         transform: 'translateY(-2px)',
-                        boxShadow: '0 8px 25px rgba(16, 185, 129, 0.3)'
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
                       },
                       transition: 'all 0.3s ease'
                     }}
                   >
-                    <Typography variant="subtitle1" sx={{ opacity: 0.9, mb: 1, fontWeight: 600 }}>
+                    <Typography variant="subtitle1" sx={{ color: 'text.secondary', mb: 1, fontWeight: 600 }}>
                       CI System
                     </Typography>
-                    <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
+                    <Typography variant="h3" sx={{ fontWeight: 700, mb: 1, color: 'success.main' }}>
                       Online
                     </Typography>
                     <Chip 
                       label="Active" 
                       size="small" 
                       sx={{ 
-                        bgcolor: 'rgba(255,255,255,0.2)', 
+                        bgcolor: 'success.main', 
                         color: 'white',
                         fontWeight: 600
                       }} 
@@ -368,7 +465,7 @@ const Dashboard = () => {
                         width: 60,
                         height: 60,
                         borderRadius: '50%',
-                        background: 'rgba(255,255,255,0.1)'
+                        background: 'rgba(16, 185, 129, 0.1)'
                       }}
                     />
                   </Paper>
@@ -379,22 +476,22 @@ const Dashboard = () => {
                     sx={{ 
                       p: 3, 
                       textAlign: 'center', 
-                      background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-                      color: 'white',
+                      backgroundColor: 'background.paper',
+                      border: (theme) => `1px solid ${theme.palette.divider}`,
                       borderRadius: 3,
                       position: 'relative',
                       overflow: 'hidden',
                       '&:hover': {
                         transform: 'translateY(-2px)',
-                        boxShadow: '0 8px 25px rgba(59, 130, 246, 0.3)'
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
                       },
                       transition: 'all 0.3s ease'
                     }}
                   >
-                    <Typography variant="subtitle1" sx={{ opacity: 0.9, mb: 1, fontWeight: 600 }}>
+                    <Typography variant="subtitle1" sx={{ color: 'text.secondary', mb: 1, fontWeight: 600 }}>
                       Active Bridges
                     </Typography>
-                    <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
+                    <Typography variant="h3" sx={{ fontWeight: 700, mb: 1, color: 'info.main' }}>
                       3
                     </Typography>
                     <LinearProgress 
@@ -403,9 +500,9 @@ const Dashboard = () => {
                       sx={{ 
                         height: 6, 
                         borderRadius: 3,
-                        bgcolor: 'rgba(255,255,255,0.2)',
+                        bgcolor: 'action.hover',
                         '& .MuiLinearProgress-bar': {
-                          bgcolor: 'rgba(255,255,255,0.8)'
+                          bgcolor: 'info.main'
                         }
                       }} 
                     />
@@ -417,7 +514,7 @@ const Dashboard = () => {
                         width: 60,
                         height: 60,
                         borderRadius: '50%',
-                        background: 'rgba(255,255,255,0.1)'
+                        background: 'rgba(14, 165, 233, 0.1)'
                       }}
                     />
                   </Paper>
@@ -428,22 +525,22 @@ const Dashboard = () => {
                     sx={{ 
                       p: 3, 
                       textAlign: 'center', 
-                      background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-                      color: 'white',
+                      backgroundColor: 'background.paper',
+                      border: (theme) => `1px solid ${theme.palette.divider}`,
                       borderRadius: 3,
                       position: 'relative',
                       overflow: 'hidden',
                       '&:hover': {
                         transform: 'translateY(-2px)',
-                        boxShadow: '0 8px 25px rgba(245, 158, 11, 0.3)'
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
                       },
                       transition: 'all 0.3s ease'
                     }}
                   >
-                    <Typography variant="subtitle1" sx={{ opacity: 0.9, mb: 1, fontWeight: 600 }}>
+                    <Typography variant="subtitle1" sx={{ color: 'text.secondary', mb: 1, fontWeight: 600 }}>
                       Avg Trust Score
                     </Typography>
-                    <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
+                    <Typography variant="h3" sx={{ fontWeight: 700, mb: 1, color: 'warning.main' }}>
                       0.82
                     </Typography>
                     <LinearProgress 
@@ -452,9 +549,9 @@ const Dashboard = () => {
                       sx={{ 
                         height: 6, 
                         borderRadius: 3,
-                        bgcolor: 'rgba(255,255,255,0.2)',
+                        bgcolor: 'action.hover',
                         '& .MuiLinearProgress-bar': {
-                          bgcolor: 'rgba(255,255,255,0.8)'
+                          bgcolor: 'warning.main'
                         }
                       }} 
                     />
@@ -466,7 +563,7 @@ const Dashboard = () => {
                         width: 60,
                         height: 60,
                         borderRadius: '50%',
-                        background: 'rgba(255,255,255,0.1)'
+                        background: 'rgba(245, 158, 11, 0.1)'
                       }}
                     />
                   </Paper>
@@ -477,29 +574,29 @@ const Dashboard = () => {
                     sx={{ 
                       p: 3, 
                       textAlign: 'center', 
-                      background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
-                      color: 'white',
+                      backgroundColor: 'background.paper',
+                      border: (theme) => `1px solid ${theme.palette.divider}`,
                       borderRadius: 3,
                       position: 'relative',
                       overflow: 'hidden',
                       '&:hover': {
                         transform: 'translateY(-2px)',
-                        boxShadow: '0 8px 25px rgba(139, 92, 246, 0.3)'
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
                       },
                       transition: 'all 0.3s ease'
                     }}
                   >
-                    <Typography variant="subtitle1" sx={{ opacity: 0.9, mb: 1, fontWeight: 600 }}>
+                    <Typography variant="subtitle1" sx={{ color: 'text.secondary', mb: 1, fontWeight: 600 }}>
                       Bonded Agents
                     </Typography>
-                    <Typography variant="h3" sx={{ fontWeight: 700, mb: 1 }}>
+                    <Typography variant="h3" sx={{ fontWeight: 700, mb: 1, color: 'primary.main' }}>
                       2
                     </Typography>
                     <Chip 
                       label="Synchronized" 
                       size="small" 
                       sx={{ 
-                        bgcolor: 'rgba(255,255,255,0.2)', 
+                        bgcolor: 'primary.main', 
                         color: 'white',
                         fontWeight: 600
                       }} 
@@ -512,7 +609,7 @@ const Dashboard = () => {
                         width: 60,
                         height: 60,
                         borderRadius: '50%',
-                        background: 'rgba(255,255,255,0.1)'
+                        background: 'rgba(26, 26, 26, 0.1)'
                       }}
                     />
                   </Paper>

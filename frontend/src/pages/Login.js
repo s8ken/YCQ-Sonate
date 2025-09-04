@@ -64,52 +64,21 @@ const Login = () => {
         justifyContent: 'center',
         alignItems: 'center',
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        p: 2,
-        position: 'relative',
-        overflow: 'hidden'
+        backgroundColor: theme.palette.background.default,
+        p: 2
       }}
     >
-      {/* Background decoration */}
-      <Box
-        sx={{
-          position: 'absolute',
-          top: -100,
-          left: -100,
-          width: 300,
-          height: 300,
-          borderRadius: '50%',
-          background: 'rgba(255,255,255,0.1)',
-          animation: 'pulse 4s ease-in-out infinite'
-        }}
-      />
-      <Box
-        sx={{
-          position: 'absolute',
-          bottom: -150,
-          right: -150,
-          width: 400,
-          height: 400,
-          borderRadius: '50%',
-          background: 'rgba(255,255,255,0.05)',
-          animation: 'pulse 6s ease-in-out infinite'
-        }}
-      />
       
       <Paper 
-        elevation={24} 
+        elevation={3} 
         sx={{
           p: 5,
           maxWidth: 450,
           width: '100%',
-          borderRadius: 4,
-          background: 'rgba(255,255,255,0.95)',
-          backdropFilter: 'blur(20px)',
-          boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
-          position: 'relative',
-          zIndex: 1,
-          transform: 'translateY(0px)',
-          transition: 'all 0.3s ease'
+          borderRadius: 3,
+          backgroundColor: theme.palette.background.paper,
+          border: `1px solid ${theme.palette.divider}`,
+          boxShadow: theme.shadows[3]
         }}
       >
         <Box sx={{ textAlign: 'center', mb: 4 }}>
@@ -178,12 +147,12 @@ const Login = () => {
             sx={{
               '& .MuiOutlinedInput-root': {
                 borderRadius: 2,
-                transition: 'all 0.3s ease',
+                backgroundColor: theme.palette.background.default,
                 '&:hover': {
-                  boxShadow: '0 4px 12px rgba(102, 126, 234, 0.15)'
+                  borderColor: theme.palette.primary.main
                 },
                 '&.Mui-focused': {
-                  boxShadow: '0 4px 20px rgba(102, 126, 234, 0.25)'
+                  backgroundColor: theme.palette.background.paper
                 }
               }
             }}
@@ -227,12 +196,12 @@ const Login = () => {
             sx={{
               '& .MuiOutlinedInput-root': {
                 borderRadius: 2,
-                transition: 'all 0.3s ease',
+                backgroundColor: theme.palette.background.default,
                 '&:hover': {
-                  boxShadow: '0 4px 12px rgba(102, 126, 234, 0.15)'
+                  borderColor: theme.palette.primary.main
                 },
                 '&.Mui-focused': {
-                  boxShadow: '0 4px 20px rgba(102, 126, 234, 0.25)'
+                  backgroundColor: theme.palette.background.paper
                 }
               }
             }}
@@ -246,23 +215,16 @@ const Login = () => {
               mb: 3,
               py: 1.5,
               borderRadius: 2,
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)',
+              backgroundColor: theme.palette.primary.main,
+              color: theme.palette.primary.contrastText,
               fontSize: '1.1rem',
               fontWeight: 600,
               textTransform: 'none',
-              transition: 'all 0.3s ease',
               '&:hover': {
-                background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)',
-                boxShadow: '0 12px 40px rgba(102, 126, 234, 0.4)',
-                transform: 'translateY(-2px)'
-              },
-              '&:active': {
-                transform: 'translateY(0px)'
+                backgroundColor: theme.palette.primary.dark
               },
               '&:disabled': {
-                background: 'rgba(102, 126, 234, 0.5)',
-                boxShadow: 'none'
+                backgroundColor: theme.palette.action.disabled
               }
             }}
             disabled={loading}
@@ -281,14 +243,10 @@ const Login = () => {
               sx={{
                 fontWeight: 600,
                 textDecoration: 'none',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                backgroundClip: 'text',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                transition: 'all 0.3s ease',
+                color: theme.palette.primary.main,
                 '&:hover': {
                   textDecoration: 'underline',
-                  transform: 'scale(1.05)'
+                  color: theme.palette.primary.dark
                 }
               }}
             >
@@ -297,8 +255,8 @@ const Login = () => {
            </Box>
          </Box>
         </Paper>
-      </Box>
-    );
+    </Box>
+  );
 };
 
 export default Login;

@@ -5,14 +5,15 @@
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: 'Arial Black', 'Helvetica', 'Arial', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f5f5f5;
+  background: #ffffff;
+  color: #000000;
+  min-height: 100vh;
   line-height: 1.6;
   scroll-behavior: smooth;
+  font-weight: 500;
 }
 
 code {
@@ -24,36 +25,86 @@ code {
   font-size: 0.875em;
 }
 
-/* Custom scrollbar */
+/* Brutalist scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 12px;
+  height: 12px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: #ffffff;
+  border: 2px solid #000000;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.3);
-  border-radius: 4px;
-  transition: background 0.2s ease;
+  background: #000000;
+  border: none;
+  transition: none;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.5);
+  background: #333333;
 }
 
-/* Focus styles */
+/* Safari-specific performance optimizations for chat interfaces */
+@supports (-webkit-touch-callout: none) {
+  [data-chat-container], [data-chat-list], [data-chat-message] {
+    will-change: auto;
+    contain: layout;
+  }
+
+  [data-streaming] {
+    will-change: transform;
+    contain: layout style;
+    transform: translateZ(0);
+  }
+
+  #__next, [data-main-content] {
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  [data-chat-list] {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
+  body[data-safari-streaming] {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeSpeed;
+  }
+
+  body[data-safari-streaming] * {
+    animation-duration: .1s;
+    transition-duration: .1s;
+  }
+}
+
+@keyframes safari-gentle-repaint {
+  0% {
+    opacity: .999999;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.safari-repaint-active {
+  animation: safari-gentle-repaint .1s ease-out;
+}
+
+/* Brutalist focus styles */
 *:focus-visible {
-  outline: 2px solid #3b82f6;
-  outline-offset: 2px;
+  outline: 4px solid #000000;
+  outline-offset: 0px;
+  box-shadow: none;
 }
 
-/* Selection styles */
+/* Brutalist selection */
 ::selection {
-  background: rgba(59, 130, 246, 0.2);
-  color: inherit;
+  background: #000000;
+  color: #ffffff;
 }
 
 /* Loading animation */

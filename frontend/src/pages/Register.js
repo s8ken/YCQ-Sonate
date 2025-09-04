@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import { 
   Box, 
   Typography, 
@@ -10,8 +10,6 @@ import {
   CircularProgress,
   InputAdornment,
   IconButton,
-  Fade,
-  Slide,
   Avatar,
   useTheme
 } from '@mui/material';
@@ -21,10 +19,10 @@ import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import EmailIcon from '@mui/icons-material/Email';
-import LockIcon from '@mui/icons-material/Lock';
 import PersonIcon from '@mui/icons-material/Person';
 
 const Register = () => {
+  const theme = useTheme();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -100,81 +98,47 @@ const Register = () => {
         justifyContent: 'center',
         alignItems: 'center',
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        p: 2,
-        position: 'relative',
-        overflow: 'hidden'
+        backgroundColor: theme.palette.background.default,
+        p: 2
       }}
     >
-      {/* Background decoration */}
-      <Box
-        sx={{
-          position: 'absolute',
-          top: -100,
-          left: -100,
-          width: 300,
-          height: 300,
-          borderRadius: '50%',
-          background: 'rgba(255,255,255,0.1)',
-          animation: 'pulse 4s ease-in-out infinite'
-        }}
-      />
-      <Box
-        sx={{
-          position: 'absolute',
-          bottom: -150,
-          right: -150,
-          width: 400,
-          height: 400,
-          borderRadius: '50%',
-          background: 'rgba(255,255,255,0.05)',
-          animation: 'pulse 6s ease-in-out infinite'
-        }}
-      />
       
-      <Fade in timeout={800}>
-        <Slide direction="up" in timeout={600}>
-          <Paper 
-            elevation={24} 
-            sx={{
-              p: 5,
-              maxWidth: 500,
-              width: '100%',
-              borderRadius: 4,
-              background: 'rgba(255,255,255,0.95)',
-              backdropFilter: 'blur(20px)',
-              boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
-              position: 'relative',
-              zIndex: 1
+      <Paper 
+        elevation={3} 
+        sx={{
+          p: 5,
+          maxWidth: 500,
+          width: '100%',
+          borderRadius: 3,
+          backgroundColor: theme.palette.background.paper,
+          border: `1px solid ${theme.palette.divider}`,
+          boxShadow: theme.shadows[3]
             }}
           >
             <Box sx={{ textAlign: 'center', mb: 4 }}>
               <Avatar
-                sx={{
-                  width: 80,
-                  height: 80,
-                  margin: '0 auto 24px',
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)'
-                }}
-              >
-                <PersonAddIcon sx={{ fontSize: 40, color: 'white' }} />
-              </Avatar>
-              <Typography 
-                variant="h4" 
-                component="h1" 
-                gutterBottom
-                sx={{
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  fontWeight: 'bold',
-                  mb: 1
-                }}
-              >
-                SYMBI Synergy
-              </Typography>
+                 sx={{
+                   width: 80,
+                   height: 80,
+                   margin: '0 auto 24px',
+                   backgroundColor: theme.palette.primary.main,
+                   boxShadow: theme.shadows[4]
+                 }}
+               >
+                 <PersonAddIcon sx={{ fontSize: 40, color: 'white' }} />
+               </Avatar>
+               <Typography 
+                 variant="h4" 
+                 component="h1" 
+                 gutterBottom
+                 sx={{
+                   color: theme.palette.text.primary,
+                   fontWeight: 'bold',
+                   mb: 1
+                 }}
+               >
+                 SYMBI Synergy
+               </Typography>
               <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 2 }}>
                 Join the future of AI collaboration
               </Typography>
@@ -212,17 +176,12 @@ const Register = () => {
                    mb: 2,
                    '& .MuiOutlinedInput-root': {
                      borderRadius: 2,
-                     backgroundColor: 'rgba(255,255,255,0.8)',
-                     transition: 'all 0.3s ease',
+                     backgroundColor: theme.palette.background.default,
                      '&:hover': {
-                       backgroundColor: 'rgba(255,255,255,0.9)',
-                       transform: 'translateY(-1px)',
-                       boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                       borderColor: theme.palette.primary.main
                      },
                      '&.Mui-focused': {
-                       backgroundColor: 'rgba(255,255,255,1)',
-                       transform: 'translateY(-1px)',
-                       boxShadow: '0 4px 20px rgba(102, 126, 234, 0.2)'
+                       backgroundColor: theme.palette.background.paper
                      }
                    },
                    '& .MuiInputLabel-root': {
@@ -251,20 +210,17 @@ const Register = () => {
                     ),
                   }}
                   sx={{
+                    mb: 2,
                     '& .MuiOutlinedInput-root': {
                       borderRadius: 2,
-                      backgroundColor: 'rgba(255,255,255,0.8)',
+                      backgroundColor: theme.palette.background.default,
                       '&:hover': {
-                        backgroundColor: 'rgba(255,255,255,0.9)',
-                        '& .MuiOutlinedInput-notchedOutline': {
-                          borderColor: 'primary.main',
-                        },
+                        borderColor: theme.palette.primary.main
                       },
                       '&.Mui-focused': {
-                        backgroundColor: 'rgba(255,255,255,1)',
-                        boxShadow: '0 0 0 3px rgba(102, 126, 234, 0.1)',
-                      },
-                    },
+                        backgroundColor: theme.palette.background.paper
+                      }
+                    }
                   }}
                 />
                <TextField
@@ -285,17 +241,12 @@ const Register = () => {
                    mb: 2,
                    '& .MuiOutlinedInput-root': {
                      borderRadius: 2,
-                     backgroundColor: 'rgba(255,255,255,0.8)',
-                     transition: 'all 0.3s ease',
+                     backgroundColor: theme.palette.background.default,
                      '&:hover': {
-                       backgroundColor: 'rgba(255,255,255,0.9)',
-                       transform: 'translateY(-1px)',
-                       boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                       borderColor: theme.palette.primary.main
                      },
                      '&.Mui-focused': {
-                       backgroundColor: 'rgba(255,255,255,1)',
-                       transform: 'translateY(-1px)',
-                       boxShadow: '0 4px 20px rgba(102, 126, 234, 0.2)'
+                       backgroundColor: theme.palette.background.paper
                      }
                    },
                    '& .MuiInputLabel-root': {
@@ -340,17 +291,12 @@ const Register = () => {
                    mb: 2,
                    '& .MuiOutlinedInput-root': {
                      borderRadius: 2,
-                     backgroundColor: 'rgba(255,255,255,0.8)',
-                     transition: 'all 0.3s ease',
+                     backgroundColor: theme.palette.background.default,
                      '&:hover': {
-                       backgroundColor: 'rgba(255,255,255,0.9)',
-                       transform: 'translateY(-1px)',
-                       boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                       borderColor: theme.palette.primary.main
                      },
                      '&.Mui-focused': {
-                       backgroundColor: 'rgba(255,255,255,1)',
-                       transform: 'translateY(-1px)',
-                       boxShadow: '0 4px 20px rgba(102, 126, 234, 0.2)'
+                       backgroundColor: theme.palette.background.paper
                      }
                    },
                    '& .MuiInputLabel-root': {
@@ -368,24 +314,16 @@ const Register = () => {
                    mb: 3,
                    py: 1.5,
                    borderRadius: 2,
-                   background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                   backgroundColor: theme.palette.primary.main,
+                   color: theme.palette.primary.contrastText,
                    fontWeight: 600,
                    fontSize: '1.1rem',
                    textTransform: 'none',
-                   boxShadow: '0 4px 15px rgba(102, 126, 234, 0.4)',
-                   transition: 'all 0.3s ease',
                    '&:hover': {
-                     background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)',
-                     transform: 'translateY(-2px)',
-                     boxShadow: '0 8px 25px rgba(102, 126, 234, 0.6)'
-                   },
-                   '&:active': {
-                     transform: 'translateY(0px)'
+                     backgroundColor: theme.palette.primary.dark
                    },
                    '&:disabled': {
-                     background: 'linear-gradient(135deg, #cbd5e0 0%, #a0aec0 100%)',
-                     transform: 'none',
-                     boxShadow: 'none'
+                     backgroundColor: theme.palette.action.disabled
                    }
                  }}
                >
@@ -405,11 +343,12 @@ const Register = () => {
                      component={Link} 
                      to="/login" 
                      sx={{
-                       color: 'primary.main',
+                       color: theme.palette.primary.main,
                        textDecoration: 'none',
                        fontWeight: 600,
                        '&:hover': {
-                         textDecoration: 'underline'
+                         textDecoration: 'underline',
+                         color: theme.palette.primary.dark
                        }
                      }}
                    >
@@ -419,22 +358,6 @@ const Register = () => {
                </Box>
              </Box>
            </Paper>
-         </Slide>
-       </Fade>
-       
-       {/* CSS Animations */}
-       <style jsx global>{`
-         @keyframes pulse {
-           0%, 100% {
-             transform: scale(1);
-             opacity: 0.7;
-           }
-           50% {
-             transform: scale(1.05);
-             opacity: 0.9;
-           }
-         }
-       `}</style>
      </Box>
    );
 };

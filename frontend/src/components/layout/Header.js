@@ -38,10 +38,11 @@ const Header = ({ toggleDrawer }) => {
     <AppBar 
       position="fixed" 
       sx={{
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        backdropFilter: 'blur(20px)',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-        boxShadow: '0 8px 32px rgba(102, 126, 234, 0.2)'
+        background: theme.palette.background.paper,
+        borderBottom: `1px solid ${theme.palette.divider}`,
+        boxShadow: 'none',
+        backdropFilter: 'blur(10px)',
+        backgroundColor: theme.palette.mode === 'dark' ? 'rgba(18, 18, 18, 0.95)' : 'rgba(255, 255, 255, 0.95)'
       }}
     >
       <Toolbar sx={{ minHeight: { xs: 56, sm: 64 } }}>
@@ -51,7 +52,15 @@ const Header = ({ toggleDrawer }) => {
             color="inherit"
             aria-label="menu"
             onClick={toggleDrawer}
-            sx={{ mr: 2 }}
+            sx={{ 
+              mr: 2,
+              color: theme.palette.text.primary,
+              '&:hover': {
+                backgroundColor: theme.palette.action.hover,
+                color: theme.palette.primary.main,
+              },
+              transition: 'all 0.2s ease'
+            }}
           >
             <MenuIcon />
           </IconButton>
@@ -64,31 +73,29 @@ const Header = ({ toggleDrawer }) => {
           sx={{ 
             flexGrow: 1, 
             textDecoration: 'none', 
-            color: 'inherit',
-            fontWeight: 700,
-            fontSize: { xs: '1.1rem', sm: '1.25rem' },
-            background: 'linear-gradient(45deg, #ffffff 30%, #f0f0f0 90%)',
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            textShadow: '0 2px 4px rgba(0,0,0,0.1)'
+            color: theme.palette.text.primary,
+            fontFamily: theme.typography.fontFamily,
+            fontWeight: 600,
+            fontSize: { xs: '1.2rem', sm: '1.4rem' },
+            letterSpacing: '-0.01em',
+            '&:hover': {
+              color: theme.palette.primary.main,
+            },
+            transition: 'color 0.2s ease'
           }}
         >
-          SYMBI Synergy
+          SYMBI SYNERGY
         </Typography>
 
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           {/* Theme toggle */}
           <IconButton 
-            color="inherit" 
             onClick={toggleTheme} 
             sx={{ 
               ml: 1,
-              bgcolor: 'rgba(255, 255, 255, 0.1)',
-              backdropFilter: 'blur(10px)',
+              color: theme.palette.warning.main,
               '&:hover': {
-                bgcolor: 'rgba(255, 255, 255, 0.2)',
-                transform: 'scale(1.05)'
+                backgroundColor: 'rgba(245, 158, 11, 0.1)',
               },
               transition: 'all 0.2s ease'
             }}
@@ -99,17 +106,20 @@ const Header = ({ toggleDrawer }) => {
           {user ? (
             <>
               <Button 
-                color="inherit" 
                 component={Link} 
                 to="/conversations"
                 sx={{ 
                   display: isMobile ? 'none' : 'block',
                   mx: 0.5,
-                  borderRadius: 2,
                   px: 2,
+                  py: 1,
+                  color: theme.palette.text.primary,
+                  fontWeight: 500,
+                  textTransform: 'none',
+                  borderRadius: 1,
                   '&:hover': {
-                    bgcolor: 'rgba(255, 255, 255, 0.1)',
-                    transform: 'translateY(-1px)'
+                    backgroundColor: theme.palette.action.hover,
+                    color: theme.palette.info.main,
                   },
                   transition: 'all 0.2s ease'
                 }}
@@ -117,17 +127,20 @@ const Header = ({ toggleDrawer }) => {
                 Conversations
               </Button>
               <Button 
-                color="inherit" 
                 component={Link} 
                 to="/agents"
                 sx={{ 
                   display: isMobile ? 'none' : 'block',
                   mx: 0.5,
-                  borderRadius: 2,
                   px: 2,
+                  py: 1,
+                  color: theme.palette.text.primary,
+                  fontWeight: 500,
+                  textTransform: 'none',
+                  borderRadius: 1,
                   '&:hover': {
-                    bgcolor: 'rgba(255, 255, 255, 0.1)',
-                    transform: 'translateY(-1px)'
+                    backgroundColor: theme.palette.action.hover,
+                    color: theme.palette.success.main,
                   },
                   transition: 'all 0.2s ease'
                 }}
@@ -135,17 +148,20 @@ const Header = ({ toggleDrawer }) => {
                 Agents
               </Button>
               <Button 
-                color="inherit" 
                 component={Link} 
                 to="/reports"
                 sx={{ 
                   display: isMobile ? 'none' : 'block',
                   mx: 0.5,
-                  borderRadius: 2,
                   px: 2,
+                  py: 1,
+                  color: theme.palette.text.primary,
+                  fontWeight: 500,
+                  textTransform: 'none',
+                  borderRadius: 1,
                   '&:hover': {
-                    bgcolor: 'rgba(255, 255, 255, 0.1)',
-                    transform: 'translateY(-1px)'
+                    backgroundColor: theme.palette.action.hover,
+                    color: theme.palette.warning.main,
                   },
                   transition: 'all 0.2s ease'
                 }}
@@ -153,17 +169,20 @@ const Header = ({ toggleDrawer }) => {
                 Symbi Logs
               </Button>
               <Button 
-                color="inherit" 
                 component={Link} 
                 to="/context-bridge"
                 sx={{ 
                   display: isMobile ? 'none' : 'block',
                   mx: 0.5,
-                  borderRadius: 2,
                   px: 2,
+                  py: 1,
+                  color: theme.palette.text.primary,
+                  fontWeight: 500,
+                  textTransform: 'none',
+                  borderRadius: 1,
                   '&:hover': {
-                    bgcolor: 'rgba(255, 255, 255, 0.1)',
-                    transform: 'translateY(-1px)'
+                    backgroundColor: theme.palette.action.hover,
+                    color: theme.palette.info.main,
                   },
                   transition: 'all 0.2s ease'
                 }}
@@ -175,24 +194,28 @@ const Header = ({ toggleDrawer }) => {
                 aria-controls="menu-appbar"
                 aria-haspopup="true"
                 onClick={handleMenu}
-                color="inherit"
                 sx={{
                   ml: 1,
+                  p: 0,
                   '&:hover': {
-                    transform: 'scale(1.05)'
+                    '& .MuiAvatar-root': {
+                      backgroundColor: theme.palette.primary.main,
+                      color: theme.palette.primary.contrastText,
+                    }
                   },
-                  transition: 'transform 0.2s ease'
+                  transition: 'all 0.2s ease'
                 }}
               >
                 <Avatar 
                   sx={{ 
                     width: 36, 
                     height: 36, 
-                    bgcolor: 'rgba(255, 255, 255, 0.2)',
-                    backdropFilter: 'blur(10px)',
-                    border: '2px solid rgba(255, 255, 255, 0.3)',
-                    fontWeight: 600,
-                    fontSize: '1rem'
+                    bgcolor: theme.palette.background.paper,
+                    color: theme.palette.text.primary,
+                    border: `1px solid ${theme.palette.divider}`,
+                    fontWeight: 500,
+                    fontSize: '0.9rem',
+                    transition: 'all 0.2s ease'
                   }}
                 >
                   {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
