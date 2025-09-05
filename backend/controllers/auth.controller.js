@@ -5,7 +5,11 @@ const User = require('../models/user.model');
 
 // Generate JWT Token
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || 'your-secret-key', {
+  const secret = process.env.JWT_SECRET;
+  if (!secret && process.env.NODE_ENV !== 'test') {
+    throw new Error('JWT_SECRET is not configured');
+  }
+  return jwt.sign({ id }, secret || 'test-secret', {
     expiresIn: '30d',
   });
 };
@@ -14,19 +18,29 @@ const generateToken = (id) => {
 // @route   POST /api/auth/register
 // @access  Public
 const registerUser = asyncHandler(async (req, res) => {
+  console.log('=== REGISTRATION REQUEST ===');
+  console.log('Request body:', JSON.stringify(req.body, null, 2));
+  console.log('Content-Type:', req.get('Content-Type'));
+  console.log('Headers:', JSON.stringify(req.headers, null, 2));
+  
   const { name, email, password } = req.body;
+  console.log('Extracted fields:', { name, email, password: password ? '[REDACTED]' : undefined });
 
   if (!name || !email || !password) {
-    res.status(400);
-    throw new Error('Please add all fields');
+    console.log('Missing required fields - name:', !!name, 'email:', !!email, 'password:', !!password);
+    return res.status(400).json({
+      success: false,
+      message: 'Please provide all required fields'
+    });
   }
 
-  // Check if user exists
-  const userExists = await User.findOne({ email });
-
-  if (userExists) {
-    res.status(400);
-    throw new Error('User already exists');
+  // Check if user already exists
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    return res.status(400).json({
+      success: false,
+      message: 'User already exists'
+    });
   }
 
   // Create user (password will be hashed by the model's pre-save hook)
@@ -59,14 +73,15 @@ const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    res.status(400);
-    throw new Error('Please add email and password');
+    const error = new Error('Please add email and password');
+    error.status = 400;
+    throw error;
   }
 
-  // Check for user email
-  const user = await User.findOne({ email });
+  // Check for user email (include password field)
+  const user = await User.findOne({ email }).select('+password');
 
-  if (user && (await bcrypt.compare(password, user.password))) {
+  if (user && (await user.matchPassword(password))) {
     res.json({
       success: true,
       data: {
@@ -77,8 +92,9 @@ const loginUser = asyncHandler(async (req, res) => {
       },
     });
   } else {
-    res.status(400);
-    throw new Error('Invalid credentials');
+    const error = new Error('Invalid credentials');
+    error.status = 400;
+    throw error;
   }
 });
 
@@ -133,4 +149,8 @@ module.exports = {
   loginUser,
   getMe,
   updateProfile,
+  // Stateless JWT logout (placeholder for future token revocation)
+  logoutUser: asyncHandler(async (req, res) => {
+    return res.status(200).json({ success: true, message: 'Logged out' });
+  })
 };

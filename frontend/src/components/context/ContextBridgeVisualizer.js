@@ -164,45 +164,7 @@ const ContextBridgeVisualizer = ({ contextBridge, onToggle }) => {
             </Paper>
           </Grid>
           
-          <Grid item xs={12} md={6}>
-            <Paper 
-              elevation={0} 
-              sx={{ 
-                p: 2, 
-                bgcolor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.02)',
-                borderRadius: 2,
-                height: '100%'
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                <Box 
-                  sx={{ 
-                    width: 32, 
-                    height: 32, 
-                    borderRadius: '50%', 
-                    bgcolor: theme.palette.secondary.main,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'white',
-                    mr: 1
-                  }}
-                >
-                  <Typography variant="subtitle2">O</Typography>
-                </Box>
-                <Typography variant="subtitle1">Overseer</Typography>
-              </Box>
-              <Typography variant="body2" paragraph>
-                Cloud-based context system with advanced cognitive intelligence.
-              </Typography>
-              <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-                <VerifiedUserIcon fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} />
-                <Typography variant="caption" color="text.secondary">
-                  Ethical alignment verified
-                </Typography>
-              </Box>
-            </Paper>
-          </Grid>
+          {/* POC: no external systems visualized */}
         </Grid>
         
         <Box 
@@ -283,7 +245,7 @@ const ContextBridgeVisualizer = ({ contextBridge, onToggle }) => {
         <Box sx={{ mt: 2, display: 'flex', alignItems: 'center' }}>
           <InfoIcon fontSize="small" sx={{ mr: 0.5, color: theme.palette.info.main }} />
           <Typography variant="caption" color="text.secondary">
-            Context bridge allows secure information sharing between Symbi and Overseer systems
+            Context shows the sources SYMBI uses (project notes, links, and session capsules)
           </Typography>
         </Box>
       </CardContent>
