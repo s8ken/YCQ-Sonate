@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Iframe Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .test-container {
+      margin-bottom: 30px;
+      border: 1px solid #ccc;
+      padding: 20px;
+      border-radius: 8px;
+    }
+    iframe {
+      width: 100%;
+      height: 300px;
+      border: 1px solid #eee;
+      border-radius: 4px;
+    }
+    h2 {
+      margin-top: 0;
+    }
+    .status {
+      margin-top: 10px;
+      padding: 8px;
+      border-radius: 4px;
+    }
+    .success {
+      background-color: #d4edda;
+      color: #155724;
+    }
+    .error {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+  </style>
+</head>
+<body>
+  <h1>Iframe Test for Onboarding HTML Files</h1>
+  <p>This page tests that the HTML placeholder files for the onboarding flow render correctly in iframes.</p>
+  
+  <div class="test-container">
+    <h2>Trust Intro</h2>
+    <iframe id="trust-intro-frame" src="/images/onboarding/trust-intro.html"></iframe>
+    <div id="trust-intro-status" class="status"></div>
+  </div>
+  
+  <div class="test-container">
+    <h2>Trust Badges</h2>
+    <iframe id="trust-badges-frame" src="/images/onboarding/trust-badges.html"></iframe>
+    <div id="trust-badges-status" class="status"></div>
+  </div>
+  
+  <div class="test-container">
+    <h2>Trust Details</h2>
+    <iframe id="trust-details-frame" src="/images/onboarding/trust-details.html"></iframe>
+    <div id="trust-details-status" class="status"></div>
+  </div>
+  
+  <script>
+    // Function to check if iframe loaded correctly
+    function checkIframe(frameId, statusId) {
+      const frame = document.getElementById(frameId);
+      const status = document.getElementById(statusId);
+      
+      frame.onload = function() {
+        try {
+          // Try to access the iframe content
+          const iframeDoc = frame.contentDocument || frame.contentWindow.document;
+          const body = iframeDoc.body;
+          
+          if (body) {
+            status.textContent = "✅ Loaded successfully";
+            status.className = "status success";
+          } else {
+            status.textContent = "❌ Error: Body element not found";
+            status.className = "status error";
+          }
+        } catch (e) {
+          status.textContent = `❌ Error: ${e.message}`;
+          status.className = "status error";
+        }
+      };
+      
+      frame.onerror = function() {
+        status.textContent = "❌ Error: Failed to load iframe";
+        status.className = "status error";
+      };
+    }
+    
+    // Check all iframes
+    checkIframe("trust-intro-frame", "trust-intro-status");
+    checkIframe("trust-badges-frame", "trust-badges-status");
+    checkIframe("trust-details-frame", "trust-details-status");
+  </script>
+</body>
+</html>

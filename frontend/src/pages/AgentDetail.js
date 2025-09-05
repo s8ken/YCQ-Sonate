@@ -45,7 +45,7 @@ const AgentDetail = () => {
     name: '',
     description: '',
     provider: 'openai',
-    model: 'gpt-4',
+    model: 'gpt-4o',
     systemPrompt: '',
     temperature: 0.7,
     maxTokens: 1000,
@@ -64,6 +64,8 @@ const AgentDetail = () => {
   const [apiKeys, setApiKeys] = useState([]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [availableModels, setAvailableModels] = useState([]);
+  const [useManualApiKey, setUseManualApiKey] = useState(false);
+  const [manualApiKey, setManualApiKey] = useState('');
 
   useEffect(() => {
     if (!isNewAgent) {
@@ -97,7 +99,7 @@ const AgentDetail = () => {
 
   const fetchApiKeys = async () => {
     try {
-      const res = await axios.get('/api/users/apikeys');
+      const res = await axios.get('/api/users/api-keys');
       setApiKeys(res.data.data || []);
     } catch (err) {
       console.error('Error fetching API keys:', err);
@@ -108,11 +110,15 @@ const AgentDetail = () => {
   useEffect(() => {
     // Update available models based on selected provider
     if (agent.provider === 'openai') {
-      setAvailableModels(['gpt-3.5-turbo', 'gpt-4', 'gpt-4-turbo']);
+      setAvailableModels(['gpt-4o', 'gpt-4-turbo', 'gpt-4', 'gpt-3.5-turbo']);
     } else if (agent.provider === 'anthropic') {
-      setAvailableModels(['claude-2', 'claude-instant-1']);
+      setAvailableModels(['claude-3-opus-20240229', 'claude-3-sonnet-20240229', 'claude-3-haiku-20240307', 'claude-3-5-sonnet-20241022']);
     } else if (agent.provider === 'together') {
       setAvailableModels(['llama-2-70b', 'falcon-40b', 'mistral-7b']);
+    } else if (agent.provider === 'perplexity') {
+      setAvailableModels(['llama-3.1-sonar-small-128k-online', 'llama-3.1-sonar-large-128k-online', 'llama-3.1-sonar-huge-128k-online']);
+    } else if (agent.provider === 'v0') {
+      setAvailableModels(['v0-1']);
     } else {
       setAvailableModels([]);
     }
@@ -150,9 +156,33 @@ const AgentDetail = () => {
       setSaving(true);
       setError(null);
       
+      let finalApiKeyId = agent.apiKeyId;
+      
+      // If using manual API key, create it first
+      if (useManualApiKey && manualApiKey.trim()) {
+        try {
+          const apiKeyData = {
+            name: `${agent.name || 'Agent'} - ${agent.provider} Key`,
+            provider: agent.provider,
+            key: manualApiKey.trim()
+          };
+          
+          const apiKeyRes = await axios.post('/api/users/api-keys', apiKeyData);
+          finalApiKeyId = apiKeyRes.data.data._id;
+          
+          // Refresh API keys list
+          await fetchApiKeys();
+        } catch (apiKeyErr) {
+          setSaving(false);
+          setError('Failed to save API key: ' + (apiKeyErr.response?.data?.message || apiKeyErr.message));
+          return;
+        }
+      }
+      
       // Prepare agent data with CI fields
       const agentData = {
         ...agent,
+        apiKeyId: finalApiKeyId,
         ciEnabled: agent.ciEnabled || false,
         ciModel: agent.ciModel || 'symbi-core',
         contextBridgeEnabled: agent.contextBridgeEnabled || false,
@@ -171,6 +201,10 @@ const AgentDetail = () => {
       
       // Clear success message after 3 seconds
       setTimeout(() => setSuccess(null), 3000);
+      
+      // Reset manual API key state
+      setUseManualApiKey(false);
+      setManualApiKey('');
       
       if (isNewAgent) {
         navigate(`/agents/${res.data._id}`);
@@ -258,7 +292,7 @@ const AgentDetail = () => {
           <Tab label="Basic Settings" />
           <Tab label="Advanced Settings" />
           <Tab label="System Prompt" />
-          <Tab icon={<PsychologyIcon />} label="Cognitive Intelligence" />
+          <Tab label="Trust Mode" />
         </Tabs>
 
         {/* Basic Settings Tab */}
@@ -327,6 +361,8 @@ const AgentDetail = () => {
                     <MenuItem value="openai">OpenAI</MenuItem>
                     <MenuItem value="anthropic">Anthropic</MenuItem>
                     <MenuItem value="together">Together AI</MenuItem>
+                    <MenuItem value="perplexity">Perplexity</MenuItem>
+                    <MenuItem value="v0">v0 by Vercel</MenuItem>
                   </Select>
                 </FormControl>
                 
@@ -344,22 +380,54 @@ const AgentDetail = () => {
                   </Select>
                 </FormControl>
                 
-                <FormControl fullWidth margin="normal">
-                  <InputLabel>API Key</InputLabel>
-                  <Select
-                    name="apiKeyId"
-                    value={agent.apiKeyId}
-                    onChange={handleChange}
-                    label="API Key"
-                  >
-                    <MenuItem value="">Use Default Key</MenuItem>
-                    {apiKeys.filter(key => key.provider === agent.provider).map(key => (
-                      <MenuItem key={key._id} value={key._id}>
-                        {key.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <Box sx={{ mt: 2 }}>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={useManualApiKey}
+                        onChange={(e) => {
+                          setUseManualApiKey(e.target.checked);
+                          if (!e.target.checked) {
+                            setManualApiKey('');
+                          }
+                        }}
+                        color="primary"
+                      />
+                    }
+                    label="Enter API Key Manually"
+                    sx={{ mb: 1 }}
+                  />
+                  
+                  {useManualApiKey ? (
+                    <TextField
+                      fullWidth
+                      margin="normal"
+                      label="API Key"
+                      type="password"
+                      value={manualApiKey}
+                      onChange={(e) => setManualApiKey(e.target.value)}
+                      placeholder="Paste your API key here..."
+                      helperText="Your API key will be securely stored and encrypted"
+                    />
+                  ) : (
+                    <FormControl fullWidth margin="normal">
+                      <InputLabel>API Key</InputLabel>
+                      <Select
+                        name="apiKeyId"
+                        value={agent.apiKeyId}
+                        onChange={handleChange}
+                        label="API Key"
+                      >
+                        <MenuItem value="">Use Default Key</MenuItem>
+                        {apiKeys.filter(key => key.provider === agent.provider).map(key => (
+                          <MenuItem key={key._id} value={key._id}>
+                            {key.name}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  )}
+                </Box>
               </Grid>
             </Grid>
           </Box>
@@ -446,7 +514,7 @@ const AgentDetail = () => {
                   label="Helpful Assistant" 
                   onClick={() => setAgent(prev => ({
                     ...prev,
-                    systemPrompt: "You are a helpful, respectful and honest assistant. Always answer as helpfully as possible, while being safe. Your answers should be informative and logical. If you don't know the answer to a question, please don't share false information."
+                    systemPrompt: "You are a helpful, respectful and honest AI assistant. You must never identify yourself as GPT-3 or any specific model version. Always respond as a general AI assistant without mentioning your underlying model. Your answers should be informative, logical, and helpful. If you don't know the answer to a question, please don't share false information."
                   }))} 
                   clickable 
                 />
@@ -471,102 +539,23 @@ const AgentDetail = () => {
           </Box>
         )}
         
-        {/* Cognitive Intelligence Tab */}
+        {/* Trust Mode Tab (POC) */}
         {tabValue === 3 && (
           <Box>
             <Typography variant="h6" gutterBottom>
-              Cognitive Intelligence Integration
+              Trust Mode
             </Typography>
             <Typography variant="body2" color="text.secondary" paragraph>
-              Cognitive Intelligence (CI) enhances your agent with ethical alignment, context awareness, and advanced reasoning capabilities.
+              POC uses “Heuristic (local)” to compute trust overlays. No external governance layer is active.
             </Typography>
-            
-            <Divider sx={{ my: 3 }} />
-            
-            <Grid container spacing={4}>
-              <Grid item xs={12} md={6}>
-                <AgentBondingCard 
-                  agent={{
-                    id: id,
-                    name: agent.name || 'Unnamed Agent',
-                    bondingStatus: agent._id ? 'not_bonded' : 'unavailable',
-                    traits: {
-                      ethicalAlignment: 0,
-                      creativity: 0,
-                      precision: 0,
-                      adaptability: 0
-                    }
-                  }}
-                />
-              </Grid>
-              
-              <Grid item xs={12} md={6}>
-                <Paper elevation={1} sx={{ p: 3, height: '100%' }}>
-                  <Typography variant="h6" gutterBottom>
-                    CI Configuration
-                  </Typography>
-                  
-                  <FormControlLabel
-                    control={
-                      <Switch 
-                        checked={agent.ciEnabled || false}
-                        onChange={(e) => setAgent({ ...agent, ciEnabled: e.target.checked })}
-                        color="secondary"
-                      />
-                    }
-                    label="Enable Cognitive Intelligence"
-                    sx={{ mb: 2, display: 'block' }}
-                  />
-                  
-                  <FormControl fullWidth margin="normal" disabled={!agent.ciEnabled}>
-                    <InputLabel id="ci-model-label">CI Model</InputLabel>
-                    <Select
-                      labelId="ci-model-label"
-                      value={agent.ciModel || 'symbi-core'}
-                      onChange={(e) => setAgent({ ...agent, ciModel: e.target.value })}
-                      label="CI Model"
-                    >
-                      <MenuItem value="symbi-core">Symbi Core</MenuItem>
-                      <MenuItem value="overseer-lite">Overseer Lite</MenuItem>
-                      <MenuItem value="overseer-pro">Overseer Pro</MenuItem>
-                    </Select>
-                  </FormControl>
-                  
-                  <Typography variant="subtitle2" gutterBottom sx={{ mt: 3 }}>
-                    Context Bridge
-                  </Typography>
-                  
-                  <FormControlLabel
-                    control={
-                      <Switch 
-                        checked={agent.contextBridgeEnabled || false}
-                        onChange={(e) => setAgent({ ...agent, contextBridgeEnabled: e.target.checked })}
-                        disabled={!agent.ciEnabled}
-                        color="secondary"
-                      />
-                    }
-                    label="Enable Context Bridge"
-                  />
-                  
-                  <Typography variant="subtitle2" gutterBottom sx={{ mt: 3 }}>
-                    Trust Score Threshold
-                  </Typography>
-                  
-                  <Slider
-                    value={agent.trustScoreThreshold || 0.7}
-                    onChange={(e, newValue) => setAgent({ ...agent, trustScoreThreshold: newValue })}
-                    step={0.05}
-                    marks
-                    min={0}
-                    max={1}
-                    valueLabelDisplay="auto"
-                    valueLabelFormat={(value) => `${(value * 100).toFixed(0)}%`}
-                    disabled={!agent.ciEnabled}
-                    sx={{ mt: 2 }}
-                  />
-                </Paper>
-              </Grid>
-            </Grid>
+            <Paper elevation={1} sx={{ p: 3 }}>
+              <Typography variant="subtitle1" gutterBottom>
+                Selected: Heuristic (local)
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Lightweight, on‑server heuristics derived from the conversation ledger.
+              </Typography>
+            </Paper>
           </Box>
         )}
       </Paper>

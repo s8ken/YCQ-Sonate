@@ -70,7 +70,7 @@ const AgentBondingCard = ({ agent, onBondingComplete }) => {
         <CardContent>
           <Box sx={{ mb: 2 }}>
             <Typography variant="body1" paragraph>
-              Bonding creates a deep connection between you and your AI agent, enabling enhanced context awareness and ethical alignment.
+              Bonding creates alignment between you and your AI agent, enabling enhanced contextual awareness and ethical decision making.
             </Typography>
             
             {agent && agent.bondingStatus === 'bonded' ? (
@@ -80,7 +80,7 @@ const AgentBondingCard = ({ agent, onBondingComplete }) => {
                   Bond Established
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  You have a strong bond with {agent.name}. This enables enhanced context awareness and ethical alignment.
+                  You have a strong bond with {agent.name}. This enables enhanced contextual awareness and ethical decision making.
                 </Typography>
               </Box>
             ) : (
