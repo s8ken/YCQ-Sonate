@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const verifyWebhookSignature = require('../middleware/verifyWebhookSignature');
 const skyIntegrationService = require('../services/skyIntegration.service');
 const asyncHandler = require('express-async-handler');
 
@@ -68,8 +69,8 @@ const getWebhookStatus = asyncHandler(async (req, res) => {
   });
 });
 
-// Webhook routes
-router.post('/sky/:agentId', handleSkyWebhook);
+// Webhook routes (signed if WEBHOOK_SECRET is configured)
+router.post('/sky/:agentId', verifyWebhookSignature(), handleSkyWebhook);
 router.post('/test', testWebhook);
 router.get('/status', getWebhookStatus);
 
