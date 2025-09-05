@@ -1,0 +1,51 @@
+{
+  "name": "symbi",
+  "displayName": "SYMBI",
+  "publisher": "symbi",
+  "version": "0.0.1",
+  "description": "SYMBI console + trust overlays (thin client to your backend).",
+  "engines": { "vscode": "^1.90.0" },
+  "categories": ["Other"],
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:symbi.openConsole",
+    "onCommand:symbi.verifyLedger",
+    "onCommand:symbi.setApiBase",
+    "onCommand:symbi.saveToken",
+    "onCommand:symbi.roundtable"
+  ],
+  "contributes": {
+    "commands": [
+      { "command": "symbi.openConsole", "title": "SYMBI: Open Console" },
+      { "command": "symbi.verifyLedger", "title": "SYMBI: Verify Ledger" },
+      { "command": "symbi.setApiBase", "title": "SYMBI: Set API Base" },
+      { "command": "symbi.saveToken", "title": "SYMBI: Save SYMBI_API_KEY" },
+      { "command": "symbi.roundtable", "title": "SYMBI: Roundtable (Gather Proposals)" }
+    ],
+    "views": {
+      "explorer": [{ "id": "symbi.ledger", "name": "Symbi Ledger" }]
+    },
+    "configuration": {
+      "title": "SYMBI",
+      "properties": {
+        "symbi.apiBase": {
+          "type": "string",
+          "default": "http://localhost:5000",
+          "description": "Base URL for SYMBI backend (e.g., http://localhost:5000)",
+          "scope": "workspace"
+        }
+      }
+    }
+  },
+  "main": "./out/extension.js",
+  "scripts": {
+    "compile": "tsc -p .",
+    "watch": "tsc -watch -p ."
+  },
+  "devDependencies": {
+    "@types/node": "^18.19.0",
+    "@types/vscode": "^1.90.0",
+    "typescript": "^5.5.0"
+  }
+}
+

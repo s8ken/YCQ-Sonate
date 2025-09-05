@@ -1,0 +1,430 @@
+{
+  "info": {
+    "name": "SYMBI UAT Collection v0.1-rc1",
+    "description": "Comprehensive UAT collection for SYMBI project testing",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "0.1.0"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "jwt",
+      "value": "Bearer your-jwt-token-here",
+      "type": "string"
+    },
+    {
+      "key": "convId",
+      "value": "your-conversation-id",
+      "type": "string"
+    },
+    {
+      "key": "webhookSecret",
+      "value": "your-webhook-secret",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Checks",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/healthz",
+              "host": ["{{baseUrl}}"],
+              "path": ["healthz"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Health check returns 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "pm.test('Response has status field', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('status');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Readiness Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/readyz",
+              "host": ["{{baseUrl}}"],
+              "path": ["readyz"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Readiness check returns 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Security Tests",
+      "item": [
+        {
+          "name": "Unauthorized Access Test",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/trust",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "trust"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('401 unauthorized without JWT', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Security Headers Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/healthz",
+              "host": ["{{baseUrl}}"],
+              "path": ["healthz"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Has security headers', function () {",
+                  "    pm.expect(pm.response.headers.get('X-Content-Type-Options')).to.exist;",
+                  "    pm.expect(pm.response.headers.get('X-Frame-Options')).to.exist;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ledger Verify",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{jwt}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/ledger/verify?session_id=conv:{{convId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ledger", "verify"],
+              "query": [
+                {
+                  "key": "session_id",
+                  "value": "conv:{{convId}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Ledger verification response', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('verified');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AI Integration",
+      "item": [
+        {
+          "name": "List OpenAI Models",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/llm/models/openai",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "llm", "models", "openai"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Models list returned', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Assistant Thread",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{jwt}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/assistant/thread/create",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "assistant", "thread", "create"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Thread created successfully', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('thread');",
+                  "    pm.expect(jsonData.thread).to.have.property('id');",
+                  "    pm.collectionVariables.set('threadId', jsonData.thread.id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Bridge Orchestrate",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{jwt}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"task\": \"Add per-message trust overlays + receipts\",\n  \"agents\": [\"codex\", \"v0\", \"trae\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/bridge/orchestrate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bridge", "orchestrate"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Orchestration response received', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('proposals');",
+                  "    if (jsonData.proposals && jsonData.proposals.length > 0) {",
+                  "        pm.collectionVariables.set('proposalId', jsonData.proposals[0].proposal_id);",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Bridge Receipts Test",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{jwt}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"task\": \"demo receipts\",\n  \"agents\": [\"codex\", \"v0\"],\n  \"session_id\": \"conv:{{convId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/bridge/orchestrate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "bridge", "orchestrate"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Bridge receipt generated', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('proposals');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Bridge: Receipt Present",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "{{jwt}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/ledger?session_id=conv:{{convId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ledger"],
+              "query": [
+                {
+                  "key": "session_id",
+                  "value": "conv:{{convId}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Bridge receipt exists in ledger', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const jsonData = pm.response.json();",
+                  "    const hasReceipt = jsonData.some(entry => ",
+                  "        entry.metadata && ",
+                  "        entry.metadata.receipt && ",
+                  "        entry.metadata.receipt.type === 'bridge_receipt'",
+                  "    );",
+                  "    pm.expect(hasReceipt).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Webhook Tests",
+      "item": [
+        {
+          "name": "Webhook Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/webhooks/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "webhooks", "status"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Webhook status OK', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('status');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Observability",
+      "item": [
+        {
+          "name": "Prometheus Metrics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/metrics",
+              "host": ["{{baseUrl}}"],
+              "path": ["metrics"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Prometheus metrics available', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const body = pm.response.text();",
+                  "    pm.expect(body).to.include('process_cpu_user_seconds_total');",
+                  "    pm.expect(body).to.include('http_requests_total');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
