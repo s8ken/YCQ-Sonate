@@ -1,0 +1,21 @@
+agents:
+  - key: v0
+    kind: http
+    base_url: "https://example-v0-endpoint"
+    route: "/bridge"
+    auth_header: "Bearer ${V0_TOKEN}"
+    enabled: false
+
+  - key: codex
+    kind: llm
+    provider: openai
+    model: gpt-4o
+    enabled: true
+
+  - key: trae
+    kind: http
+    base_url: "http://localhost:7890"
+    route: "/shell/run-safe"
+    auth_header: "Bearer ${SERVICE_TOKEN}"
+    enabled: false
+
