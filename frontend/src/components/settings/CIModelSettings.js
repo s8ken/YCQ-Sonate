@@ -25,17 +25,12 @@ const CIModelSettings = ({ onSave }) => {
   const theme = useTheme();
   const [loading, setLoading] = useState(false);
   const [settings, setSettings] = useState({
-    ciEnabled: false,
-    preferredModel: 'symbi-core',
-    ethicalAlignment: true,
-    contextBridgeEnabled: false,
+    ciEnabled: true,
+    preferredModel: 'heuristic',
     modelPriority: 'balanced'
   });
   const [availableModels, setAvailableModels] = useState([
-    { id: 'symbi-core', name: 'Symbi Core', description: 'Open-source CI model optimized for ethical alignment', cost: 'Low', provider: 'Symbi' },
-    { id: 'overseer-lite', name: 'Overseer Lite', description: 'Lightweight CI model with basic ethical guardrails', cost: 'Free', provider: 'Overseer' },
-    { id: 'overseer-pro', name: 'Overseer Pro', description: 'Advanced CI model with enhanced context awareness', cost: 'Medium', provider: 'Overseer' },
-    { id: 'custom', name: 'Custom CI Model', description: 'Connect your own CI model implementation', cost: 'Varies', provider: 'Custom' }
+    { id: 'heuristic', name: 'Heuristic (local)', description: 'Lightweight, on-server heuristics.', cost: 'Free', provider: 'SYMBI' }
   ]);
 
   // Fetch current settings
@@ -43,10 +38,8 @@ const CIModelSettings = ({ onSave }) => {
     const fetchSettings = async () => {
       setLoading(true);
       try {
-        const response = await axios.get('/api/settings/ci');
-        if (response.data) {
-          setSettings(response.data);
-        }
+        // POC: skip remote fetch; default to heuristic
+        setSettings({ ciEnabled: true, preferredModel: 'heuristic', modelPriority: 'balanced' });
       } catch (error) {
         console.error('Error fetching CI settings:', error);
       } finally {
@@ -72,7 +65,8 @@ const CIModelSettings = ({ onSave }) => {
   const saveSettings = async () => {
     setLoading(true);
     try {
-      await axios.put('/api/settings/ci', settings);
+      // POC: no-op save
+      await Promise.resolve();
       if (onSave) onSave(settings);
     } catch (error) {
       console.error('Error saving CI settings:', error);
@@ -100,8 +94,8 @@ const CIModelSettings = ({ onSave }) => {
       boxShadow: '0 20px 40px rgba(0,0,0,0.1)'
     }}>
       <CardHeader 
-        title="Cognitive Intelligence Settings" 
-        subheader="Configure CI model preferences and ethical alignment"
+        title="Trust Mode"
+        subheader="POC uses on-server heuristics only"
         sx={{
           '& .MuiCardHeader-title': {
             fontWeight: 600,
@@ -115,51 +109,16 @@ const CIModelSettings = ({ onSave }) => {
       <CardContent>
         <Grid container spacing={3}>
           <Grid item xs={12}>
-            <FormControl component="fieldset" variant="standard">
-              <FormControlLabel
-                  control={
-                    <Switch 
-                      checked={settings.ciEnabled} 
-                      onChange={handleChange} 
-                      name="ciEnabled"
-                      sx={{
-                        '& .MuiSwitch-switchBase': {
-                          '&.Mui-checked': {
-                            color: '#667eea',
-                            '& + .MuiSwitch-track': {
-                              backgroundColor: '#667eea',
-                              opacity: 0.5
-                            }
-                          }
-                        },
-                        '& .MuiSwitch-track': {
-                          borderRadius: 12,
-                          backgroundColor: 'rgba(255, 255, 255, 0.1)'
-                        },
-                        '& .MuiSwitch-thumb': {
-                          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)'
-                        }
-                      }}
-                    />
-                  }
-                  label="Enable Cognitive Intelligence"
-                  sx={{
-                    '& .MuiFormControlLabel-label': {
-                      fontWeight: 500
-                    }
-                  }}
-                />
-              <FormHelperText>
-                Activate advanced cognitive capabilities for your agents and conversations
-              </FormHelperText>
-            </FormControl>
+            <Typography variant="body2" color="text.secondary">
+              Only “Heuristic (local)” is available in POC.
+            </Typography>
           </Grid>
 
-          {settings.ciEnabled && (
+          {true && (
             <>
               <Grid item xs={12}>
                 <Typography variant="subtitle1" gutterBottom>
-                  Select Preferred CI Model
+                  Trust Mode
                 </Typography>
                 <FormControl component="fieldset">
                   <RadioGroup
@@ -201,15 +160,13 @@ const CIModelSettings = ({ onSave }) => {
                           } 
                           label={
                             <Box>
-                              <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                                {model.name}
-                              </Typography>
+                          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>{model.name}</Typography>
                               <Typography variant="body2" color="text.secondary">
                                 {model.description}
                               </Typography>
                               <Box sx={{ display: 'flex', mt: 1 }}>
                                 <Typography variant="caption" sx={{ mr: 2, fontWeight: 500 }}>
-                                  Provider: {model.provider}
+                                Provider: {model.provider}
                                 </Typography>
                                 <Typography variant="caption" sx={{ fontWeight: 500 }}>
                                   Cost: {model.cost}
@@ -310,95 +267,11 @@ const CIModelSettings = ({ onSave }) => {
                       }}
                     />
                   </RadioGroup>
-                  <FormHelperText>
-                    Choose the optimization focus for CI model selection
-                  </FormHelperText>
+                  <FormHelperText>POC only</FormHelperText>
                 </FormControl>
               </Grid>
 
-              <Grid item xs={12}>
-                <Divider sx={{ my: 2 }} />
-                <Typography variant="subtitle1" gutterBottom>
-                  Advanced Settings
-                </Typography>
-                <FormControl component="fieldset" variant="standard" sx={{ display: 'block', mb: 2 }}>
-                  <FormControlLabel
-                    control={
-                      <Switch 
-                        checked={settings.ethicalAlignment} 
-                        onChange={handleChange} 
-                        name="ethicalAlignment"
-                        sx={{
-                          '& .MuiSwitch-switchBase': {
-                            '&.Mui-checked': {
-                              color: '#667eea',
-                              '& + .MuiSwitch-track': {
-                                backgroundColor: '#667eea',
-                                opacity: 0.5
-                              }
-                            }
-                          },
-                          '& .MuiSwitch-track': {
-                            borderRadius: 12,
-                            backgroundColor: 'rgba(255, 255, 255, 0.1)'
-                          },
-                          '& .MuiSwitch-thumb': {
-                            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)'
-                          }
-                        }}
-                      />
-                    }
-                    label="Enable Ethical Alignment"
-                    sx={{
-                      '& .MuiFormControlLabel-label': {
-                        fontWeight: 500
-                      }
-                    }}
-                  />
-                  <FormHelperText>
-                    Ensure AI responses adhere to ethical guidelines and values
-                  </FormHelperText>
-                </FormControl>
-
-                <FormControl component="fieldset" variant="standard">
-                  <FormControlLabel
-                    control={
-                      <Switch 
-                        checked={settings.contextBridgeEnabled} 
-                        onChange={handleChange} 
-                        name="contextBridgeEnabled"
-                        sx={{
-                          '& .MuiSwitch-switchBase': {
-                            '&.Mui-checked': {
-                              color: '#667eea',
-                              '& + .MuiSwitch-track': {
-                                backgroundColor: '#667eea',
-                                opacity: 0.5
-                              }
-                            }
-                          },
-                          '& .MuiSwitch-track': {
-                            borderRadius: 12,
-                            backgroundColor: 'rgba(255, 255, 255, 0.1)'
-                          },
-                          '& .MuiSwitch-thumb': {
-                            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)'
-                          }
-                        }}
-                      />
-                    }
-                    label="Enable Context Bridge"
-                    sx={{
-                      '& .MuiFormControlLabel-label': {
-                        fontWeight: 500
-                      }
-                    }}
-                  />
-                  <FormHelperText>
-                    Allow secure context sharing between Symbi and Overseer systems
-                  </FormHelperText>
-                </FormControl>
-              </Grid>
+              {/* POC: no advanced settings */}
 
               <Grid item xs={12}>
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>

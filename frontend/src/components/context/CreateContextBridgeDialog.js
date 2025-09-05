@@ -241,12 +241,12 @@ const CreateContextBridgeDialog = ({ open, onClose, onSubmit }) => {
           
           <Grid item xs={12} sm={6}>
             <FormControl fullWidth>
-              <InputLabel sx={{ color: 'rgba(255, 255, 255, 0.7)', '&.Mui-focused': { color: '#667eea' } }}>Source System</InputLabel>
+              <InputLabel sx={{ color: 'rgba(255, 255, 255, 0.7)', '&.Mui-focused': { color: '#667eea' } }}>Source</InputLabel>
               <Select
                 name="source"
                 value={formData.source}
                 onChange={handleChange}
-                label="Source System"
+                label="Source"
                 sx={{
                   borderRadius: 2,
                   backgroundColor: 'rgba(255, 255, 255, 0.05)',
@@ -267,8 +267,6 @@ const CreateContextBridgeDialog = ({ open, onClose, onSubmit }) => {
                 }}
               >
                 <MenuItem value="symbi">Symbi</MenuItem>
-                <MenuItem value="overseer">Overseer</MenuItem>
-                <MenuItem value="system">System</MenuItem>
               </Select>
               <FormHelperText>
                 The system that originated this context
@@ -486,8 +484,8 @@ const CreateContextBridgeDialog = ({ open, onClose, onSubmit }) => {
             fontWeight: 600,
             fontSize: '0.95rem'
           }}
-        >
-          Create Context Bridge
+          >
+            Add Context
         </Button>
       </DialogActions>
     </Dialog>
