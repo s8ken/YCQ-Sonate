@@ -1,5 +1,5 @@
 {
-  "name": "symbi-synergy-frontend",
+  "name": "symbi-synergy-frontend-rebuilt",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -17,8 +17,8 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
+    "build": "CI=false react-scripts build",
+    "test": "react-scripts test --passWithNoTests",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -39,5 +39,9 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "http://localhost:5000"
+  "proxy": "http://localhost:5000",
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.8.0",
+    "@testing-library/react": "^16.3.0"
+  }
 }

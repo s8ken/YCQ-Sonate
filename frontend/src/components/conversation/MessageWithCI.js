@@ -16,8 +16,8 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import LockIcon from '@mui/icons-material/Lock';
 import SecurityIcon from '@mui/icons-material/Security';
-import EthicalScoreIndicator from './EthicalScoreIndicator';
 import ContextTags from './ContextTags';
+import TrustBadge from '../trust/TrustBadge';
 import '../../styles/builder.css';
 
 const MessageWithCI = ({ message, isUser, timestamp }) => {
@@ -60,7 +60,7 @@ const MessageWithCI = ({ message, isUser, timestamp }) => {
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             {message.trustScore !== undefined && (
-              <EthicalScoreIndicator score={message.trustScore * 5} size="small" showLabel />
+              <TrustBadge trustScore={message.trustScore} simplified={!expanded} />
             )}
             <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
               {formatTime(timestamp)}
@@ -133,11 +133,11 @@ const MessageWithCI = ({ message, isUser, timestamp }) => {
                 {message.trustScore !== undefined && (
                   <Box>
                     <Typography variant="caption" color="text.secondary" component="div">
-                      Trust Score
+                      Trust Rating
                     </Typography>
-                    <Typography variant="body2">
-                      {(message.trustScore * 100).toFixed(0)}%
-                    </Typography>
+                    <Box sx={{ mt: 0.5 }}>
+                      <TrustBadge trustScore={message.trustScore} />
+                    </Box>
                   </Box>
                 )}
                 
