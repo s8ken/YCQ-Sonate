@@ -1,4 +1,4 @@
-import React, { createContext, useState, useMemo, useContext } from 'react';
+import React, { createContext, useState, useMemo, useContext, useEffect } from 'react';
 import { createTheme } from '@mui/material/styles';
 
 // Create a context for the theme
@@ -270,7 +270,33 @@ const darkTheme = createTheme({
 });
 
 export const CustomThemeProvider = ({ children }) => {
-  const [mode, setMode] = useState('light');
+  const [mode, setMode] = useState(() => {
+    try {
+      const saved = typeof window !== 'undefined' ? window.localStorage.getItem('theme-mode') : null;
+      if (saved === 'light' || saved === 'dark') return saved;
+      if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        return 'dark';
+      }
+      return 'light';
+    } catch {
+      return 'light';
+    }
+  });
+
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem('theme-mode', mode);
+      }
+    } catch {}
+  }, [mode]);
+
+  useEffect(() => {
+    if (typeof document !== 'undefined') {
+      const root = document.documentElement;
+      root.setAttribute('data-theme', mode);
+    }
+  }, [mode]);
 
   const toggleTheme = () => {
     setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));

@@ -51,18 +51,32 @@ const AssistantChat = () => {
     try {
       setLoading(true);
       setError(null);
-      
+      // Resolve assistant id if 'latest'
+      let resolvedAssistantId = assistantId;
+      if (assistantId === 'latest') {
+        try {
+          const latest = await axios.get('/api/assistant/latest');
+          if (latest.data?.success && latest.data?.assistant?.id) {
+            resolvedAssistantId = latest.data.assistant.id;
+          }
+        } catch (e) {
+          // ignore, will proceed without assistant
+        }
+      }
+
       // Create a new thread for this conversation
       const threadResponse = await axios.post('/api/assistant/thread/create');
       if (threadResponse.data.success) {
         setThreadId(threadResponse.data.thread.id);
       }
       
-      // Get assistant info (we'll need to fetch from the list)
-      const assistantsResponse = await axios.get('/api/assistant/list');
-      if (assistantsResponse.data.success) {
-        const foundAssistant = assistantsResponse.data.assistants.find(a => a.id === assistantId);
-        setAssistant(foundAssistant);
+      // Get assistant info (from list) if resolved
+      if (resolvedAssistantId) {
+        const assistantsResponse = await axios.get('/api/assistant/list');
+        if (assistantsResponse.data.success) {
+          const foundAssistant = assistantsResponse.data.assistants.find(a => a.id === resolvedAssistantId);
+          setAssistant(foundAssistant);
+        }
       }
       
     } catch (err) {
@@ -97,8 +111,9 @@ const AssistantChat = () => {
     try {
       const response = await axios.post('/api/assistant/message', {
         threadId,
-        assistantId,
-        message: messageText
+        assistantId: assistant?.id || (assistantId !== 'latest' ? assistantId : undefined),
+        message: messageText,
+        session_id: threadId // use thread as stable session for capsule/trust
       });
 
       if (response.data.success) {

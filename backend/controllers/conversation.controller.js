@@ -5,6 +5,7 @@ const User = require('../models/user.model');
 const axios = require('axios');
 const OpenAI = require('openai');
 const { getSocketIO } = require('../utils/socket');
+const InteractionEvent = require('../models/interactionEvent.model');
 
 // @desc    Get all conversations for user
 // @route   GET /api/conversations
@@ -202,6 +203,30 @@ const addMessage = asyncHandler(async (req, res) => {
       if (agentMessage) {
         getSocketIO().to(req.params.id).emit('newMessage', agentMessage);
       }
+
+      // Append a ledger event for this turn (user prompt + AI response)
+      try {
+        const agent = await Agent.findById(agentId).lean();
+        // Normalize session id with conv: prefix for 24-hex ids
+        const hex24 = /^[a-f0-9]{24}$/i;
+        const rawSid = req.params.id;
+        const sessionId = (rawSid && hex24.test(String(rawSid))) ? `conv:${rawSid}` : rawSid;
+        if (agentMessage?.content) {
+          const ev = new InteractionEvent({
+            session_id: sessionId,
+            user: req.user.id,
+            model_vendor: agent?.provider || 'openai',
+            model_name: agent?.model || null,
+            prompt: content,
+            response: agentMessage.content,
+            metadata: { conversation_id: req.params.id, agent_id: agentId, source: 'conversation' }
+          });
+          await ev.save();
+        }
+      } catch (e) {
+        // non-fatal logging only
+        console.warn('ledger append failed:', e.message);
+      }
     } catch (error) {
       console.error('Error generating agent response:', error.message);
       
@@ -235,8 +260,8 @@ const generateAgentResponse = async (conversation, agentId, userId) => {
       throw new Error('Agent not found');
     }
 
-    // Get user with API keys
-    const user = await User.findById(userId);
+    // Get user with API keys (explicitly select key field since it has select: false)
+    const user = await User.findById(userId).select('+apiKeys.key');
     if (!user) {
       throw new Error('User not found');
     }

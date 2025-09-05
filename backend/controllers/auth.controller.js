@@ -18,9 +18,16 @@ const generateToken = (id) => {
 // @route   POST /api/auth/register
 // @access  Public
 const registerUser = asyncHandler(async (req, res) => {
+  console.log('=== REGISTRATION REQUEST ===');
+  console.log('Request body:', JSON.stringify(req.body, null, 2));
+  console.log('Content-Type:', req.get('Content-Type'));
+  console.log('Headers:', JSON.stringify(req.headers, null, 2));
+  
   const { name, email, password } = req.body;
+  console.log('Extracted fields:', { name, email, password: password ? '[REDACTED]' : undefined });
 
   if (!name || !email || !password) {
+    console.log('Missing required fields - name:', !!name, 'email:', !!email, 'password:', !!password);
     return res.status(400).json({
       success: false,
       message: 'Please provide all required fields'

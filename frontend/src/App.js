@@ -1,146 +1,86 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { Box, CssBaseline, CircularProgress } from '@mui/material';
-import { useAuth } from './context/AuthContext';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import { CustomThemeProvider, useTheme } from './context/ThemeContext';
+import { VariantProvider } from './context/VariantContext';
+import { ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
 
-// Layout components
 import Layout from './components/layout/Layout';
+import ProtectedRoute from './components/guards/ProtectedRoute';
+import ConversationGuard from './components/guards/ConversationGuard';
 
-// Pages
-import Login from './pages/Login';
-import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Conversations from './pages/Conversations';
 import ConversationDetail from './pages/ConversationDetail';
-import ConversationGuard from './components/guards/ConversationGuard';
+import ReviewConsole from './pages/ReviewConsole';
 import Agents from './pages/Agents';
 import AgentDetail from './pages/AgentDetail';
 import Assistants from './pages/Assistants';
 import AssistantDetail from './pages/AssistantDetail';
-import AssistantChat from './pages/AssistantChat';
-import Settings from './pages/Settings';
-import Reports from './pages/Reports';
 import ContextBridge from './pages/ContextBridge';
+import Reports from './pages/Reports';
+import Settings from './pages/Settings';
+import Documentation from './pages/Documentation';
+import Login from './pages/Login';
+import Register from './pages/Register';
 import NotFound from './pages/NotFound';
-import ReviewConsole from './pages/ReviewConsole';
+
+const AppContent = () => {
+  const { theme } = useTheme();
+  return (
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <Router>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route
+            path="/*"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <Routes>
+                    <Route path="/" element={<Dashboard />} />
+                    <Route path="/conversations" element={<Conversations />} />
+                    <Route
+                      path="/conversations/:id"
+                      element={
+                        <ConversationGuard>
+                          <ConversationDetail />
+                        </ConversationGuard>
+                      }
+                    />
+                    <Route path="/review" element={<ReviewConsole />} />
+                    <Route path="/agents" element={<Agents />} />
+                    <Route path="/agents/:id" element={<AgentDetail />} />
+                    <Route path="/assistants" element={<Assistants />} />
+                    <Route path="/assistants/:id" element={<AssistantDetail />} />
+                    <Route path="/context-bridge" element={<ContextBridge />} />
+                    <Route path="/reports" element={<Reports />} />
+                    <Route path="/settings" element={<Settings />} />
+                    <Route path="/documentation" element={<Documentation />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </Router>
+    </ThemeProvider>
+  );
+}
 
 const App = () => {
-  const { isAuthenticated, loading } = useAuth();
-
-  // Protected route wrapper
-  const ProtectedRoute = ({ children }) => {
-    if (loading) {
-      return (
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-          <CircularProgress />
-        </Box>
-      );
-    }
-    return isAuthenticated ? children : <Navigate to="/login" />;
-  };
-
   return (
-    <Routes>
-      {/* Public routes */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      
-      {/* Protected routes - wrapped in Layout */}
-      <Route path="/" element={
-        <ProtectedRoute>
-          <Layout>
-            <Dashboard />
-          </Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/dashboard" element={
-        <ProtectedRoute>
-          <Layout>
-            <Dashboard />
-          </Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/conversations" element={
-        <ProtectedRoute>
-          <Layout>
-            <Conversations />
-          </Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/conversations/:id" element={
-        <ProtectedRoute>
-          <Layout>
-            <ConversationGuard>
-              <ConversationDetail />
-            </ConversationGuard>
-          </Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/agents" element={
-        <ProtectedRoute>
-          <Layout>
-            <Agents />
-          </Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/review" element={
-        <ProtectedRoute>
-          <Layout>
-            <ReviewConsole />
-          </Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/agents/:id" element={
-        <ProtectedRoute>
-          <Layout>
-            <AgentDetail />
-          </Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/assistants" element={
-        <ProtectedRoute>
-          <Layout>
-            <Assistants />
-          </Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/assistants/new" element={
-        <ProtectedRoute>
-          <Layout>
-            <AssistantDetail />
-          </Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/assistants/:assistantId/chat" element={
-        <ProtectedRoute>
-          <AssistantChat />
-        </ProtectedRoute>
-      } />
-      <Route path="/settings" element={
-        <ProtectedRoute>
-          <Layout>
-            <Settings />
-          </Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/reports" element={
-        <ProtectedRoute>
-          <Layout>
-            <Reports />
-          </Layout>
-        </ProtectedRoute>
-      } />
-      <Route path="/context-bridge" element={
-        <ProtectedRoute>
-          <Layout>
-            <ContextBridge />
-          </Layout>
-        </ProtectedRoute>
-      } />
-      
-      {/* 404 route */}
-      <Route path="*" element={<NotFound />} />
-    </Routes>
+    <AuthProvider>
+      <CustomThemeProvider>
+        <VariantProvider>
+          <AppContent />
+        </VariantProvider>
+      </CustomThemeProvider>
+    </AuthProvider>
   );
 };
 

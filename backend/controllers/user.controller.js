@@ -75,9 +75,18 @@ const getApiKeys = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user.id).select('apiKeys');
 
   if (user) {
+    // Return API keys without exposing the actual key values for security
+    const safeApiKeys = user.apiKeys.map(apiKey => ({
+      _id: apiKey._id,
+      name: apiKey.name,
+      provider: apiKey.provider,
+      isActive: apiKey.isActive,
+      createdAt: apiKey.createdAt
+    }));
+    
     res.json({
       success: true,
-      data: user.apiKeys || []
+      data: safeApiKeys
     });
   } else {
     res.status(404);

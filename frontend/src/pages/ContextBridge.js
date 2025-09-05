@@ -35,8 +35,9 @@ import {
   LinkOff as LinkOffIcon,
   Search as SearchIcon,
   AutoAwesome as AutoAwesomeIcon,
-  Psychology as PsychologyIcon,
 } from '@mui/icons-material';
+import { flags } from '../lib/flags';
+import { LEX } from '../config/lexicon';
 import { useAuth } from '../context/AuthContext';
 import '../styles/builder.css';
 
@@ -314,26 +315,13 @@ const ContextBridge = () => {
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
           <Box>
             <Typography variant="h4" component="h1" gutterBottom>
-              Context Bridge
+              {LEX.app.contextTitle}
             </Typography>
             <Typography variant="body1" color="text.secondary">
-              Manage context sharing between Symbi and Overseer systems
+              {LEX.app.contextSubtitle}
             </Typography>
           </Box>
-          
-          {/* Weaviate Status Indicator */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <PsychologyIcon 
-              color={weaviateStatus.connected ? 'success' : 'disabled'}
-              sx={{ fontSize: 20 }}
-            />
-            <Typography 
-              variant="caption" 
-              color={weaviateStatus.connected ? 'success.main' : 'text.disabled'}
-            >
-              {weaviateStatus.connected ? 'Vector Search Active' : 'Basic Search Only'}
-            </Typography>
-          </Box>
+          {/* POC: no vector banner */}
         </Box>
         
         {/* Semantic Search Bar */}
@@ -356,7 +344,7 @@ const ContextBridge = () => {
                   </IconButton>
                 )
               }}
-              disabled={!weaviateStatus.connected}
+              disabled={!flags.vector || !weaviateStatus.connected}
               sx={{
                 '& .MuiOutlinedInput-root': {
                   backgroundColor: 'rgba(255, 255, 255, 0.05)',
@@ -455,10 +443,8 @@ const ContextBridge = () => {
           variant="scrollable"
           scrollButtons="auto"
         >
-          <Tab label="All Sources" value="all" />
+          <Tab label="All" value="all" />
           <Tab label="Symbi" value="symbi" />
-          <Tab label="Overseer" value="overseer" />
-          <Tab label="System" value="system" />
         </Tabs>
       </Paper>
       
@@ -637,8 +623,6 @@ const ContextBridge = () => {
                   label="Source"
                 >
                   <MenuItem value="symbi">Symbi</MenuItem>
-                  <MenuItem value="overseer">Overseer</MenuItem>
-                  <MenuItem value="system">System</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
@@ -687,68 +671,7 @@ const ContextBridge = () => {
         </DialogActions>
       </Dialog>
       
-      {/* Create Bridge Dialog */}
-      <Dialog
-        open={bridgeDialogOpen}
-        onClose={() => setBridgeDialogOpen(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>Create Context Bridge</DialogTitle>
-        <DialogContent>
-          <DialogContentText sx={{ mb: 2 }}>
-            Create a bridge between Symbi and Overseer contexts.
-          </DialogContentText>
-          <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="From Tag"
-                name="fromTag"
-                value={bridgeForm.fromTag}
-                onChange={handleBridgeFormChange}
-                required
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="To Tag"
-                name="toTag"
-                value={bridgeForm.toTag}
-                onChange={handleBridgeFormChange}
-                required
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Bridge Data (JSON)"
-                name="data"
-                value={bridgeForm.data}
-                onChange={handleBridgeFormChange}
-                multiline
-                rows={4}
-                required
-                placeholder='{"key": "value"}'
-              />
-            </Grid>
-          </Grid>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setBridgeDialogOpen(false)}>
-            Cancel
-          </Button>
-          <Button 
-            onClick={createBridge} 
-            color="primary" 
-            variant="contained"
-            disabled={!bridgeForm.fromTag || !bridgeForm.toTag || !bridgeForm.data}
-          >
-            Create Bridge
-          </Button>
-        </DialogActions>
-      </Dialog>
+      {/* POC: no bridge dialog */}
       
       {/* Delete Confirmation Dialog */}
       <Dialog

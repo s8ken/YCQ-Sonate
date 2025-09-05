@@ -25,6 +25,8 @@ import {
   Switch,
   FormControlLabel
 } from '@mui/material';
+import TrustBadge from '../components/trust/TrustBadge';
+import TrustOnboarding from '../components/onboarding/TrustOnboarding';
 import SendIcon from '@mui/icons-material/Send';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -35,6 +37,8 @@ import PsychologyIcon from '@mui/icons-material/Psychology';
 import axios from 'axios';
 import MessageWithCI from '../components/conversation/MessageWithCI';
 import { io } from 'socket.io-client';
+import TrustChips from '../components/trust/TrustChips';
+import CapsulePanel from '../components/context/CapsulePanel';
 
 const ConversationDetail = () => {
   const { id } = useParams();
@@ -59,6 +63,12 @@ const ConversationDetail = () => {
   const [menuAnchorEl, setMenuAnchorEl] = useState(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editTitle, setEditTitle] = useState('');
+  const [trustDetailLevel, setTrustDetailLevel] = useState(
+    localStorage.getItem('trustDetailLevel') || 'simple'
+  );
+  const [showOnboarding, setShowOnboarding] = useState(
+    localStorage.getItem('trustOnboardingComplete') !== 'true'
+  );
   const messagesEndRef = useRef(null);
   const socketRef = useRef(null);
 
@@ -256,7 +266,31 @@ const ConversationDetail = () => {
         <Typography variant="h5">
           {conversation?.title || 'Untitled Conversation'}
         </Typography>
-        <Box>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          {/* Session-level Trust Chips (best-effort: uses conversation id as session) */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={trustDetailLevel === 'detailed'}
+                  onChange={(e) => {
+                    const newLevel = e.target.checked ? 'detailed' : 'simple';
+                    setTrustDetailLevel(newLevel);
+                    localStorage.setItem('trustDetailLevel', newLevel);
+                  }}
+                  size="small"
+                />
+              }
+              label={
+                <Typography variant="body2">Detailed Trust Info</Typography>
+              }
+            />
+            {trustDetailLevel === 'simple' ? (
+              <TrustBadge trustScore={conversation?.ethicalScore / 5 || 0.8} />
+            ) : (
+              <TrustChips sessionId={id} compact />
+            )}
+          </Box>
           <IconButton onClick={handleMenuOpen}>
             <MoreVertIcon />
           </IconButton>
@@ -281,18 +315,20 @@ const ConversationDetail = () => {
         </Box>
       </Box>
 
-      {/* Messages Container */}
-      <Paper 
-        elevation={1} 
-        sx={{ 
-          flexGrow: 1, 
-          overflow: 'auto', 
-          mb: 2, 
-          p: 2,
-          bgcolor: 'background.default',
-          borderRadius: 2
-        }}
-      >
+      {/* Main Content Area - Messages and Capsule Side by Side */}
+      <Box sx={{ flexGrow: 1, display: 'flex', gap: 2, mb: 2, minHeight: 0 }}>
+        {/* Messages Container */}
+        <Paper 
+          elevation={1} 
+          sx={{ 
+            flex: '2 1 0',
+            overflow: 'auto', 
+            p: 2,
+            bgcolor: 'background.default',
+            borderRadius: 2,
+            minHeight: 0
+          }}
+        >
         {conversation?.messages?.length > 0 ? (
           conversation.messages.map((msg, index) => {
             const isUser = msg.sender === 'user';
@@ -368,6 +404,14 @@ const ConversationDetail = () => {
                   >
                     {formatTimestamp(msg.timestamp)}
                   </Typography>
+                  {/* Per-message Trust display */}
+                  <Box sx={{ mt: 1 }}>
+                    {trustDetailLevel === 'simple' ? (
+                      <TrustBadge trustScore={msg.trustScore || 0.8} />
+                    ) : (
+                      <TrustChips sessionId={id} at={msg.timestamp} compact />
+                    )}
+                  </Box>
                 </Box>
               </Box>
             );
@@ -379,8 +423,14 @@ const ConversationDetail = () => {
             </Typography>
           </Box>
         )}
-        <div ref={messagesEndRef} />
-      </Paper>
+          <div ref={messagesEndRef} />
+        </Paper>
+
+        {/* Capsule Panel (context memory) - Side Panel */}
+        <Box sx={{ flex: '0 0 300px', minHeight: 0 }}>
+          <CapsulePanel sessionId={id} />
+        </Box>
+      </Box>
 
       {/* Message Input */}
       <Paper 
@@ -475,6 +525,12 @@ const ConversationDetail = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Trust Onboarding Dialog */}
+      <TrustOnboarding 
+        open={showOnboarding} 
+        onClose={() => setShowOnboarding(false)} 
+      />
     </Box>
   );
 };

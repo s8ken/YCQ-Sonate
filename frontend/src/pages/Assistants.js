@@ -35,6 +35,7 @@ import SmartToyIcon from '@mui/icons-material/SmartToy';
 import FunctionsIcon from '@mui/icons-material/Functions';
 import InfoIcon from '@mui/icons-material/Info';
 import axios from 'axios';
+import AssistantEditDialog from '../components/assistants/AssistantEditDialog';
 
 const Assistants = () => {
   const navigate = useNavigate();
@@ -47,6 +48,7 @@ const Assistants = () => {
   const [error, setError] = useState(null);
   const [functionsDialogOpen, setFunctionsDialogOpen] = useState(false);
   const [functions, setFunctions] = useState([]);
+  const [editing, setEditing] = useState(null);
 
   useEffect(() => {
     fetchAssistants();
@@ -152,6 +154,13 @@ const Assistants = () => {
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button
+            variant="outlined"
+            startIcon={<ChatIcon />}
+            onClick={() => navigate('/assistants/latest/chat')}
+          >
+            Use Most Recent
+          </Button>
           <Button
             variant="outlined"
             startIcon={<FunctionsIcon />}
@@ -304,6 +313,12 @@ const Assistants = () => {
           </ListItemIcon>
           <ListItemText>Chat</ListItemText>
         </MenuItem>
+        <MenuItem onClick={() => { setEditing(selectedAssistant); handleMenuClose(); }}>
+          <ListItemIcon>
+            <InfoIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Edit</ListItemText>
+        </MenuItem>
         <MenuItem onClick={handleDeleteDialogOpen}>
           <ListItemIcon>
             <DeleteIcon fontSize="small" />
@@ -369,6 +384,13 @@ const Assistants = () => {
           <Button onClick={() => setFunctionsDialogOpen(false)}>Close</Button>
         </DialogActions>
       </Dialog>
+
+      {/* Edit Assistant Dialog */}
+      <AssistantEditDialog
+        open={!!editing}
+        assistant={editing}
+        onClose={(saved) => { setEditing(null); if (saved) fetchAssistants(); }}
+      />
     </Box>
   );
 };

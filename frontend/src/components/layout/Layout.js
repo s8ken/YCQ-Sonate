@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
-import { Box, CssBaseline, Toolbar } from '@mui/material';
+import { Box, IconButton } from '@mui/material';
+import Brightness4Icon from '@mui/icons-material/Brightness4';
+import Brightness7Icon from '@mui/icons-material/Brightness7';
 import Header from './Header';
 import Sidebar from './Sidebar';
+import { useTheme } from '../../context/ThemeContext';
 
 const Layout = ({ children }) => {
+  const { mode, toggleTheme } = useTheme();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const toggleDrawer = () => {
@@ -11,24 +15,17 @@ const Layout = ({ children }) => {
   };
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
-      <CssBaseline />
-      
-      <Header toggleDrawer={toggleDrawer} />
+    <Box sx={{ display: 'flex' }}>
       <Sidebar open={drawerOpen} toggleDrawer={toggleDrawer} />
-      
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          p: 3,
-          width: '100%',
-          bgcolor: 'background.default',
-          minHeight: '100vh',
-        }}
-      >
-        <Toolbar /> {/* This creates space for the fixed AppBar */}
-        {children}
+      <Box sx={{ flexGrow: 1 }}>
+        <Header toggleDrawer={toggleDrawer}>
+          <IconButton sx={{ ml: 1 }} onClick={toggleTheme} color="inherit">
+            {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+          </IconButton>
+        </Header>
+        <Box component="main" sx={{ p: 3, mt: 8 }}>
+          {children}
+        </Box>
       </Box>
     </Box>
   );

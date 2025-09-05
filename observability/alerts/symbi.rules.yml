@@ -1,0 +1,95 @@
+groups:
+- name: symbi-uat
+  rules:
+  - alert: HighErrorRate
+    expr: sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m])) > 0.05
+    for: 10m
+    labels: 
+      severity: page
+    annotations:
+      summary: "HTTP 5xx error rate > 5% for 10m"
+      description: "The HTTP 5xx error rate has been above 5% for more than 10 minutes. Current rate: {{ $value | humanizePercentage }}"
+      runbook_url: "https://github.com/symbi-ai/runbooks/blob/main/high-error-rate.md"
+      
+  - alert: HighLatencyP95
+    expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) > 1
+    for: 10m
+    labels: 
+      severity: page
+    annotations:
+      summary: "P95 request latency > 1s for 10m"
+      description: "The 95th percentile request latency has been above 1 second for more than 10 minutes. Current P95: {{ $value }}s"
+      runbook_url: "https://github.com/symbi-ai/runbooks/blob/main/high-latency.md"
+      
+  - alert: APIUnavailable
+    expr: absent_over_time(http_requests_total[5m]) > 0
+    for: 5m
+    labels: 
+      severity: page
+    annotations:
+      summary: "No HTTP traffic observed in last 5m (possible outage)"
+      description: "No HTTP requests have been observed in the last 5 minutes, indicating a possible service outage or monitoring issue."
+      runbook_url: "https://github.com/symbi-ai/runbooks/blob/main/api-unavailable.md"
+      
+  - alert: HighMemoryUsage
+    expr: (process_resident_memory_bytes / 1024 / 1024) > 512
+    for: 15m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High memory usage detected"
+      description: "Process memory usage is above 512MB for more than 15 minutes. Current usage: {{ $value }}MB"
+      
+  - alert: DatabaseConnectionFailure
+    expr: increase(mongodb_connection_errors_total[5m]) > 0
+    for: 2m
+    labels:
+      severity: critical
+    annotations:
+      summary: "MongoDB connection errors detected"
+      description: "MongoDB connection errors have been detected in the last 5 minutes. Error count: {{ $value }}"
+      
+  - alert: TrustDeclarationAnomalies
+    expr: rate(http_requests_total{route="/api/trust", status=~"4.."}[10m]) > 0.1
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High rate of trust declaration failures"
+      description: "Trust declaration endpoint is experiencing high failure rates. Rate: {{ $value }} failures/sec"
+      
+  - alert: BridgeOrchestrationFailures
+    expr: rate(http_requests_total{route="/api/bridge/orchestrate", status=~"5.."}[5m]) > 0.05
+    for: 3m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Bridge orchestration failures detected"
+      description: "Bridge orchestration is failing at a high rate. This may impact AI agent coordination."
+      
+  - alert: LedgerIntegrityIssues
+    expr: rate(http_requests_total{route="/api/ledger/verify", status!="200"}[10m]) > 0
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Ledger verification failures detected"
+      description: "Ledger integrity verification is failing, which may indicate data corruption or tampering."
+      
+  - alert: MetricsEndpointDown
+    expr: up{job="symbi-api"} == 0
+    for: 2m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Metrics endpoint is down"
+      description: "The metrics endpoint is not responding, monitoring may be compromised."
+      
+  - alert: HighCPUUsage
+    expr: rate(process_cpu_seconds_total[5m]) > 0.8
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High CPU usage detected"
+      description: "CPU usage has been above 80% for more than 10 minutes. Current usage: {{ $value | humanizePercentage }}"

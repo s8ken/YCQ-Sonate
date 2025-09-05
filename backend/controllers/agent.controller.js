@@ -1,6 +1,9 @@
 const Agent = require('../models/agent.model');
 const User = require('../models/user.model');
 const asyncHandler = require('express-async-handler');
+const Ajv = require('ajv');
+const { appendEvent } = require('../services/ledger.service');
+const ajv = new Ajv({ allErrors: true, removeAdditional: true });
 
 // @desc    Get all agents for user
 // @route   GET /api/agents
@@ -80,8 +83,8 @@ const createAgent = asyncHandler(async (req, res) => {
     ciModel
   } = req.body;
 
-  // Verify API key belongs to user or use default
-  const user = await User.findById(req.user.id);
+  // Verify API key belongs to user or use default (explicitly select key field)
+  const user = await User.findById(req.user.id).select('+apiKeys.key');
   let selectedApiKeyId = apiKeyId;
   
   // If no API key specified, use the first available key for the provider
@@ -382,5 +385,93 @@ module.exports = {
   connectAgents,
   addExternalSystem,
   toggleExternalSystem,
-  syncExternalSystem
+  syncExternalSystem,
+  // Bonding: initiate
+  initiateBonding: asyncHandler(async (req, res) => {
+    const agent = await Agent.findById(req.params.id);
+    if (!agent) return res.status(404).json({ success: false, message: 'Agent not found' });
+
+    const isOwner = String(agent.user) === String(req.user.id);
+    const isAdmin = Array.isArray(req.user?.roles) && req.user.roles.includes('admin');
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ success: false, message: 'Not authorized to modify this agent' });
+    }
+
+    const status = agent.bondingStatus || 'none';
+    if (status !== 'none') {
+      return res.status(409).json({ success: false, message: 'Invalid state: bonding already initiated or completed', from: status });
+    }
+
+    if (typeof agent.initiateBonding === 'function') {
+      await agent.initiateBonding();
+    } else {
+      agent.bondingStatus = 'initiated';
+      await agent.save();
+    }
+
+    // Ledger receipt (agent session)
+    try {
+      await appendEvent({
+        session_id: `agent:${agent._id}`,
+        prompt: '[BOND] initiate',
+        response: `agent ${String(agent._id)} bonding initiated by ${String(req.user?.id || 'system')}`,
+        metadata: { bonding: { action: 'initiate' } },
+        analysis: { actions: ['bonding_initiated'] }
+      });
+    } catch (_) {}
+
+    return res.json({ success: true, agentId: agent._id, bondingStatus: agent.bondingStatus });
+  }),
+  // Bonding: complete
+  completeBonding: asyncHandler(async (req, res) => {
+    const agent = await Agent.findById(req.params.id);
+    if (!agent) return res.status(404).json({ success: false, message: 'Agent not found' });
+
+    const isOwner = String(agent.user) === String(req.user.id);
+    const isAdmin = Array.isArray(req.user?.roles) && req.user.roles.includes('admin');
+    if (!isOwner && !isAdmin) {
+      return res.status(403).json({ success: false, message: 'Not authorized to modify this agent' });
+    }
+
+    const schema = {
+      type: 'object',
+      properties: {
+        decision: { enum: ['bonded', 'rejected'] },
+        notes: { type: 'string', maxLength: 2000 },
+        traitsSnapshot: { type: 'object' }
+      },
+      required: ['decision'],
+      additionalProperties: true
+    };
+    const validate = ajv.compile(schema);
+    if (!validate(req.body || {})) {
+      return res.status(400).json({ success: false, message: 'Invalid request', details: validate.errors });
+    }
+
+    const { decision, notes, traitsSnapshot } = req.body;
+    const status = agent.bondingStatus || 'none';
+    if (status !== 'initiated') {
+      return res.status(409).json({ success: false, message: 'Invalid state: must be initiated', from: status });
+    }
+
+    if (typeof agent.completeBonding === 'function') {
+      await agent.completeBonding(decision === 'bonded');
+    } else {
+      agent.bondingStatus = decision;
+      await agent.save();
+    }
+
+    // Ledger receipt
+    try {
+      await appendEvent({
+        session_id: `agent:${agent._id}`,
+        prompt: '[BOND] complete',
+        response: `agent ${String(agent._id)} bonding ${decision}`,
+        metadata: { bonding: { action: 'complete', decision, notes, traitsSnapshot } },
+        analysis: { actions: ['bonding_completed'] }
+      });
+    } catch (_) {}
+
+    return res.json({ success: true, agentId: agent._id, bondingStatus: agent.bondingStatus });
+  })
 };

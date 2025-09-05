@@ -292,7 +292,7 @@ const AgentDetail = () => {
           <Tab label="Basic Settings" />
           <Tab label="Advanced Settings" />
           <Tab label="System Prompt" />
-          <Tab icon={<PsychologyIcon />} label="Cognitive Intelligence" />
+          <Tab label="Trust Mode" />
         </Tabs>
 
         {/* Basic Settings Tab */}
@@ -539,102 +539,23 @@ const AgentDetail = () => {
           </Box>
         )}
         
-        {/* Cognitive Intelligence Tab */}
+        {/* Trust Mode Tab (POC) */}
         {tabValue === 3 && (
           <Box>
             <Typography variant="h6" gutterBottom>
-              Cognitive Intelligence Integration
+              Trust Mode
             </Typography>
             <Typography variant="body2" color="text.secondary" paragraph>
-              Cognitive Intelligence (CI) enhances your agent with ethical alignment, context awareness, and advanced reasoning capabilities.
+              POC uses “Heuristic (local)” to compute trust overlays. No external governance layer is active.
             </Typography>
-            
-            <Divider sx={{ my: 3 }} />
-            
-            <Grid container spacing={4}>
-              <Grid item xs={12} md={6}>
-                <AgentBondingCard 
-                  agent={{
-                    id: id,
-                    name: agent.name || 'Unnamed Agent',
-                    bondingStatus: agent._id ? 'not_bonded' : 'unavailable',
-                    traits: {
-                      ethicalAlignment: 0,
-                      creativity: 0,
-                      precision: 0,
-                      adaptability: 0
-                    }
-                  }}
-                />
-              </Grid>
-              
-              <Grid item xs={12} md={6}>
-                <Paper elevation={1} sx={{ p: 3, height: '100%' }}>
-                  <Typography variant="h6" gutterBottom>
-                    CI Configuration
-                  </Typography>
-                  
-                  <FormControlLabel
-                    control={
-                      <Switch 
-                        checked={agent.ciEnabled || false}
-                        onChange={(e) => setAgent({ ...agent, ciEnabled: e.target.checked })}
-                        color="secondary"
-                      />
-                    }
-                    label="Enable Cognitive Intelligence"
-                    sx={{ mb: 2, display: 'block' }}
-                  />
-                  
-                  <FormControl fullWidth margin="normal" disabled={!agent.ciEnabled}>
-                    <InputLabel id="ci-model-label">CI Model</InputLabel>
-                    <Select
-                      labelId="ci-model-label"
-                      value={agent.ciModel || 'symbi-core'}
-                      onChange={(e) => setAgent({ ...agent, ciModel: e.target.value })}
-                      label="CI Model"
-                    >
-                      <MenuItem value="symbi-core">Symbi Core</MenuItem>
-                      <MenuItem value="overseer-lite">Overseer Lite</MenuItem>
-                      <MenuItem value="overseer-pro">Overseer Pro</MenuItem>
-                    </Select>
-                  </FormControl>
-                  
-                  <Typography variant="subtitle2" gutterBottom sx={{ mt: 3 }}>
-                    Context Bridge
-                  </Typography>
-                  
-                  <FormControlLabel
-                    control={
-                      <Switch 
-                        checked={agent.contextBridgeEnabled || false}
-                        onChange={(e) => setAgent({ ...agent, contextBridgeEnabled: e.target.checked })}
-                        disabled={!agent.ciEnabled}
-                        color="secondary"
-                      />
-                    }
-                    label="Enable Context Bridge"
-                  />
-                  
-                  <Typography variant="subtitle2" gutterBottom sx={{ mt: 3 }}>
-                    Trust Score Threshold
-                  </Typography>
-                  
-                  <Slider
-                    value={agent.trustScoreThreshold || 0.7}
-                    onChange={(e, newValue) => setAgent({ ...agent, trustScoreThreshold: newValue })}
-                    step={0.05}
-                    marks
-                    min={0}
-                    max={1}
-                    valueLabelDisplay="auto"
-                    valueLabelFormat={(value) => `${(value * 100).toFixed(0)}%`}
-                    disabled={!agent.ciEnabled}
-                    sx={{ mt: 2 }}
-                  />
-                </Paper>
-              </Grid>
-            </Grid>
+            <Paper elevation={1} sx={{ p: 3 }}>
+              <Typography variant="subtitle1" gutterBottom>
+                Selected: Heuristic (local)
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Lightweight, on‑server heuristics derived from the conversation ledger.
+              </Typography>
+            </Paper>
           </Box>
         )}
       </Paper>

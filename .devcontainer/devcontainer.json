@@ -1,0 +1,32 @@
+{
+  "name": "symbi-dev",
+  "dockerComposeFile": [
+    "docker-compose.dev.yml"
+  ],
+  "service": "workspace",
+  "workspaceFolder": "/work",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": { "version": "18" },
+    "ghcr.io/devcontainers/features/git:1": {}
+  },
+  "forwardPorts": [5000, 3000, 27017],
+  "postCreateCommand": "npm ci --prefix backend || npm install --prefix backend && npm ci --prefix frontend || npm install --prefix frontend",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "symbi.apiBase": "http://localhost:5000",
+        "editor.formatOnSave": true
+      },
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  },
+  "containerEnv": {
+    "NODE_ENV": "development",
+    "SYMBI_MODE": "normal"
+  },
+  "remoteUser": "node"
+}
+

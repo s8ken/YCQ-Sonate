@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import Snackbar from '@mui/material/Snackbar';
+import MuiAlert from '@mui/material/Alert';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import './TrustDeclaration.css';
@@ -53,12 +55,12 @@ const TrustDeclaration = () => {
       if (response.data.success) {
         setDeclaration(response.data.data);
         setAuditMode(false);
-        alert('Trust declaration audited successfully');
+        setToast({ open: true, severity: 'success', message: 'Trust declaration audited successfully' });
       } else {
-        alert('Failed to audit trust declaration');
+        setToast({ open: true, severity: 'error', message: 'Failed to audit trust declaration' });
       }
     } catch (err) {
-      alert(err.response?.data?.message || 'Error auditing trust declaration');
+      setToast({ open: true, severity: 'error', message: err.response?.data?.message || 'Error auditing trust declaration' });
       console.error('Error auditing trust declaration:', err);
     }
   };
@@ -239,6 +241,8 @@ const TrustDeclaration = () => {
     );
   }
 
+  const [toast, setToast] = useState({ open: false, severity: 'info', message: '' });
+
   return (
     <div className="trust-declaration-detail">
       {/* Header */}
@@ -393,6 +397,22 @@ const TrustDeclaration = () => {
           {renderAuditHistory()}
         </div>
       </div>
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={5000}
+        onClose={() => setToast(prev => ({ ...prev, open: false }))}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <MuiAlert
+          onClose={() => setToast(prev => ({ ...prev, open: false }))}
+          severity={toast.severity}
+          elevation={6}
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {toast.message}
+        </MuiAlert>
+      </Snackbar>
     </div>
   );
 };

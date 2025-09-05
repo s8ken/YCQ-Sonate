@@ -77,6 +77,9 @@ const createContext = asyncHandler(async (req, res) => {
 // @route   POST /api/context/bridge
 // @access  Private
 const createContextBridge = asyncHandler(async (req, res) => {
+  if (process.env.OVERSEER_ENABLED !== 'true') {
+    return res.status(501).json({ success: false, message: 'Not implemented in POC' });
+  }
   const { fromTag, toTag, data } = req.body;
   
   if (!fromTag || !toTag || !data) {

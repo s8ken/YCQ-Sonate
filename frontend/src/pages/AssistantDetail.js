@@ -40,17 +40,30 @@ const AssistantDetail = () => {
   const [success, setSuccess] = useState(null);
   const [functions, setFunctions] = useState([]);
 
-  const availableModels = [
-    'gpt-4-1106-preview',
-    'gpt-4-turbo-preview',
-    'gpt-4',
-    'gpt-3.5-turbo-1106',
-    'gpt-3.5-turbo'
-  ];
+  const [availableModels, setAvailableModels] = useState([
+    'gpt-4o', 'gpt-4o-mini', 'gpt-4-turbo', 'gpt-4', 'gpt-3.5-turbo'
+  ]);
 
   useEffect(() => {
     fetchFunctions();
+    fetchModels();
   }, []);
+
+  const fetchModels = async () => {
+    try {
+      const res = await axios.get('/api/llm/models/openai');
+      const list = res.data?.data?.models || [];
+      if (Array.isArray(list) && list.length) {
+        const models = list.map(m => m.id || m.name).filter(Boolean);
+        setAvailableModels(models);
+        if (!assistant.model && models.length) {
+          setAssistant(prev => ({ ...prev, model: models[0] }));
+        }
+      }
+    } catch (e) {
+      // keep defaults
+    }
+  };
 
   const fetchFunctions = async () => {
     try {

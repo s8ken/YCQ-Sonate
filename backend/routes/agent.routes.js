@@ -10,7 +10,9 @@ const {
   connectAgents,
   addExternalSystem,
   toggleExternalSystem,
-  syncExternalSystem
+  syncExternalSystem,
+  initiateBonding,
+  completeBonding
 } = require('../controllers/agent.controller');
 const { protect } = require('../middleware/auth.middleware');
 
@@ -29,5 +31,9 @@ router.post('/connect', protect, connectAgents);
 router.post('/:id/external-systems', protect, addExternalSystem);
 router.put('/:id/external-systems/:systemName/toggle', protect, toggleExternalSystem);
 router.post('/:id/external-systems/:systemName/sync', protect, syncExternalSystem);
+
+// Bonding ritual routes (owner or admin)
+router.put('/:id/bond/initiate', protect, initiateBonding);
+router.put('/:id/bond/complete', protect, completeBonding);
 
 module.exports = router;

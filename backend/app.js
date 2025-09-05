@@ -15,7 +15,7 @@ const {
   validateContentType,
   requestSizeLimiter
 } = require('./middleware/security.middleware');
-const path = require('path');
+const { metricsMiddleware, mountMetrics } = require('./middleware/metrics.middleware');
 
 // Load environment variables
 dotenv.config();
@@ -96,6 +96,9 @@ app.use(morgan('combined', {
   skip: (req, res) => res.statusCode < 400
 }));
 
+// Metrics collection (Prometheus)
+app.use(metricsMiddleware);
+
 // General API rate limiting
 app.use('/api/', apiRateLimit);
 
@@ -128,6 +131,8 @@ const snowflakeRoutes = require('./routes/snowflake.routes');
 const assistantRoutes = require('./routes/assistant.routes');
 const eventRoutes = require('./routes/events.routes');
 const analysisRoutes = require('./routes/analysis.routes');
+const bridgeRoutes = require('./routes/bridge.routes');
+const capsuleRoutes = require('./routes/capsule.routes');
 const guardrailsRoutes = require('./routes/guardrails.routes');
 const insightsRoutes = require('./routes/insights.routes');
 const ledgerRoutes = require('./routes/ledger.routes');
@@ -172,6 +177,11 @@ app.use('/api/guardrails', guardrailsRoutes);
 app.use('/api/insights', insightsRoutes);
 app.use('/api/ledger', ledgerRoutes);
 app.use('/api/sessions', sessionsRoutes);
+app.use('/api/bridge', bridgeRoutes);
+app.use('/api/context/capsule', capsuleRoutes);
+
+// Expose /metrics (optionally bearer‑gated in production)
+mountMetrics(app);
 
 // Developer docs: Swagger UI (non-production only)
 if (process.env.NODE_ENV !== 'production') {

@@ -188,7 +188,7 @@ class AssistantController {
   // Send message to assistant
   async sendMessage(req, res) {
     try {
-      const { threadId, assistantId, message } = req.body;
+      const { threadId, assistantId, message, session_id: sidFromBody } = req.body;
       const userId = req.user.id;
       
       if (!threadId || !message) {
@@ -214,7 +214,29 @@ class AssistantController {
         assistantToUse = latest.id;
       }
 
-      const result = await assistantService.sendMessage(openaiKey, threadId, assistantToUse, message, userId);
+      // Pull Context Capsule and prefix message if session provided
+      let finalMessage = message;
+      try {
+        if (sidFromBody) {
+          const HEX24 = /^[a-f0-9]{24}$/i;
+          const sid = (String(sidFromBody).startsWith('conv:') || !HEX24.test(String(sidFromBody))) ? String(sidFromBody) : `conv:${sidFromBody}`;
+          const ContextCapsule = require('../models/contextCapsule.model');
+          const doc = await ContextCapsule.findOne({ session_id: sid }).lean();
+          if (doc?.capsule) {
+            const cap = doc.capsule;
+            const preface = [
+              '[CONTEXT CAPSULE]',
+              `Goals: ${Array.isArray(cap.goals)&&cap.goals.length?cap.goals.join('; '):'—'}`,
+              `Tone: ${Array.isArray(cap.tone_prefs)&&cap.tone_prefs.length?cap.tone_prefs.join('; '):'—'}`,
+              `Constraints: ${Array.isArray(cap.constraints)&&cap.constraints.length?cap.constraints.join('; '):'—'}`,
+              `Tags: ${Array.isArray(cap.tags)&&cap.tags.length?cap.tags.join(', '):'—'}`
+            ].join('\n');
+            finalMessage = `${preface}\n\n${message}`;
+          }
+        }
+      } catch {}
+
+      const result = await assistantService.sendMessage(openaiKey, threadId, assistantToUse, finalMessage, userId);
       
       res.json({
         success: true,

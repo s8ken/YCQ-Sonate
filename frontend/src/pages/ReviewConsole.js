@@ -23,6 +23,7 @@ const ReviewConsole = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [points, setPoints] = useState([]);
+  const [events, setEvents] = useState([]);
   const [expandedIndex, setExpandedIndex] = useState(null);
 
   const loadTimeline = async () => {
@@ -37,9 +38,22 @@ const ReviewConsole = () => {
         params: { session_id: sessionId }
       });
       setPoints(res.data?.data?.points || []);
+      
+      // Also try to fetch events for bridge receipts
+      try {
+        const eventsRes = await axios.get('/api/events', {
+          params: { session_id: sessionId }
+        });
+        setEvents(eventsRes.data?.events || []);
+      } catch (eventsError) {
+        // Events endpoint might not exist or fail, but don't break the main flow
+        console.warn('Failed to load events for bridge receipts:', eventsError);
+        setEvents([]);
+      }
     } catch (e) {
       setError(e.response?.data?.message || 'Failed to load timeline');
       setPoints([]);
+      setEvents([]);
     } finally {
       setLoading(false);
     }
@@ -51,6 +65,9 @@ const ReviewConsole = () => {
     if (from && to) return `${from} → ${to}`;
     return 'stance change';
   };
+
+  // Filter events for bridge receipts
+  const bridgeReceipts = events.filter(e => e?.metadata?.receipt?.type === 'bridge_receipt');
 
   return (
     <Box>
@@ -97,6 +114,33 @@ const ReviewConsole = () => {
         </Typography>
       )}
 
+      {/* Bridge Receipts Section */}
+      {bridgeReceipts.length > 0 && (
+        <Box sx={{ mb: 3 }}>
+          <Card sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 2, bgcolor: 'grey.50' }}>
+            <CardContent sx={{ p: 3 }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
+                Bridge Receipts
+              </Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                {bridgeReceipts.map((e, i) => (
+                  <Box key={i} sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
+                    <Chip
+                      size="small"
+                      sx={{ bgcolor: 'primary.100', color: 'primary.800', px: 1 }}
+                      label={e.metadata.receipt.chosen?.agent_key || 'none'}
+                    />
+                    <Typography variant="body2" color="text.secondary">
+                      score={e.metadata.receipt.chosen?.score ?? 'n/a'} • agents={e.metadata.receipt.agents_considered?.length ?? 0}
+                    </Typography>
+                  </Box>
+                ))}
+              </Box>
+            </CardContent>
+          </Card>
+        </Box>
+      )}
+
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         {points.map((p, idx) => {
           const pivot = (p.change_point_score || 0) > 0.6;
@@ -123,6 +167,9 @@ const ReviewConsole = () => {
                         icon={pivot ? <WarningAmberIcon /> : <CheckCircleIcon />}
                         label={`Change score: ${(p.change_point_score * 100).toFixed(0)}%`}
                       />
+                      {pivot && (
+                        <Chip size="small" color="error" variant="outlined" label="Pivot" />
+                      )}
                       {p.row_hash && (
                         <Chip size="small" variant="outlined" label={`hash: ${p.row_hash.slice(0, 10)}…`} />
                       )}
@@ -154,4 +201,3 @@ const ReviewConsole = () => {
 };
 
 export default ReviewConsole;
-
