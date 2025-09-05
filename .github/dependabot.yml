@@ -1,0 +1,22 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "your-github-username"  # Replace with actual reviewer
+    labels:
+      - "dependencies"
+      - "backend"
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "your-github-username"  # Replace with actual reviewer
+    labels:
+      - "dependencies"
+      - "frontend"

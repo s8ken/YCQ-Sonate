@@ -114,7 +114,7 @@ const BondingRitual = ({ agent, onComplete }) => {
               Initiate Bonding Ritual with {agent.name}
             </Typography>
             <Typography variant="body1" paragraph>
-              Bonding creates a deep connection between you and your AI agent, enabling enhanced context awareness and ethical alignment.
+              Bonding creates alignment between you and your AI agent, enabling enhanced contextual awareness and ethical decision making.
             </Typography>
             <Box className="bonding-cta" sx={{ mt: 3, p: 2, borderRadius: 2 }}>
               <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
@@ -274,7 +274,7 @@ const BondingRitual = ({ agent, onComplete }) => {
               </div>
             </Box>
             <Typography variant="body2" color="text.secondary">
-              By confirming this bond, you establish a persistent connection with your agent that enhances context awareness and ethical alignment.
+              By confirming this bond, you establish a persistent connection with your agent that enhances contextual awareness and ethical decision making.
             </Typography>
           </Box>
         );
