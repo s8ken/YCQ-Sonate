@@ -23,6 +23,7 @@ import AssessmentIcon from "@mui/icons-material/Assessment"
 import LinkIcon from "@mui/icons-material/Link"
 import PersonIcon from "@mui/icons-material/Person"
 import LogoutIcon from "@mui/icons-material/Logout"
+import BookOpenIcon from "@mui/icons-material/MenuBook"
 
 interface SidebarProps {
   open: boolean
@@ -40,6 +41,7 @@ const Sidebar: React.FC<SidebarProps> = ({ open, toggleDrawer, user, mode = "lig
     { text: "Conversations", icon: <ChatIcon />, path: "/conversations", color: "#10b981" },
     { text: "Agents", icon: <SmartToyIcon />, path: "/agents", color: "#8b5cf6" },
     { text: "Assistants", icon: <SmartToyIcon />, path: "/assistants", color: "#ec4899" },
+    { text: "Case Studies", icon: <BookOpenIcon />, path: "/case-studies", color: "#f97316" },
     { text: "Reports", icon: <AssessmentIcon />, path: "/reports", color: "#f59e0b" },
     { text: "Context Bridge", icon: <LinkIcon />, path: "/context-bridge", color: "#3b82f6" },
     { text: "Settings", icon: <SettingsIcon />, path: "/settings", color: "#6b7280" },
